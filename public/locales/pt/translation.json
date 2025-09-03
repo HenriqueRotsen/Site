@@ -24,6 +24,7 @@
     "titulo": "Principais Trabalhos",
     "ciberseguranca": "Cibersegurança",
     "ciberseguranca_desc": "Pesquisador na área de Arquitetura de Segurança, voltado para o planejamento e desenvolvimento de sistemas Safety by Design (SbD) e Privacy by Design (PbD). Recentemente realizou um projeto que envolvia análise estática (SAST) e dinâmica (DAST) de vulnerabilidades nos sistemas do Ministério Público de Minas Gerais (MPMG) e do Gabinete de Segurança Integrado (GSI). Além disso, com um artigo publicado no Seminário Integrado de Software e Hardware (SEMISH) 2025.",
+    "ciberseguranca_desc2": "Veja também uma matéria sobre \"A Computação Quântica e a Cibersegurança: O Futuro Promissor e Seus Desafios\" disponível abaixo.",
     "mineracao": "Mineração de Dados",
     "mineracao_desc": "Foi feito um trabalho voltado para descoberta de padrões em dados de apartamento para aluguel nos EUA. Esse trabalho utilizou várias técnicas de tratamento e análise de dados, que foram discutidas em um relatório disponível abaixo.",
     "analise": "ANÁLISE EXPLORATÓRIA DE DADOS",

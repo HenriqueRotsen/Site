@@ -23,6 +23,7 @@
     "titulo": "Main Projects",
     "ciberseguranca": "Cybersecurity",
     "ciberseguranca_desc": "Researcher in the field of Security Architecture, focused on the planning and development of Safety by Design (SbD) and Privacy by Design (PbD) systems. Recently, he carried out a project that involved static (SAST) and dynamic (DAST) vulnerability analysis in the systems of the Public Prosecutor's Office of Minas Gerais (MPMG) and the Integrated Security Office (GSI). Additionally, with an article published in the Integrated Software and Hardware Seminar (SEMISH) 2025.",
+    "ciberseguranca_desc2": "See also an essay on \"Quantum Computing and Cybersecurity: The Promising Future and Its Challenges\" available below.",
     "mineracao": "Data Mining",
     "mineracao_desc": "A project focused on discovering patterns in apartment rental data in the USA. Several data cleaning and analysis techniques were applied and discussed in the report available below.",
     "analise": "EXPLORATORY DATA ANALYSIS",
