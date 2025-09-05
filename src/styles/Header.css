@@ -19,7 +19,7 @@
 }
 
 .navbar-logo {
-    color: #fff;
+    color: white;
     justify-self: start;
     margin-left: 20px;
     cursor: pointer;
@@ -60,7 +60,7 @@
 }
 
 .nav-links:hover {
-    border-bottom: 4px solid #ff851b;
+    border-bottom: 4px solid #C7B279;
     transition: all 0.2s ease-out;
 }
 
@@ -139,13 +139,14 @@
     }
 
     .nav-links:hover {
-        background-color: #ff851b;
+        background-color: #C7B279;
         color: #2a2a2a;
         border-radius: 0;
     }
 
     .navbar-logo {
         position: absolute;
+        width: 10%;
         left: 0;
     }
 

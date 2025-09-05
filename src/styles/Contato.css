@@ -60,7 +60,7 @@
 
 .contato h1 {
     margin: 20px;
-    color: #ff851b;
+    color: #C7B279;
 }
 
 .form-group-button {
@@ -75,7 +75,7 @@
 }
 
 .error-message {
-    color: #ff851b;
+    color: #C7B279;
     font-size: 0.9rem;
     margin-top: 5px;
   }

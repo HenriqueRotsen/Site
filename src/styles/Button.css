@@ -1,7 +1,7 @@
 :root {
     --primary: #2A2A2A;
-    --secondary: #FFFFFF;
-    --contrast: #ff851b;
+    --secondary: white;
+    --contrast: #C7B279;
 }
 
 .btn {

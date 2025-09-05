@@ -18,7 +18,7 @@ h1 {
 
 .logo-main-box {
     width: auto;
-    height: 30%;
+    height: 100%;
     opacity: 0;
     transition: opacity 1s ease;
 }
@@ -75,7 +75,7 @@ li {
     left: 0;
     width: 80%;
     height: 2px;
-    background-color: #ff851b;
+    background-color: #C7B279;
 }
 
 .btn-contato{
