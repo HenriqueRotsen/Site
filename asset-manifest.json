@@ -1,12 +1,12 @@
 {
   "files": {
     "main.css": "/Site/static/css/main.fbfb17de.css",
-    "main.js": "/Site/static/js/main.b4195f23.js",
+    "main.js": "/Site/static/js/main.5809fa80.js",
     "static/js/38.096c640d.chunk.js": "/Site/static/js/38.096c640d.chunk.js",
     "static/media/background-home-page.png": "/Site/static/media/background-home-page.943ab84ed4678e78e939.png",
     "static/media/profissional2.jpg": "/Site/static/media/profissional2.451bd83b13013457281d.jpg",
-    "static/media/Henrique_Rotsen_curriculo_portugues.pdf": "/Site/static/media/Henrique_Rotsen_curriculo_portugues.19f9b9a2b0641592deec.pdf",
-    "static/media/Henrique_Rotsen_resume_english.pdf": "/Site/static/media/Henrique_Rotsen_resume_english.2a6f76a49b2a55fc7a10.pdf",
+    "static/media/Henrique_Rotsen_curriculo_portugues.pdf": "/Site/static/media/Henrique_Rotsen_curriculo_portugues.ad672abc07bbf64cbab8.pdf",
+    "static/media/Henrique_Rotsen_resume_english.pdf": "/Site/static/media/Henrique_Rotsen_resume_english.e2c02078580e4a3fa20a.pdf",
     "static/media/foto-profissional-trabalhos.jpeg": "/Site/static/media/foto-profissional-trabalhos.a01eba20e435f26a351a.jpeg",
     "static/media/Mineracao_Dados_Apartamentos_EUA.pdf": "/Site/static/media/Mineracao_Dados_Apartamentos_EUA.1fbca35c9084f0ac0029.pdf",
     "static/media/Henrique_Rotsen_curriculo_linkedin.pdf": "/Site/static/media/Henrique_Rotsen_curriculo_linkedin.6a8f08f066d68273f800.pdf",
@@ -14,11 +14,11 @@
     "static/media/logo-no-background.png": "/Site/static/media/logo-no-background.2f475dbf435fbad732af.png",
     "index.html": "/Site/index.html",
     "main.fbfb17de.css.map": "/Site/static/css/main.fbfb17de.css.map",
-    "main.b4195f23.js.map": "/Site/static/js/main.b4195f23.js.map",
+    "main.5809fa80.js.map": "/Site/static/js/main.5809fa80.js.map",
     "38.096c640d.chunk.js.map": "/Site/static/js/38.096c640d.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.fbfb17de.css",
-    "static/js/main.b4195f23.js"
+    "static/js/main.5809fa80.js"
   ]
 }
