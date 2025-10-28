@@ -6,7 +6,7 @@ import { Turnstile } from '@marsidev/react-turnstile';
 import EmailButton from '../components/EmailButton.js';
 
 const TURNSTILE_SITE_KEY = "0x4AAAAAAB9J1GRCy4T4B_pH";
-const WORKER_URL = "https://siteworker.henriquerotsensf.workers.dev/";
+const WORKER_URL = "https://siteworker.henriquerotsensf.workers.dev/contato";
 
 export const Contato = () => {
   const { t } = useTranslation();
@@ -49,10 +49,12 @@ export const Contato = () => {
     setErrors({});
     setSubmissionStatus('Enviando...');
 
+    // Cria um objeto FormData para enviar os dados
     const dataToSend = new FormData();
     dataToSend.append('name', formData.name);
     dataToSend.append('email', formData.email);
     dataToSend.append('message', formData.message);
+    // 👈 IMPORTANTE: Anexa o token do Turnstile para validação no Worker
     dataToSend.append('cf-turnstile-response', turnstileToken);
 
     try {
