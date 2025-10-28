@@ -1,3 +1,4 @@
+import Button from '../components/Button.js';
 import DownloadButton from '../components/DownloadButton.js';
 import '../App.css';
 import '../styles/Trabalhos.css';
