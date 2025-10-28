@@ -2,11 +2,8 @@ import '../App.css';
 import '../styles/Contato.css';
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Turnstile } from '@marsidev/react-turnstile';
 import EmailButton from '../components/EmailButton.js';
-
-const TURNSTILE_SITE_KEY = "0x4AAAAAAB9J1GRCy4T4B_pH";
-const WORKER_URL = "https://siteworker.henriquerotsensf.workers.dev/contato";
+import emailjs from '@emailjs/browser';
 
 export const Contato = () => {
   const { t } = useTranslation();
@@ -16,7 +13,6 @@ export const Contato = () => {
     message: ''
   });
 
-  const [turnstileToken, setTurnstileToken] = useState('');
   const [submissionStatus, setSubmissionStatus] = useState('');
   const [errors, setErrors] = useState({});
 
@@ -28,55 +24,52 @@ export const Contato = () => {
     });
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
 
     const validationErrors = {};
-    if (!formData.name) validationErrors.name = t('contato.erroNome');
-    if (!formData.email) validationErrors.email = t('contato.erroEmail');
-    if (!formData.message) validationErrors.message = t('contato.erroMensagem');
 
-    if (!turnstileToken) {
-      setSubmissionStatus(t('contato.erroVerificacao') || 'Por favor, complete a verificação de segurança.');
-      return;
+    if (!formData.name) {
+      validationErrors.name = t('contato.erroNome');
+    }
+    if (!formData.email) {
+      validationErrors.email = t('contato.erroEmail');
+    }
+    if (!formData.message) {
+      validationErrors.message = t('contato.erroMensagem');
     }
 
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors);
       return;
+    } else {
+      setErrors({});
     }
 
-    setErrors({});
-    setSubmissionStatus('Enviando...');
+    const templateParams = {
+      from_name: formData.name,
+      message: formData.message,
+      email: formData.email
+    };
 
-    // Cria um objeto FormData para enviar os dados
-    const dataToSend = new FormData();
-    dataToSend.append('name', formData.name);
-    dataToSend.append('email', formData.email);
-    dataToSend.append('message', formData.message);
-    // 👈 IMPORTANTE: Anexa o token do Turnstile para validação no Worker
-    dataToSend.append('cf-turnstile-response', turnstileToken);
-
-    try {
-      const response = await fetch(WORKER_URL, {
-        method: 'POST',
-        body: dataToSend,
-      });
-
-      if (response.ok) {
-        console.log('Mensagem enviada via Worker.');
+    emailjs.send(
+      'service_c3pkaiw',
+      'template_tjl9zii',
+      templateParams,
+      'Aj6r553aDRSOBjQ5W'
+    )
+      .then((response) => {
+        console.log('EMAIL ENVIADO', response.status, response.text);
         setSubmissionStatus(t('contato.emailSucesso'));
-        setFormData({ name: '', email: '', message: '' });
-        setTurnstileToken('');
-      } else {
-        const errorText = await response.text();
-        console.log('ERRO NO WORKER: ', errorText);
-        setSubmissionStatus(`${t('contato.emailErro')} ${errorText}`);
-      }
-    } catch (error) {
-      console.error('ERRO DE CONEXÃO: ', error);
-      setSubmissionStatus('Erro de conexão com o servidor. Tente novamente.');
-    }
+        setFormData({
+          name: '',
+          email: '',
+          message: ''
+        });
+      }, (error) => {
+        console.log('ERRO: ', error);
+        setSubmissionStatus(`${t('contato.emailErro')} ${error.text}`);
+      });
   };
 
   return (
@@ -119,25 +112,12 @@ export const Contato = () => {
             ></textarea>
             {errors.message && <p className="error-message">{errors.message}</p>}
           </div>
-          <div className="form-group-turnstile">
-                    <Turnstile
-                        siteKey={TURNSTILE_SITE_KEY} 
-                        onSuccess={(token) => setTurnstileToken(token)}
-                        onExpire={() => setTurnstileToken('')}
-                    />
-                    {submissionStatus.includes('Por favor') && <p className="error-message">{submissionStatus}</p>}
-                </div>
           <div className="form-group-button">
-            <EmailButton
-              type="submit"
-              className='btn-send'
-              buttonStyle={'btn--outline'}
-              disabled={submissionStatus === 'Enviando...' || !turnstileToken}
-            >
+            <EmailButton type="submit" className='btn-send' buttonStyle={'btn--outline'}>
               {t('contato.botao')}
             </EmailButton>
           </div>
-          {submissionStatus && !submissionStatus.includes('Por favor') && <p>{submissionStatus}</p>}
+          {submissionStatus && <p>{submissionStatus}</p>}
         </form>
       </div>
     </div>
