@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { Contato } from './pages/Contato';
+import { Contato } from '../pages/Contato';
 import emailjs from '@emailjs/browser';
 
 // 1. Mock do EmailJS (Para não enviar email real)
