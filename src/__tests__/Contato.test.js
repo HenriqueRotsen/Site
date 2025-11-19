@@ -3,19 +3,25 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { Contato } from '../pages/Contato';
 import emailjs from '@emailjs/browser';
 
-// 1. Mock do EmailJS (Para não enviar email real)
-jest.mock('@emailjs/browser', () => ({
-  send: jest.fn().mockResolvedValue({ status: 200, text: 'OK' }),
-}));
+// 1. Mock Estrutural do EmailJS
+jest.mock('@emailjs/browser', () => {
+  return {
+    __esModule: true,
+    default: {
+      send: jest.fn(), // Simula: import emailjs from...
+    },
+    send: jest.fn(),   // Simula: import { send } from...
+  };
+});
 
-// 2. Mock do i18next (Tradução)
+// 2. Mock do i18next
 jest.mock('react-i18next', () => ({
   useTranslation: () => ({
-    t: (key) => key, // Retorna a própria chave como texto (ex: 'contato.botao')
+    t: (key) => key,
   }),
 }));
 
-// Mock do componente de botão customizado para simplificar o teste
+// 3. Mock do componente de botão
 jest.mock('../components/EmailButton.js', () => {
   return ({ children, onClick, type }) => (
     <button onClick={onClick} type={type}>{children}</button>
@@ -24,7 +30,7 @@ jest.mock('../components/EmailButton.js', () => {
 
 describe('Componente Contato', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    emailjs.send.mockResolvedValue({ status: 200, text: 'OK' });
   });
 
   test('deve chamar emailjs.send quando o formulário é preenchido corretamente', async () => {
@@ -38,14 +44,14 @@ describe('Componente Contato', () => {
       target: { value: 'teste@exemplo.com' },
     });
     fireEvent.change(screen.getByPlaceholderText('contato.placeholderMensagem'), {
-      target: { value: 'Esta é uma mensagem de teste automatizado.' },
+      target: { value: 'Msg Automatica' },
     });
 
-    // Clica no botão de enviar
+    // Clica no botão
     const submitButton = screen.getByText('contato.botao');
     fireEvent.click(submitButton);
 
-    // Verifica se a função send foi chamada com os parâmetros corretos
+    // Aguarda e verifica a chamada do emailjs
     await waitFor(() => {
       expect(emailjs.send).toHaveBeenCalledTimes(1);
       expect(emailjs.send).toHaveBeenCalledWith(
@@ -54,13 +60,13 @@ describe('Componente Contato', () => {
         {
           from_name: 'Henrique Teste',
           email: 'teste@exemplo.com',
-          message: 'Esta é uma mensagem de teste automatizado.',
+          message: 'Msg Automatica',
         },
         'Aj6r553aDRSOBjQ5W'
       );
     });
 
-    // Verifica se a mensagem de sucesso apareceu
+    // Verifica se a mensagem de sucesso apareceu na tela
     expect(screen.getByText('contato.emailSucesso')).toBeInTheDocument();
   });
 
@@ -70,11 +76,8 @@ describe('Componente Contato', () => {
     const submitButton = screen.getByText('contato.botao');
     fireEvent.click(submitButton);
 
-    // Verifica que o send NÃO foi chamado
     await waitFor(() => {
       expect(emailjs.send).not.toHaveBeenCalled();
     });
-    
-    // Opcional: verificar se msg de erro apareceu (depende da sua lógica de i18n no teste)
   });
 });
