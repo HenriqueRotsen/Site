@@ -1,5 +1,5 @@
 import Header from './components/Header.js';
-import { BrowserRouter, Routes, Route} from "react-router-dom";
+import { HashRouter, Routes, Route } from "react-router-dom"; 
 import { Home } from './pages/Home.js'
 import { Curriculo } from './pages/Curriculo.js'
 import { Contato } from './pages/Contato.js'
@@ -9,17 +9,17 @@ import ScrollToTop from './components/ScrollToTop';
 
 function App() {
   return (
-    <BrowserRouter basename="Site">
+    <HashRouter>
       <ScrollToTop />
       <Header />
       <Routes>
-        <Route path="/" exact Component={Home}/>
-        <Route path="/curriculo" Component={Curriculo}/>
-        <Route path="/contato" Component={Contato}/>
-        <Route path="/trabalhos" Component={Trabalhos}/>
+        <Route path="/" element={<Home />} />
+        <Route path="/curriculo" element={<Curriculo />} />
+        <Route path="/contato" element={<Contato />} />
+        <Route path="/trabalhos" element={<Trabalhos />} />
       </Routes>
       <Footer />
-    </BrowserRouter>
+    </HashRouter>
   )
 }
 
