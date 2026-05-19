@@ -113,7 +113,7 @@ export const Contato = () => {
             {errors.message && <p className="error-message">{errors.message}</p>}
           </div>
           <div className="form-group-button">
-            <EmailButton type="submit" className='btn-send' buttonStyle={'btn--outline'}>
+            <EmailButton type="submit" className='btn-send' buttonStyle={'btn--primary'}>
               {t('contato.botao')}
             </EmailButton>
           </div>

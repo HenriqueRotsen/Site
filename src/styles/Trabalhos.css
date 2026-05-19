@@ -40,7 +40,7 @@
 }
 
 .main-title {
-    color: #C7B279;
+    color: #ffffff;
     margin: 0;
 }
 
@@ -51,7 +51,7 @@
 .divider {
     margin-top: 25px;
     margin-bottom: 25px;
-    color: #C7B279;
+    color: #ffffff;
     border-width: 2px;
     opacity: 60%;
 }
@@ -72,7 +72,7 @@
 }
 
 a{
-    color: #C7B279;
+    color: #0d203b;
     text-decoration: none;
 }
 

@@ -1,7 +1,7 @@
 :root {
-    --primary: #2A2A2A;
+    --primary: #0d203b;
     --secondary: white;
-    --contrast: #C7B279;
+    --contrast: #0d203b;
 }
 
 .btn {
@@ -19,8 +19,8 @@
 }
 
 .btn--outline{
-    background-color: transparent;
-    color: var(--contrast);
+    background-color: var(--secondary);
+    color: var(--primary);
     padding: 8px 20px;
     border: 1px solid var(--contrast);
     transition: all 0.3s ease-out;
