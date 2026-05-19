@@ -1,8 +1,8 @@
 {
   "files": {
     "main.css": "/Site/static/css/main.fb4fb2c6.css",
-    "main.js": "/Site/static/js/main.d87a27b2.js",
-    "static/js/38.ba52c896.chunk.js": "/Site/static/js/38.ba52c896.chunk.js",
+    "main.js": "/Site/static/js/main.8406c231.js",
+    "static/js/38.fb4f8edf.chunk.js": "/Site/static/js/38.fb4f8edf.chunk.js",
     "static/media/background-home-page.png": "/Site/static/media/background-home-page.943ab84ed4678e78e939.png",
     "static/media/profissional2.jpg": "/Site/static/media/profissional2.451bd83b13013457281d.jpg",
     "static/media/Henrique_Rotsen_resume_english.pdf": "/Site/static/media/Henrique_Rotsen_resume_english.d25114ff6abc389c3746.pdf",
@@ -14,11 +14,11 @@
     "static/media/logo-no-background-canto.png": "/Site/static/media/logo-no-background-canto.94745786db1de81ea558.png",
     "index.html": "/Site/index.html",
     "main.fb4fb2c6.css.map": "/Site/static/css/main.fb4fb2c6.css.map",
-    "main.d87a27b2.js.map": "/Site/static/js/main.d87a27b2.js.map",
-    "38.ba52c896.chunk.js.map": "/Site/static/js/38.ba52c896.chunk.js.map"
+    "main.8406c231.js.map": "/Site/static/js/main.8406c231.js.map",
+    "38.fb4f8edf.chunk.js.map": "/Site/static/js/38.fb4f8edf.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.fb4fb2c6.css",
-    "static/js/main.d87a27b2.js"
+    "static/js/main.8406c231.js"
   ]
 }
