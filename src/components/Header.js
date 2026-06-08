@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import '../styles/Header.css';
 import LogoCantoPagina from './images/logo-no-background-canto.png';
+import LanguageSelector from './LanguageSelector';
 import { useTranslation } from 'react-i18next';
 
 function Header() {
@@ -10,12 +11,7 @@ function Header() {
   const handleClick = () => setClick(!click);
   const closeMobileMenu = () => setClick(false);
 
-  const { t, i18n } = useTranslation();
-
-  const handleLanguageChange = (event) => {
-    const selectedLang = event.target.value;
-    i18n.changeLanguage(selectedLang);
-  };
+  const { t } = useTranslation();
 
   return (
     <>
@@ -49,22 +45,12 @@ function Header() {
               </Link>
             </li>
 
-            {/* Seletor de idioma para mobile */}
             <li className='nav-item language-selector-mobile'>
-              <select onChange={handleLanguageChange} value={i18n.language}>
-                <option value='pt'>🇧🇷</option>
-                <option value='en'>🇺🇸</option>
-              </select>
+              <LanguageSelector variant='mobile' />
             </li>
           </ul>
 
-          {/* Seletor de idioma para desktop */}
-          <div className='language-selector desktop-only'>
-            <select onChange={handleLanguageChange} value={i18n.language}>
-              <option value='pt'>🇧🇷</option>
-              <option value='en'>🇺🇸</option>
-            </select>
-          </div>
+          <LanguageSelector variant='desktop' />
         </div>
         <hr className='nav-hr' />
       </nav>

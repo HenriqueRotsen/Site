@@ -1,19 +1,21 @@
 {
   "home": {
     "sobre": "About",
-    "descricao": "Graduated in Computer Science at the Federal University of Minas Gerais (UFMG).",
+    "descricao": "PhD candidate in Computer Science at the Federal University of Minas Gerais (UFMG), in the field of Distributed Systems.",
+    "descricao_graduacao": "Graduated in Computer Science at the Federal University of Minas Gerais (UFMG).",
     "descricao2": "Main Skills",
     "linguagens": "Languages",
     "bibliotecas": "Libraries",
     "outrasTecnologias": "Other Technologies",
-    "interesses": "With solid experience in security architecture for GSI and MPMG systems, and in the development of neural networks for the largest radiography company in Brazil, he has a proactive and dedicated profile, with a great interest in Cybersecurity and Artificial Intelligence.",
+    "interesses": "Currently conducting PhD research focused on Adaptive Security Orchestration at the Network Edge, using an autonomous approach based on Multi-Agent Systems and Small Language Models (SLMs). With solid experience in security architecture for GSI and MPMG systems, and in the development of neural networks for the largest radiography company in Brazil, he has a great interest in Cybersecurity, Distributed Systems, and Artificial Intelligence.",
     "interesses2": "He faces challenges with determination, seeks creative solutions to complex problems, and, when he doesn't master some knowledge, commits to learning it quickly.",
     "btnTrabalhos": "See the works"
   },
   "header": {
     "trabalhos": "Projects",
     "curriculo": "Resume",
-    "contato": "Contact"
+    "contato": "Contact",
+    "idioma": "Select language"
   },
   "footer": {
     "texto1": "Developed by Henrique Rotsen",
@@ -21,6 +23,10 @@
   },
   "trabalhos": {
     "titulo": "Main Projects",
+    "doutorado": "PhD — UFMG",
+    "doutorado_desc": "PhD candidate in Computer Science at the Federal University of Minas Gerais (UFMG), with emphasis on Distributed Systems. The research investigates Adaptive Security Orchestration at the Network Edge: an autonomous approach based on Multi-Agent Systems and Small Language Models (SLMs), combining cybersecurity, edge computing, and applied artificial intelligence.",
+    "doutorado_area": "Field: Computer Science — Distributed Systems",
+    "doutorado_tema": "Topic: Adaptive Security Orchestration at the Network Edge",
     "ciberseguranca": "Cybersecurity",
     "ciberseguranca_desc": "Researcher in the field of Security Architecture, focused on the planning and development of Safety by Design (SbD) and Privacy by Design (PbD) systems. He carried out a project that involved static (SAST) and dynamic (DAST) vulnerability analysis in the systems of the Public Prosecutor's Office of Minas Gerais (MPMG) and the Integrated Security Office (GSI). Additionally, with an article published in the Integrated Software and Hardware Seminar (SEMISH) 2025.",
     "ciberseguranca_desc2": "See also an essay on \"Quantum Computing and Cybersecurity: The Promising Future and Its Challenges\" available below.",
@@ -55,6 +61,10 @@
   },
   "contato": {
     "titulo": "Contact",
+    "subtitulo": "Send a message and I'll get back to you soon.",
+    "labelNome": "Name",
+    "labelEmail": "Email",
+    "labelMensagem": "Message",
     "placeholderNome": "Enter your name",
     "placeholderEmail": "Enter your email",
     "placeholderMensagem": "Enter your message",

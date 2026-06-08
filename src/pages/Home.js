@@ -5,10 +5,16 @@ import Logo from '../components/images/logo-no-background.png';
 import ProfessionalFoto from '../components/images/profissional2.jpg';
 import Button from '../components/Button.js';
 import { useTranslation } from 'react-i18next';
+import { useReveal, useRevealChildren } from '../hooks/useScrollAnimation';
 
 export const Home = () => {
     const [showLogo, setShowLogo] = useState(false);
     const { t } = useTranslation();
+    const titleRef = useReveal('up');
+    const imageRef = useReveal('right', 200);
+    const interestsRef = useReveal('up', 150);
+    const buttonRef = useReveal('scale', 200);
+    const skillsRef = useRevealChildren('.item', 50, 'up');
 
     useEffect(() => {
         const timer = setTimeout(() => {
@@ -23,11 +29,11 @@ export const Home = () => {
             <div className='main-box'>
                 <img src={Logo} alt='Logo' className={`logo-main-box ${showLogo ? 'show' : ''}`} />
             </div>
-            <h1>{t('home.sobre')}</h1>
+            <h1 ref={titleRef}>{t('home.sobre')}</h1>
             <section className='about-container'>
-                <div className='side-text'>
-                    <p>{t('home.descricao')}<br /><b>{t('home.descricao2')}</b></p>
-                    <b>{t('home.linguagens')}</b>
+                <div className='side-text' ref={skillsRef}>
+                    <p>{t('home.descricao')}<br />{t('home.descricao_graduacao')}<br /><b>{t('home.descricao2')}</b></p>
+                    <b className='skill-heading'>{t('home.linguagens')}</b>
                     <ul className='has-bar'>
                         <li className='item'>Python</li>
                         <li className='item'>C</li>
@@ -41,7 +47,7 @@ export const Home = () => {
                         <li className='item'>Css</li>
                     </ul>
 
-                    <b>{t('home.bibliotecas')}</b>
+                    <b className='skill-heading'>{t('home.bibliotecas')}</b>
                     <ul className='has-bar'>
                         <li className='item'>PyTorch</li>
                         <li className='item'>Pandas</li>
@@ -53,7 +59,7 @@ export const Home = () => {
                         <li className='item'>.NET</li>
                     </ul>
 
-                    <b>{t('home.outrasTecnologias')}</b>
+                    <b className='skill-heading'>{t('home.outrasTecnologias')}</b>
                     <ul className='tecnologies'>
                         <li className='item'>AWS</li>
                         <li className='item'>SonarQube</li>
@@ -72,15 +78,17 @@ export const Home = () => {
                         <li className='item'>Design Thinking</li>
                         <li className='item'>Knime</li>
                     </ul>
-                    <p>{t('home.interesses')}</p>
-                    <p>{t('home.interesses2')}</p>
+                    <div ref={interestsRef}>
+                        <p>{t('home.interesses')}</p>
+                        <p>{t('home.interesses2')}</p>
+                    </div>
                 </div>
 
-                <div className='professional-image-box'>
+                <div className='professional-image-box' ref={imageRef}>
                     <img src={ProfessionalFoto} alt='Henrique Rotsen' className='professional-image' />
                 </div>
             </section>
-            <div className='btn-contato'>
+            <div className='btn-contato' ref={buttonRef}>
                 <Button path='/trabalhos' buttonSize={'btn--medium'}>
                     {t('home.btnTrabalhos')}
                 </Button>

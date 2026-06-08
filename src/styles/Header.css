@@ -76,35 +76,10 @@
     display: none;
 }
 
-/* Estilo geral para os seletores */
-.language-selector select,
-.language-selector-mobile select {
-    appearance: none;
-    padding: 5px 30px 5px 10px;
-    font-size: 18px;
-    border-radius: 5px;
-    border: 1px solid transparent;
-    background-color: transparent;
-    color: #ffffff;
-    cursor: pointer;
-    background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg fill='%23ffffff' height='24' viewBox='0 0 24 24' width='24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M7 10l5 5 5-5H7z'/%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: right 10px center;
-    background-size: 16px;
-}
-
-/* Mobile version oculta desktop selector */
-.desktop-only {
-    display: block;
-}
-
 .language-selector-mobile {
     display: none;
     text-align: center;
-    margin-top: 1rem;
 }
-
-
 
 @media screen and (max-width: 960px) {
     .NavbarItems {
@@ -186,18 +161,7 @@
         transition: 250ms;
     }
 
-    .desktop-only {
-        display: none;
-    }
-
     .language-selector-mobile {
         display: block;
-    }
-
-    .language-selector-mobile select {
-        font-size: 1.3rem;
-        padding: 10px 30px 10px 10px;
-        margin: 0 auto;
-        border: 1px solid #ffffff;
     }
 }

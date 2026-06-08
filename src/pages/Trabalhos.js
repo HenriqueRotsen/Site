@@ -2,18 +2,41 @@ import DownloadButton from '../components/DownloadButton.js';
 import '../App.css';
 import '../styles/Trabalhos.css';
 import { useTranslation } from 'react-i18next';
+import { useReveal } from '../hooks/useScrollAnimation';
 import MDA from '../components/files/Mineracao_Dados_Apartamentos_EUA.pdf';
+
+const WORKS_REVEAL = { threshold: 0.06, rootMargin: '0px 0px -24px 0px' };
 
 export const Trabalhos = () => {
   const { t } = useTranslation();
+  const titleRef = useReveal('up', 0, WORKS_REVEAL);
+  const doutoradoRef = useReveal('left', 0, WORKS_REVEAL);
+  const cibersegRef = useReveal('right', 0, WORKS_REVEAL);
+  const iaRef = useReveal('left', 0, WORKS_REVEAL);
+  const mineracaoRef = useReveal('right', 0, WORKS_REVEAL);
+  const simplexRef = useReveal('left', 0, WORKS_REVEAL);
+  const gpsRef = useReveal('right', 0, WORKS_REVEAL);
+  const softwareRef = useReveal('left', 0, WORKS_REVEAL);
 
   return (
     <>
       <section className='works'>
-        <h1 className='main-title'>{t('trabalhos.titulo')}</h1>
+        <h1 className='main-title' ref={titleRef}>{t('trabalhos.titulo')}</h1>
         <hr className='divider' />
         <div className='work'>
-          <div className='info-container-1'>
+          <div className='info-container-1 info-container-highlight' ref={doutoradoRef}>
+            <h2 className='work-title'>{t('trabalhos.doutorado')}</h2>
+            <p>{t('trabalhos.doutorado_desc')}</p>
+            <ul className='vertical'>
+              <li><b>{t('trabalhos.doutorado_area')}</b></li>
+              <li><b>{t('trabalhos.doutorado_tema')}</b></li>
+            </ul>
+          </div>
+        </div>
+        <hr className='divider' />
+
+        <div className='work'>
+          <div className='info-container-2' ref={cibersegRef}>
             <h2 className='work-title'>{t('trabalhos.ciberseguranca')}</h2>
             <p>{t('trabalhos.ciberseguranca_desc')}</p>
             <p><a href='https://sol.sbc.org.br/index.php/semish/article/view/36832' target="_blank" rel="noopener noreferrer">{t('trabalhos.veja_trabalho')}</a></p>
@@ -24,7 +47,7 @@ export const Trabalhos = () => {
         <hr className='divider' />
 
         <div className='work'>
-          <div className='info-container-2'>
+          <div className='info-container-1' ref={iaRef}>
             <h2 className='work-title'>{t('trabalhos.ia')}</h2>
             <p>{t('trabalhos.ia_desc')}</p>
           </div>
@@ -32,7 +55,7 @@ export const Trabalhos = () => {
 
         <hr className='divider' />
         <div className='work'>
-          <div className='info-container-1'>
+          <div className='info-container-2' ref={mineracaoRef}>
             <h2 className='work-title'>{t('trabalhos.mineracao')}</h2>
             <p>{t('trabalhos.mineracao_desc')}</p>
             <ul className='vertical'>
@@ -48,7 +71,7 @@ export const Trabalhos = () => {
 
         <hr className='divider' />
         <div className='work'>
-          <div className='info-container-2'>
+          <div className='info-container-1' ref={simplexRef}>
             <h2 className='work-title'>{t('trabalhos.simplex')}</h2>
             <p>{t('trabalhos.simplex_desc')} <br /><br />
               <a href='https://github.com/HenriqueRotsen/Simplex'>SIMPLEX</a>
@@ -58,7 +81,7 @@ export const Trabalhos = () => {
 
         <hr className='divider' />
         <div className='work'>
-          <div className='info-container-1'>
+          <div className='info-container-2' ref={gpsRef}>
             <h2 className='work-title'>{t('trabalhos.gps')}</h2>
             <p>{t('trabalhos.gps_desc')}</p>
             <ul>
@@ -80,7 +103,7 @@ export const Trabalhos = () => {
 
         <hr className='divider' />
         <div className='work'>
-          <div className='info-container-2'>
+          <div className='info-container-1' ref={softwareRef}>
             <h2 className='work-title'>{t('trabalhos.desenv_software')}</h2>
             <p>{t('trabalhos.desenv_software_desc')}</p>
             <ul className='vertical'>

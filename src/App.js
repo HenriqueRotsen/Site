@@ -1,3 +1,4 @@
+import './styles/animations.css';
 import Header from './components/Header.js';
 import { HashRouter, Routes, Route } from "react-router-dom"; 
 import { Home } from './pages/Home.js'
