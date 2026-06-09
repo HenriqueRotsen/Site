@@ -11,12 +11,13 @@ export const Trabalhos = () => {
   const { t } = useTranslation();
   const titleRef = useReveal('up', 0, WORKS_REVEAL);
   const doutoradoRef = useReveal('left', 0, WORKS_REVEAL);
-  const cibersegRef = useReveal('right', 0, WORKS_REVEAL);
-  const iaRef = useReveal('left', 0, WORKS_REVEAL);
-  const mineracaoRef = useReveal('right', 0, WORKS_REVEAL);
-  const simplexRef = useReveal('left', 0, WORKS_REVEAL);
-  const gpsRef = useReveal('right', 0, WORKS_REVEAL);
-  const softwareRef = useReveal('left', 0, WORKS_REVEAL);
+  const gestaoRef = useReveal('right', 0, WORKS_REVEAL);
+  const cibersegRef = useReveal('left', 0, WORKS_REVEAL);
+  const iaRef = useReveal('right', 0, WORKS_REVEAL);
+  const mineracaoRef = useReveal('left', 0, WORKS_REVEAL);
+  const simplexRef = useReveal('right', 0, WORKS_REVEAL);
+  const gpsRef = useReveal('left', 0, WORKS_REVEAL);
+  const softwareRef = useReveal('right', 0, WORKS_REVEAL);
 
   return (
     <>
@@ -24,7 +25,7 @@ export const Trabalhos = () => {
         <h1 className='main-title' ref={titleRef}>{t('trabalhos.titulo')}</h1>
         <hr className='divider' />
         <div className='work'>
-          <div className='info-container-1 info-container-highlight' ref={doutoradoRef}>
+          <div className='info-container-1' ref={doutoradoRef}>
             <h2 className='work-title'>{t('trabalhos.doutorado')}</h2>
             <p>{t('trabalhos.doutorado_desc')}</p>
             <ul className='vertical'>
@@ -36,7 +37,15 @@ export const Trabalhos = () => {
         <hr className='divider' />
 
         <div className='work'>
-          <div className='info-container-2' ref={cibersegRef}>
+          <div className='info-container-2' ref={gestaoRef}>
+            <h2 className='work-title'>{t('trabalhos.gestao')}</h2>
+            <p>{t('trabalhos.gestao_desc')}</p>
+          </div>
+        </div>
+        <hr className='divider' />
+
+        <div className='work'>
+          <div className='info-container-1' ref={cibersegRef}>
             <h2 className='work-title'>{t('trabalhos.ciberseguranca')}</h2>
             <p>{t('trabalhos.ciberseguranca_desc')}</p>
             <p><a href='https://sol.sbc.org.br/index.php/semish/article/view/36832' target="_blank" rel="noopener noreferrer">{t('trabalhos.veja_trabalho')}</a></p>
@@ -47,7 +56,7 @@ export const Trabalhos = () => {
         <hr className='divider' />
 
         <div className='work'>
-          <div className='info-container-1' ref={iaRef}>
+          <div className='info-container-2' ref={iaRef}>
             <h2 className='work-title'>{t('trabalhos.ia')}</h2>
             <p>{t('trabalhos.ia_desc')}</p>
           </div>
@@ -55,7 +64,7 @@ export const Trabalhos = () => {
 
         <hr className='divider' />
         <div className='work'>
-          <div className='info-container-2' ref={mineracaoRef}>
+          <div className='info-container-1' ref={mineracaoRef}>
             <h2 className='work-title'>{t('trabalhos.mineracao')}</h2>
             <p>{t('trabalhos.mineracao_desc')}</p>
             <ul className='vertical'>
@@ -71,7 +80,7 @@ export const Trabalhos = () => {
 
         <hr className='divider' />
         <div className='work'>
-          <div className='info-container-1' ref={simplexRef}>
+          <div className='info-container-2' ref={simplexRef}>
             <h2 className='work-title'>{t('trabalhos.simplex')}</h2>
             <p>{t('trabalhos.simplex_desc')} <br /><br />
               <a href='https://github.com/HenriqueRotsen/Simplex'>SIMPLEX</a>
@@ -81,7 +90,7 @@ export const Trabalhos = () => {
 
         <hr className='divider' />
         <div className='work'>
-          <div className='info-container-2' ref={gpsRef}>
+          <div className='info-container-1' ref={gpsRef}>
             <h2 className='work-title'>{t('trabalhos.gps')}</h2>
             <p>{t('trabalhos.gps_desc')}</p>
             <ul>
@@ -103,7 +112,7 @@ export const Trabalhos = () => {
 
         <hr className='divider' />
         <div className='work'>
-          <div className='info-container-1' ref={softwareRef}>
+          <div className='info-container-2' ref={softwareRef}>
             <h2 className='work-title'>{t('trabalhos.desenv_software')}</h2>
             <p>{t('trabalhos.desenv_software_desc')}</p>
             <ul className='vertical'>
