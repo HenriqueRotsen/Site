@@ -4,6 +4,9 @@
     height: 100px;
     display: flex;
     align-items: center;
+    position: relative;
+    z-index: 2;
+    margin-top: -1px;
 }
 
 .social-medias {
