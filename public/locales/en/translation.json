@@ -71,6 +71,7 @@
     "placeholderEmail": "Enter your email",
     "placeholderMensagem": "Enter your message",
     "botao": "Send",
+    "enviando": "Sending...",
     "erroNome": "Please enter your name.",
     "erroEmail": "Please enter your email.",
     "erroMensagem": "Please enter your message.",

@@ -1,0 +1,17 @@
+name = "contact-api"
+main = "src/index.js"
+compatibility_date = "2025-01-01"
+
+# After first deploy, bind a custom domain in the Cloudflare dashboard:
+# contact-api.henriquerotsen.com.br
+
+[vars]
+SITE_URL = "https://henriquerotsen.com.br"
+FROM_NO_REPLY = "Henrique Rotsen <no-reply@henriquerotsen.com.br>"
+INBOX_TO = "contato@henriquerotsen.com.br"
+# Set after publishing the template in Resend (id or alias):
+# RESEND_AUTO_REPLY_TEMPLATE_ID = "contact-auto-reply"
+
+# Secrets (set via CLI, never commit):
+# npx wrangler secret put RESEND_API_KEY
+# npx wrangler secret put RESEND_AUTO_REPLY_TEMPLATE_ID

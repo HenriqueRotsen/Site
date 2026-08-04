@@ -1,26 +1,12 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { Contato } from '../pages/Contato';
-import emailjs from '@emailjs/browser';
 
-// 1. Mock Estrutural do EmailJS
-jest.mock('@emailjs/browser', () => {
-  return {
-    __esModule: true,
-    default: {
-      send: jest.fn(), // Simula: import emailjs from...
-    },
-    send: jest.fn(),   // Simula: import { send } from...
-  };
-});
-
-// 2. Mock do i18next
 jest.mock('react-i18next', () => ({
   useTranslation: () => ({
     t: (key) => key,
   }),
 }));
 
-// 3. Mock do componente de botão
 jest.mock('../components/EmailButton.js', () => {
   return ({ children, type }) => (
     <button type={type}>
@@ -29,13 +15,19 @@ jest.mock('../components/EmailButton.js', () => {
   );
 });
 
-
 describe('Componente Contato', () => {
   beforeEach(() => {
-    emailjs.send.mockResolvedValue({ status: 200, text: 'OK' });
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ ok: true }),
+    });
   });
 
-  test('deve chamar emailjs.send quando o formulário é preenchido corretamente', async () => {
+  afterEach(() => {
+    jest.resetAllMocks();
+  });
+
+  test('deve chamar a API de contato quando o formulário é preenchido corretamente', async () => {
     render(<Contato />);
 
     fireEvent.change(screen.getByPlaceholderText('contato.placeholderNome'), {
@@ -53,14 +45,21 @@ describe('Componente Contato', () => {
     fireEvent.click(screen.getByText('contato.botao'));
 
     await waitFor(() => {
-      expect(emailjs.send).toHaveBeenCalledTimes(1);
+      expect(global.fetch).toHaveBeenCalledTimes(1);
     });
+
+    expect(global.fetch).toHaveBeenCalledWith(
+      expect.any(String),
+      expect.objectContaining({
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      })
+    );
 
     await waitFor(() => {
       expect(screen.getByText('contato.emailSucesso')).toBeInTheDocument();
     });
   });
-
 
   test('não deve enviar email se os campos estiverem vazios', async () => {
     render(<Contato />);
@@ -69,7 +68,7 @@ describe('Componente Contato', () => {
     fireEvent.click(submitButton);
 
     await waitFor(() => {
-      expect(emailjs.send).not.toHaveBeenCalled();
+      expect(global.fetch).not.toHaveBeenCalled();
     });
   });
 });

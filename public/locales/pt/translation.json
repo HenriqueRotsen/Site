@@ -72,6 +72,7 @@
     "placeholderEmail": "Digite seu email",
     "placeholderMensagem": "Digite sua mensagem",
     "botao": "Enviar",
+    "enviando": "Enviando...",
     "erroNome": "Por favor, preencha o seu nome.",
     "erroEmail": "Por favor, preencha o seu email.",
     "erroMensagem": "Por favor, preencha a sua mensagem.",

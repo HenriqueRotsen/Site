@@ -3,8 +3,11 @@ import '../styles/Contato.css';
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import EmailButton from '../components/EmailButton.js';
-import emailjs from '@emailjs/browser';
 import { useReveal } from '../hooks/useScrollAnimation';
+
+const CONTACT_API_URL =
+  process.env.REACT_APP_CONTACT_API_URL ||
+  'https://contact-api.henriquerotsen.com.br';
 
 export const Contato = () => {
   const { t } = useTranslation();
@@ -12,11 +15,13 @@ export const Contato = () => {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
-    message: ''
+    message: '',
+    website: '',
   });
 
   const [submissionStatus, setSubmissionStatus] = useState('');
   const [isSuccess, setIsSuccess] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState({});
 
   const handleChange = (e) => {
@@ -31,7 +36,7 @@ export const Contato = () => {
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     const validationErrors = {};
@@ -53,33 +58,41 @@ export const Contato = () => {
     }
 
     setErrors({});
+    setIsSubmitting(true);
+    setSubmissionStatus('');
 
-    const templateParams = {
-      from_name: formData.name,
-      message: formData.message,
-      email: formData.email
-    };
-
-    emailjs.send(
-      'service_c3pkaiw',
-      'template_tjl9zii',
-      templateParams,
-      'Aj6r553aDRSOBjQ5W'
-    )
-      .then((response) => {
-        console.log('EMAIL ENVIADO', response.status, response.text);
-        setIsSuccess(true);
-        setSubmissionStatus(t('contato.emailSucesso'));
-        setFormData({
-          name: '',
-          email: '',
-          message: ''
-        });
-      }, (error) => {
-        console.log('ERRO: ', error);
-        setIsSuccess(false);
-        setSubmissionStatus(`${t('contato.emailErro')} ${error.text}`);
+    try {
+      const response = await fetch(CONTACT_API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: formData.name.trim(),
+          email: formData.email.trim(),
+          message: formData.message.trim(),
+          website: formData.website,
+        }),
       });
+
+      const data = await response.json().catch(() => ({}));
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Request failed');
+      }
+
+      setIsSuccess(true);
+      setSubmissionStatus(t('contato.emailSucesso'));
+      setFormData({
+        name: '',
+        email: '',
+        message: '',
+        website: '',
+      });
+    } catch (error) {
+      setIsSuccess(false);
+      setSubmissionStatus(`${t('contato.emailErro')} ${error.message}`);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -101,6 +114,7 @@ export const Contato = () => {
               value={formData.name}
               onChange={handleChange}
               autoComplete="name"
+              disabled={isSubmitting}
             />
             {errors.name && <p className="error-message">{errors.name}</p>}
           </div>
@@ -115,6 +129,7 @@ export const Contato = () => {
               value={formData.email}
               onChange={handleChange}
               autoComplete="email"
+              disabled={isSubmitting}
             />
             {errors.email && <p className="error-message">{errors.email}</p>}
           </div>
@@ -128,13 +143,27 @@ export const Contato = () => {
               value={formData.message}
               onChange={handleChange}
               rows={5}
+              disabled={isSubmitting}
             />
             {errors.message && <p className="error-message">{errors.message}</p>}
           </div>
 
+          <div className="form-field form-field--honeypot" aria-hidden="true">
+            <label htmlFor="website">Website</label>
+            <input
+              type="text"
+              id="website"
+              name="website"
+              value={formData.website}
+              onChange={handleChange}
+              tabIndex={-1}
+              autoComplete="off"
+            />
+          </div>
+
           <div className="form-submit">
             <EmailButton type="submit" buttonStyle="btn--primary" buttonSize="btn--large">
-              {t('contato.botao')}
+              {isSubmitting ? t('contato.enviando') : t('contato.botao')}
             </EmailButton>
           </div>
 
