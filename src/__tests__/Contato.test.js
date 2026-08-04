@@ -4,6 +4,7 @@ import { Contato } from '../pages/Contato';
 jest.mock('react-i18next', () => ({
   useTranslation: () => ({
     t: (key) => key,
+    i18n: { language: 'pt' },
   }),
 }));
 
@@ -53,6 +54,7 @@ describe('Componente Contato', () => {
       expect.objectContaining({
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        body: expect.stringContaining('"lang":"pt"'),
       })
     );
 

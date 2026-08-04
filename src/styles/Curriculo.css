@@ -1,24 +1,120 @@
-.main {
-    flex-wrap: wrap;
-    background-color: #ffffff;
-    padding: 100px;
-    text-align: center;
+.curriculo-page {
+    position: relative;
+    background-color: #191919;
+    overflow: hidden;
+    isolation: isolate;
+    min-height: calc(100vh - 90px);
 }
 
-.main h2 {
-    margin-bottom: 8px;
-}
-
-.main-box {
-    width: auto;
-    height: 300px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+.curriculo-page::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
     background-image: url('../components/images/background-home-page.png');
     background-size: cover;
     background-repeat: no-repeat;
-    background-position: center;
+    background-position: center top;
+    -webkit-mask-image: linear-gradient(
+        to bottom,
+        #000 0%,
+        #000 72%,
+        rgba(0, 0, 0, 0.75) 88%,
+        transparent 97%
+    );
+    mask-image: linear-gradient(
+        to bottom,
+        #000 0%,
+        #000 72%,
+        rgba(0, 0, 0, 0.75) 88%,
+        transparent 97%
+    );
+}
+
+.curriculo-page::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    background-image:
+        linear-gradient(
+            to bottom,
+            #191919 0%,
+            rgba(25, 25, 25, 0.88) 8%,
+            transparent 24%
+        ),
+        linear-gradient(
+            to top,
+            #191919 0%,
+            #191919 10%,
+            rgba(25, 25, 25, 0.82) 20%,
+            transparent 38%
+        ),
+        linear-gradient(
+            to bottom,
+            rgba(0, 0, 0, 0.35) 0%,
+            rgba(0, 0, 0, 0.48) 45%,
+            rgba(0, 0, 0, 0.28) 100%
+        );
+}
+
+.curriculo-page > *:not(.curriculo-watermarks) {
+    position: relative;
+    z-index: 2;
+}
+
+.curriculo-page > .curriculo-watermarks {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    overflow: hidden;
+}
+
+.curriculo-watermark {
+    position: absolute;
+    width: clamp(140px, 18vw, 240px);
+    height: auto;
+    opacity: 0.1;
+    user-select: none;
+}
+
+.curriculo-watermark--1 {
+    top: 18%;
+    right: 6%;
+    width: clamp(160px, 20vw, 260px);
+    transform: rotate(-12deg);
+}
+
+.curriculo-watermark--2 {
+    top: 48%;
+    left: 4%;
+    width: clamp(120px, 15vw, 200px);
+    transform: rotate(18deg);
+}
+
+.curriculo-watermark--3 {
+    bottom: 12%;
+    right: 22%;
+    width: clamp(150px, 19vw, 250px);
+    transform: rotate(-6deg);
+}
+
+.curriculo-page .main {
+    flex-wrap: wrap;
+    background-color: transparent;
+    padding: 110px 100px 100px;
+    text-align: center;
+}
+
+.curriculo-page .main h2 {
+    margin-bottom: 8px;
+    color: #ffffff;
+    font-family: Montserrat, sans-serif;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
 }
 
 .files {
@@ -74,8 +170,8 @@
 }
 
 @media screen and (max-width: 960px) {
-    .main {
-        padding: 60px 24px;
+    .curriculo-page .main {
+        padding: 90px 24px 80px;
     }
 
     .files {

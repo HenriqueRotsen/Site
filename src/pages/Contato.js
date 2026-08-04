@@ -10,7 +10,7 @@ const CONTACT_API_URL =
   'https://contact-api.henriquerotsen.com.br';
 
 export const Contato = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const formRef = useReveal('up', 0, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
   const [formData, setFormData] = useState({
     name: '',
@@ -70,6 +70,7 @@ export const Contato = () => {
           email: formData.email.trim(),
           message: formData.message.trim(),
           website: formData.website,
+          lang: i18n.language?.startsWith('en') ? 'en' : 'pt',
         }),
       });
 

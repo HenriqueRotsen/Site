@@ -1,98 +1,118 @@
 import '../App.css';
 import '../styles/Home.css';
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import Logo from '../components/images/logo-no-background.png';
+import LogoMark from '../components/images/logo-no-background-canto.png';
 import ProfessionalFoto from '../components/images/profissional2.jpg';
 import Button from '../components/Button.js';
 import { useTranslation } from 'react-i18next';
 import { useReveal, useRevealChildren } from '../hooks/useScrollAnimation';
 
+const SKILL_GROUPS = [
+  {
+    key: 'grupoIa',
+    items: ['Python', 'PyTorch', 'Pandas', 'Scikit-learn', 'Numpy'],
+  },
+  {
+    key: 'grupoSeguranca',
+    items: ['Wazuh', 'TheHive', 'MISP', 'SonarQube', 'OwaspZap'],
+  },
+  {
+    key: 'grupoCloud',
+    items: ['AWS', 'Azure DevOPS', 'Jenkins', 'JavaScript', '.NET'],
+  },
+];
+
 export const Home = () => {
-    const [showLogo, setShowLogo] = useState(false);
-    const { t } = useTranslation();
-    const titleRef = useReveal('up');
-    const imageRef = useReveal('right', 200);
-    const interestsRef = useReveal('up', 150);
-    const buttonRef = useReveal('scale', 200);
-    const skillsRef = useRevealChildren('.item', 50, 'up');
+  const { t } = useTranslation();
+  const heroTextRef = useReveal('up');
+  const heroImageRef = useReveal('right', 180);
+  const aboutRef = useReveal('up', 80);
+  const skillsRef = useRevealChildren('.skill-group', 100, 'up');
+  const closeCopyRef = useReveal('up', 80);
+  const logoRef = useReveal('scale', 220);
+  const ctaRef = useReveal('scale', 160);
 
-    useEffect(() => {
-        const timer = setTimeout(() => {
-            setShowLogo(true);
-        }, 1500);
+  return (
+    <div className="home-page">
+      <div className="home-watermarks" aria-hidden="true">
+        <img src={LogoMark} alt="" className="home-watermark home-watermark--1" />
+        <img src={LogoMark} alt="" className="home-watermark home-watermark--2" />
+        <img src={LogoMark} alt="" className="home-watermark home-watermark--3" />
+      </div>
 
-        return () => clearTimeout(timer);
-    }, []);
-
-    return (
-        <>
-            <div className='main-box'>
-                <img src={Logo} alt='Logo' className={`logo-main-box ${showLogo ? 'show' : ''}`} />
+      <section className="home-hero">
+        <div className="home-shell home-hero-grid">
+          <div className="home-hero-copy" ref={heroTextRef}>
+            <h1 className="home-brand">{t('home.marca')}</h1>
+            <p className="home-headline">{t('home.headline')}</p>
+            <p className="home-lead">{t('home.subtitulo')}</p>
+            <div className="home-hero-cta">
+              <Button path="/trabalhos" buttonStyle="btn--outline" buttonSize="btn--large">
+                {t('home.btnTrabalhos')}
+              </Button>
             </div>
-            <h1 ref={titleRef}>{t('home.sobre')}</h1>
-            <section className='about-container'>
-                <div className='side-text' ref={skillsRef}>
-                    <p>{t('home.descricao')}<br />{t('home.descricao_graduacao')}<br /><b>{t('home.descricao2')}</b></p>
-                    <b className='skill-heading'>{t('home.linguagens')}</b>
-                    <ul className='has-bar'>
-                        <li className='item'>Python</li>
-                        <li className='item'>C</li>
-                        <li className='item'>C++</li>
-                        <li className='item'>C#</li>
-                        <li className='item'>JavaScript</li>
-                        <li className='item'>Java</li>
-                        <li className='item'>Matlab</li>
-                        <li className='item'>Vue</li>
-                        <li className='item'>Html</li>
-                        <li className='item'>Css</li>
-                    </ul>
+            <blockquote className="home-quote">{t('home.frase')}</blockquote>
+          </div>
+          <div className="home-hero-media" ref={heroImageRef}>
+            <img
+              src={ProfessionalFoto}
+              alt={t('home.marca')}
+              className="home-hero-photo"
+            />
+          </div>
+        </div>
+      </section>
 
-                    <b className='skill-heading'>{t('home.bibliotecas')}</b>
-                    <ul className='has-bar'>
-                        <li className='item'>PyTorch</li>
-                        <li className='item'>Pandas</li>
-                        <li className='item'>Scikit-learn</li>
-                        <li className='item'>Statsmodels</li>
-                        <li className='item'>Scypi</li>
-                        <li className='item'>Numpy</li>
-                        <li className='item'>Seaborn</li>
-                        <li className='item'>.NET</li>
-                    </ul>
+      <section className="home-section home-about" ref={aboutRef}>
+        <div className="home-shell">
+          <p className="home-section-label">{t('home.sobre')}</p>
+          <h2 className="home-section-title">{t('home.descricao')}</h2>
+          <p className="home-section-text">{t('home.descricao_graduacao')}</p>
+        </div>
+      </section>
 
-                    <b className='skill-heading'>{t('home.outrasTecnologias')}</b>
-                    <ul className='tecnologies'>
-                        <li className='item'>AWS</li>
-                        <li className='item'>SonarQube</li>
-                        <li className='item'>Jenkins</li>
-                        <li className='item'>OwaspZap</li>
-                        <li className='item'>Wazuh</li>
-                        <li className='item'>Shuffle</li>
-                        <li className='item'>TheHive</li>
-                        <li className='item'>MISP</li>
-                        <li className='item'>Cortex</li>
-                        <li className='item'>Azure DevOPS</li>
-                        <li className='item'>Visual Studio</li>
-                        <li className='item'>Excel</li>
-                        <li className='item'>Scrum</li>
-                        <li className='item'>Kanban</li>
-                        <li className='item'>Design Thinking</li>
-                        <li className='item'>Knime</li>
-                    </ul>
-                    <div ref={interestsRef}>
-                        <p>{t('home.interesses')}</p>
-                        <p>{t('home.interesses2')}</p>
-                    </div>
-                </div>
+      <section className="home-section home-skills" ref={skillsRef}>
+        <div className="home-shell">
+          <p className="home-section-label">{t('home.skillsTitulo')}</p>
+          <div className="skill-groups">
+            {SKILL_GROUPS.map((group) => (
+              <div className="skill-group" key={group.key}>
+                <h3 className="skill-group-title">{t(`home.${group.key}`)}</h3>
+                <ul className="skill-chips">
+                  {group.items.map((item) => (
+                    <li className="skill-chip" key={item}>
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
 
-                <div className='professional-image-box' ref={imageRef}>
-                    <img src={ProfessionalFoto} alt='Henrique Rotsen' className='professional-image' />
-                </div>
-            </section>
-            <div className='btn-contato' ref={buttonRef}>
-                <Button path='/trabalhos' buttonSize={'btn--medium'}>
-                    {t('home.btnTrabalhos')}
-                </Button>
+      <section className="home-section home-close">
+        <div className="home-shell home-close-grid">
+          <div className="home-close-copy" ref={closeCopyRef}>
+            <p className="home-section-label">{t('home.interessesTitulo')}</p>
+            <p className="home-section-text">{t('home.interesses')}</p>
+            <p className="home-section-text home-section-text--soft">{t('home.interesses2')}</p>
+            <div className="home-close-cta" ref={ctaRef}>
+              <Button path="/trabalhos" buttonStyle="btn--outline" buttonSize="btn--large">
+                {t('home.btnTrabalhos')}
+              </Button>
             </div>
-        </>
-    );
+          </div>
+          <div className="home-close-logo-box" ref={logoRef}>
+            <img
+              src={Logo}
+              alt=""
+              className="home-close-logo"
+            />
+          </div>
+        </div>
+      </section>
+    </div>
+  );
 };
