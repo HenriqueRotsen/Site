@@ -81,48 +81,50 @@ function resolveLang(value) {
 function buildAutoReplyHtml({ lang, safeName, safeSiteUrl, logoUrl, logoMarkUrl }) {
   const t = COPY[lang] || COPY.pt;
 
+  // Logos are baked on #191919 so they keep contrast on light/dark clients.
+  // bgcolor attrs help older clients; inline background-color helps modern ones.
   return `
       <div style="margin:0;padding:0;background:#191919;font-family:Georgia,'Times New Roman',serif;color:#191919;">
-        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#191919;padding:40px 12px;">
+        <!--[if mso]><i style="mso-font-width:100%;mso-text-raise:100%"></i><![endif]-->
+        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" bgcolor="#191919" style="background-color:#191919;padding:40px 12px;">
           <tr>
-            <td align="center">
-              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:560px;border-collapse:collapse;">
+            <td align="center" bgcolor="#191919" style="background-color:#191919;">
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:560px;width:100%;border-collapse:collapse;">
                 <tr>
-                  <td align="center" style="background:#191919;padding:8px 24px 28px;">
+                  <td align="center" bgcolor="#191919" style="background-color:#191919;padding:12px 24px 28px;">
                     <a href="${safeSiteUrl}" style="text-decoration:none;">
-                      <img src="${logoUrl}" alt="Henrique Rotsen" width="160" style="display:block;width:160px;max-width:50%;height:auto;border:0;margin:0 auto 18px;" />
+                      <img src="${logoUrl}" alt="Henrique Rotsen" width="168" height="119" style="display:block;width:168px;max-width:56%;height:auto;border:0;margin:0 auto;outline:none;" />
                     </a>
-                    <p style="margin:0;font-family:Arial,Helvetica,sans-serif;font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:rgba(244,245,247,0.55);">Henrique Rotsen</p>
                   </td>
                 </tr>
                 <tr>
-                  <td style="background:#ffffff;">
+                  <td bgcolor="#ffffff" style="background-color:#ffffff;">
                     <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
                       <tr>
-                        <td style="padding:36px 36px 8px;">
+                        <td bgcolor="#ffffff" style="background-color:#ffffff;padding:36px 28px 8px;">
                           <p style="margin:0 0 8px;font-family:Arial,Helvetica,sans-serif;font-size:11px;letter-spacing:0.16em;text-transform:uppercase;color:#6b7280;">${t.label}</p>
-                          <h1 style="margin:0 0 24px;font-family:Arial,Helvetica,sans-serif;font-size:26px;line-height:1.25;letter-spacing:0.04em;text-transform:uppercase;color:#191919;font-weight:700;">${t.title}</h1>
-                          <p style="margin:0 0 16px;font-size:17px;line-height:1.65;color:#191919;">${t.greeting(safeName)}</p>
-                          <p style="margin:0 0 16px;font-size:17px;line-height:1.65;color:#3a3a3a;">${t.thanks}</p>
-                          <p style="margin:0 0 28px;font-size:17px;line-height:1.65;color:#3a3a3a;">${t.autoNoteBefore} <a href="mailto:contato@henriquerotsen.com.br" style="color:#0d203b;text-decoration:none;font-weight:700;">contato@henriquerotsen.com.br</a>.</p>
+                          <h1 style="margin:0 0 24px;font-family:Arial,Helvetica,sans-serif;font-size:24px;line-height:1.25;letter-spacing:0.04em;text-transform:uppercase;color:#191919;font-weight:700;">${t.title}</h1>
+                          <p style="margin:0 0 16px;font-size:16px;line-height:1.65;color:#191919;">${t.greeting(safeName)}</p>
+                          <p style="margin:0 0 16px;font-size:16px;line-height:1.65;color:#3a3a3a;">${t.thanks}</p>
+                          <p style="margin:0 0 28px;font-size:16px;line-height:1.65;color:#3a3a3a;">${t.autoNoteBefore} <a href="mailto:contato@henriquerotsen.com.br" style="color:#0d203b;text-decoration:none;font-weight:700;">contato@henriquerotsen.com.br</a>.</p>
                           <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin:0 0 28px;">
                             <tr>
                               <td style="border-left:2px solid #0d203b;padding:4px 0 4px 18px;">
-                                <p style="margin:0;font-family:Georgia,'Times New Roman',serif;font-size:18px;font-style:italic;line-height:1.4;color:rgba(25,25,25,0.72);">${t.quote}</p>
+                                <p style="margin:0;font-family:Georgia,'Times New Roman',serif;font-size:17px;font-style:italic;line-height:1.4;color:#4b5563;">${t.quote}</p>
                               </td>
                             </tr>
                           </table>
-                          <p style="margin:0 0 8px;font-size:17px;line-height:1.65;color:#191919;">${t.regards}<br /><strong style="font-family:Arial,Helvetica,sans-serif;letter-spacing:0.04em;">Henrique Rotsen</strong></p>
+                          <p style="margin:0 0 8px;font-size:16px;line-height:1.65;color:#191919;">${t.regards}<br /><strong style="font-family:Arial,Helvetica,sans-serif;letter-spacing:0.04em;">Henrique Rotsen</strong></p>
                           <p style="margin:0 0 28px;font-family:Arial,Helvetica,sans-serif;font-size:12px;letter-spacing:0.08em;text-transform:uppercase;color:#6b7280;">${t.role}</p>
-                          <a href="${safeSiteUrl}" style="display:inline-block;background:#0d203b;color:#ffffff;text-decoration:none;padding:14px 22px;border-radius:2px;font-family:Arial,Helvetica,sans-serif;font-size:14px;font-weight:700;letter-spacing:0.04em;">${t.cta}</a>
+                          <a href="${safeSiteUrl}" style="display:inline-block;background-color:#0d203b;color:#ffffff;text-decoration:none;padding:14px 22px;border-radius:2px;font-family:Arial,Helvetica,sans-serif;font-size:14px;font-weight:700;letter-spacing:0.04em;">${t.cta}</a>
                         </td>
                       </tr>
                       <tr>
-                        <td style="padding:28px 36px 32px;">
+                        <td bgcolor="#ffffff" style="background-color:#ffffff;padding:28px 28px 32px;">
                           <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border-top:1px solid #eceff3;">
                             <tr>
-                              <td style="padding-top:20px;">
-                                <img src="${logoMarkUrl}" alt="" width="36" style="display:block;width:36px;height:auto;border:0;opacity:0.35;" />
+                              <td bgcolor="#ffffff" style="background-color:#ffffff;padding-top:20px;">
+                                <img src="${logoMarkUrl}" alt="HR" width="44" height="32" style="display:block;width:44px;max-width:20%;height:auto;border:0;outline:none;" />
                                 <p style="margin:12px 0 0;font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:1.55;color:#6b7280;">${t.footerBefore} <a href="${safeSiteUrl}" style="color:#0d203b;text-decoration:none;">henriquerotsen.com.br</a> ${t.footerAfter}<br />${t.noReply}</p>
                               </td>
                             </tr>
@@ -225,8 +227,9 @@ export default {
       lang,
       safeName,
       safeSiteUrl,
-      logoUrl: `${safeSiteUrl}/logo-email.png`,
-      logoMarkUrl: `${safeSiteUrl}/logo-mark-email.png`,
+      // ?v= busts client caches after logo asset updates
+      logoUrl: `${safeSiteUrl}/logo-email.png?v=2`,
+      logoMarkUrl: `${safeSiteUrl}/logo-mark-email.png?v=2`,
     });
 
     try {
