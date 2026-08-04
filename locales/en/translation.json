@@ -1,15 +1,24 @@
 {
   "home": {
+    "marca": "Henrique Rotsen",
+    "headline": "PhD candidate · Cybersecurity · Artificial Intelligence",
+    "subtitulo": "I build at the intersection of distributed systems, security, and applied AI.",
     "sobre": "About",
-    "descricao": "PhD candidate in Computer Science at the Federal University of Minas Gerais (UFMG), in the field of Distributed Systems.",
-    "descricao_graduacao": "Graduated in Computer Science at the Federal University of Minas Gerais (UFMG).",
+    "descricao": "PhD candidate in Computer Science at UFMG, focused on Distributed Systems.",
+    "descricao_graduacao": "B.Sc. in Computer Science from the same university, with experience in research, security architecture, and intelligent systems.",
     "descricao2": "Main Skills",
+    "skillsTitulo": "Technical focus",
+    "grupoIa": "AI / Data",
+    "grupoSeguranca": "Cybersecurity",
+    "grupoCloud": "Cloud / Engineering",
     "linguagens": "Languages",
     "bibliotecas": "Libraries",
     "outrasTecnologias": "Other Technologies",
-    "interesses": "Currently conducting PhD research focused on Adaptive Security Orchestration at the Network Edge, using an autonomous approach based on Multi-Agent Systems and Small Language Models (SLMs). With solid experience in security architecture for GSI and MPMG systems, and in the development of neural networks for the largest radiography company in Brazil, he has a great interest in Cybersecurity, Distributed Systems, and Artificial Intelligence.",
-    "interesses2": "He faces challenges with determination, seeks creative solutions to complex problems, and, when he doesn't master some knowledge, commits to learning it quickly.",
-    "btnTrabalhos": "See the works"
+    "interessesTitulo": "In focus",
+    "interesses": "My PhD explores adaptive security orchestration at the network edge, using multi-agent systems and Small Language Models (SLMs).",
+    "interesses2": "I have worked on security architecture for GSI and MPMG and on applied neural networks. I enjoy hard problems — and learning fast what I do not yet know.",
+    "frase": "\"Every day we have a new opportunity to become a little better.\"",
+    "btnTrabalhos": "View projects"
   },
   "header": {
     "trabalhos": "Projects",

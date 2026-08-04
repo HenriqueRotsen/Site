@@ -1,16 +1,25 @@
 {
   "home": {
+    "marca": "Henrique Rotsen",
+    "headline": "Doutorando · Cibersegurança · Inteligência Artificial",
+    "subtitulo": "Construo soluções na fronteira entre sistemas distribuídos, segurança e IA aplicada.",
     "sobre": "Sobre",
-    "descricao": "Doutorando em Ciência da Computação na Universidade Federal de Minas Gerais (UFMG), na área de Sistemas Distribuídos.",
-    "descricao_graduacao": "Graduado em Ciência da Computação pela Universidade Federal de Minas Gerais (UFMG).",
+    "descricao": "Doutorando em Ciência da Computação na UFMG, com foco em Sistemas Distribuídos.",
+    "descricao_graduacao": "Graduado em Ciência da Computação pela mesma universidade, com trajetória em pesquisa, arquitetura de segurança e desenvolvimento de sistemas inteligentes.",
     "descricao2": "Principais conhecimentos",
+    "skillsTitulo": "Foco técnico",
+    "grupoIa": "IA / Dados",
+    "grupoSeguranca": "Cibersegurança",
+    "grupoCloud": "Cloud / Engenharia",
     "linguagens": "Linguagens",
     "bibliotecas": "Bibliotecas",
     "outrasTecnologias": "Outras Tecnologias",
-    "interesses": "Atualmente desenvolve pesquisa de doutorado com foco em Orquestração de Segurança Adaptativa em Borda de Rede, utilizando uma abordagem autônoma baseada em Sistemas Multi-Agentes e Small Language Models (SLMs). Possui sólida experiência em arquitetura de segurança para os sistemas do GSI e MPMG, e no desenvolvimento de redes neurais para a maior empresa de radiografia do Brasil, com grande interesse em Cibersegurança, Sistemas Distribuídos e Inteligência Artificial.",
-    "interesses2": "Encara desafios com determinação, busca soluções criativas para problemas complexos e, quando não domina algum conhecimento, compromete-se a aprender rapidamente.",
+    "interessesTitulo": "Em foco",
+    "interesses": "No doutorado, investigo orquestração de segurança adaptativa na borda de rede com sistemas multi-agentes e Small Language Models (SLMs).",
+    "interesses2": "Já atuei em arquitetura de segurança para GSI e MPMG e no desenvolvimento de redes neurais aplicadas. Gosto de problemas difíceis — e de aprender rápido o que ainda não sei.",
+    "frase": "\"Todo dia temos uma nova oportunidade de sermos um pouco melhor.\"",
     "vejaTrabalhos": "Para saber mais, acesse a página a seguir",
-    "btnTrabalhos": "Veja os trabalhos"
+    "btnTrabalhos": "Ver trabalhos"
   },
   "header": {
     "trabalhos": "Trabalhos",
