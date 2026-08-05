@@ -1,5 +1,5 @@
 {
-  "name": "contact-api",
+  "name": "contact-api-henrique",
   "private": true,
   "scripts": {
     "dev": "wrangler dev",

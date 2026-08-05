@@ -1,9 +1,16 @@
-name = "contact-api"
+name = "contact-api-henrique"
 main = "src/index.js"
 compatibility_date = "2025-01-01"
 
-# After first deploy, bind a custom domain in the Cloudflare dashboard:
+# Custom domain (keep this hostname; bind it to THIS worker in Cloudflare):
 # contact-api.henriquerotsen.com.br
+#
+# After renaming from "contact-api":
+# 1) npx wrangler deploy
+# 2) npx wrangler secret put RESEND_API_KEY
+# 3) Workers → contact-api-henrique → Settings → Domains & Routes
+#    → add contact-api.henriquerotsen.com.br
+# 4) Delete the old Worker named "contact-api" (optional cleanup)
 
 [vars]
 SITE_URL = "https://henriquerotsen.com.br"
