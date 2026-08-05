@@ -1,7 +1,7 @@
 {
   "files": {
-    "main.css": "/static/css/main.5b041879.css",
-    "main.js": "/static/js/main.48d8e6dd.js",
+    "main.css": "/static/css/main.24996b19.css",
+    "main.js": "/static/js/main.17322ab3.js",
     "static/js/38.fb4f8edf.chunk.js": "/static/js/38.fb4f8edf.chunk.js",
     "static/media/background-home-page.png": "/static/media/background-home-page.943ab84ed4678e78e939.png",
     "static/media/profissional2.jpg": "/static/media/profissional2.451bd83b13013457281d.jpg",
@@ -9,16 +9,18 @@
     "static/media/Mineracao_Dados_Apartamentos_EUA.pdf": "/static/media/Mineracao_Dados_Apartamentos_EUA.1fbca35c9084f0ac0029.pdf",
     "static/media/Henrique_Rotsen_resume_english.pdf": "/static/media/Henrique_Rotsen_resume_english.3fa4ac74387158ff2f77.pdf",
     "static/media/Henrique_Rotsen_curriculo_portugues.pdf": "/static/media/Henrique_Rotsen_curriculo_portugues.5f0e056a5f9f56cafd1b.pdf",
+    "static/media/logo-branca.png": "/static/media/logo-branca.778aab51a34e03d2dad5.png",
     "static/media/Henrique_Rotsen_curriculo_linkedin.pdf": "/static/media/Henrique_Rotsen_curriculo_linkedin.f9a73283b7796b5819e7.pdf",
-    "static/media/logo-no-background.png": "/static/media/logo-no-background.ab8cf4251b62625b8f86.png",
-    "static/media/logo-no-background-canto.png": "/static/media/logo-no-background-canto.94745786db1de81ea558.png",
+    "static/media/hr-cinza.png": "/static/media/hr-cinza.72ae9f82b782b53dcf5c.png",
+    "static/media/hr-branca.png": "/static/media/hr-branca.aae0475ebf33f2ee1f80.png",
+    "static/media/wordmark-branca.png": "/static/media/wordmark-branca.bf03b7b93e8a878cdd69.png",
     "index.html": "/index.html",
-    "main.5b041879.css.map": "/static/css/main.5b041879.css.map",
-    "main.48d8e6dd.js.map": "/static/js/main.48d8e6dd.js.map",
+    "main.24996b19.css.map": "/static/css/main.24996b19.css.map",
+    "main.17322ab3.js.map": "/static/js/main.17322ab3.js.map",
     "38.fb4f8edf.chunk.js.map": "/static/js/38.fb4f8edf.chunk.js.map"
   },
   "entrypoints": [
-    "static/css/main.5b041879.css",
-    "static/js/main.48d8e6dd.js"
+    "static/css/main.24996b19.css",
+    "static/js/main.17322ab3.js"
   ]
 }
