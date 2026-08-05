@@ -3,6 +3,7 @@ import '../App.css';
 import '../styles/Trabalhos.css';
 import { useTranslation } from 'react-i18next';
 import { useReveal } from '../hooks/useScrollAnimation';
+import LogoHr from '../components/images/hr-branca.png';
 import MDA from '../components/files/Mineracao_Dados_Apartamentos_EUA.pdf';
 
 const WORKS_REVEAL = { threshold: 0.06, rootMargin: '0px 0px -24px 0px' };
@@ -22,6 +23,11 @@ export const Trabalhos = () => {
   return (
     <>
       <section className='works'>
+        <div className="trabalhos-watermarks" aria-hidden="true">
+          <img src={LogoHr} alt="" className="trabalhos-watermark trabalhos-watermark--1" />
+          <img src={LogoHr} alt="" className="trabalhos-watermark trabalhos-watermark--2" />
+          <img src={LogoHr} alt="" className="trabalhos-watermark trabalhos-watermark--3" />
+        </div>
         <h1 className='main-title' ref={titleRef}>{t('trabalhos.titulo')}</h1>
         <hr className='divider' />
         <div className='work'>

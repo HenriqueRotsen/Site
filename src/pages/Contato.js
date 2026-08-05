@@ -3,6 +3,8 @@ import '../styles/Contato.css';
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import EmailButton from '../components/EmailButton.js';
+import LogoHr from '../components/images/hr-branca.png';
+import LogoHrDark from '../components/images/hr-cinza.png';
 import { useReveal } from '../hooks/useScrollAnimation';
 
 const CONTACT_API_URL =
@@ -98,8 +100,14 @@ export const Contato = () => {
 
   return (
     <div className="contato-box">
+      <div className="contato-watermarks" aria-hidden="true">
+        <img src={LogoHr} alt="" className="contato-watermark contato-watermark--1" />
+        <img src={LogoHr} alt="" className="contato-watermark contato-watermark--2" />
+      </div>
+
       <div className="contato-card" ref={formRef}>
         <header className="contato-header">
+          <img src={LogoHrDark} alt="" className="contato-card-mark" />
           <h1>{t('contato.titulo')}</h1>
           <p className="contato-subtitle">{t('contato.subtitulo')}</p>
         </header>

@@ -1,12 +1,13 @@
 .footer-container {
     background-color: #191919;
     color: white;
-    height: 100px;
+    min-height: 100px;
     display: flex;
     align-items: center;
     position: relative;
     z-index: 2;
     margin-top: -1px;
+    padding: 12px 0;
 }
 
 .social-medias {
@@ -31,16 +32,36 @@
 
 .copyright {
     flex: 1;
+    display: flex;
     justify-content: center;
-    align-content: center;
+    align-items: center;
     text-align: center;
     font-size: large;
+    padding: 0 16px;
+}
+
+.copyright-line {
+    margin: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    line-height: 1;
+}
+
+.footer-wordmark {
+    display: block;
+    width: 110px;
+    height: auto;
+    opacity: 0.92;
 }
 
 @media screen and (max-width: 960px) {
     .footer-container {
-        flex-direction:column;
-        height: 150px;
+        flex-direction: column;
+        min-height: 140px;
+        padding: 20px 0;
     }
 
     .social-medias {
@@ -48,7 +69,11 @@
         margin-top: 10px;
     }
 
-    .copyright{
+    .copyright {
         font-size: medium;
+    }
+
+    .footer-wordmark {
+        width: 96px;
     }
 }

@@ -24,15 +24,21 @@
     margin-left: 20px;
     cursor: pointer;
     text-decoration: none;
-    font-size: 2rem;
     display: flex;
     align-items: center;
-    width: 6%;
+    width: auto;
+    flex-shrink: 0;
+}
+
+.navbar-logo img {
+    display: block;
+    width: 52px;
+    height: auto;
 }
 
 .navbar-logo:hover {
-    transform: scale(1.1);
-    transition: all 0.5s ease-out;
+    transform: scale(1.06);
+    transition: all 0.35s ease-out;
 }
 
 .nav-menu {
@@ -114,15 +120,19 @@
     }
 
     .nav-links:hover {
-        background-color: #0d203b;
-        color: #2a2a2a;
+        background-color: rgba(255, 255, 255, 0.08);
+        color: #ffffff;
         border-radius: 0;
     }
 
     .navbar-logo {
         position: absolute;
-        width: 10%;
-        left: 0;
+        left: 16px;
+        width: auto;
+    }
+
+    .navbar-logo img {
+        width: 44px;
     }
 
     .menu-icon {
@@ -157,7 +167,7 @@
 
     .nav-links-mobile:hover {
         background: #ffffff;
-        color: #00254a;
+        color: #191919;
         transition: 250ms;
     }
 

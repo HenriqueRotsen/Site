@@ -63,6 +63,34 @@
         );
 }
 
+.contato-watermarks {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    overflow: hidden;
+}
+
+.contato-watermark {
+    position: absolute;
+    opacity: 0.08;
+    user-select: none;
+}
+
+.contato-watermark--1 {
+    top: 18%;
+    left: -4%;
+    width: clamp(140px, 18vw, 220px);
+    transform: rotate(-14deg);
+}
+
+.contato-watermark--2 {
+    bottom: 16%;
+    right: -2%;
+    width: clamp(120px, 16vw, 200px);
+    transform: rotate(12deg);
+}
+
 .contato-card {
     position: relative;
     z-index: 2;
@@ -74,7 +102,14 @@
     border: 1px solid rgba(255, 255, 255, 0.65);
     box-shadow:
         0 24px 64px rgba(0, 0, 0, 0.22),
-        0 0 0 1px rgba(13, 32, 59, 0.04);
+        0 0 0 1px rgba(25, 25, 25, 0.04);
+}
+
+.contato-card-mark {
+    display: block;
+    width: 48px;
+    height: auto;
+    margin: 0 auto 18px;
 }
 
 .contato-card.reveal {
@@ -94,14 +129,14 @@
 
 .contato-header h1 {
     margin: 0 0 10px;
-    color: #0d203b;
+    color: #191919;
     font-size: 1.65rem;
     letter-spacing: 0.04em;
 }
 
 .contato-subtitle {
     margin: 0;
-    color: rgba(13, 32, 59, 0.62);
+    color: rgba(25, 25, 25, 0.62);
     font-size: 1.05rem;
     line-height: 1.5;
 }
@@ -124,17 +159,17 @@
     font-weight: 600;
     letter-spacing: 0.1em;
     text-transform: uppercase;
-    color: rgba(13, 32, 59, 0.72);
+    color: rgba(25, 25, 25, 0.72);
 }
 
 .form-field input,
 .form-field textarea {
     width: 100%;
     padding: 14px 16px;
-    border: 1px solid rgba(13, 32, 59, 0.14);
+    border: 1px solid rgba(25, 25, 25, 0.14);
     border-radius: 10px;
     background-color: #f7f8fa;
-    color: #0d203b;
+    color: #191919;
     font-family: 'Cormorant Garamond', serif;
     font-size: 1.1rem;
     line-height: 1.4;
@@ -146,21 +181,21 @@
 
 .form-field input::placeholder,
 .form-field textarea::placeholder {
-    color: rgba(13, 32, 59, 0.38);
+    color: rgba(25, 25, 25, 0.38);
 }
 
 .form-field input:hover,
 .form-field textarea:hover {
-    border-color: rgba(13, 32, 59, 0.28);
+    border-color: rgba(25, 25, 25, 0.28);
     background-color: #ffffff;
 }
 
 .form-field input:focus,
 .form-field textarea:focus {
     outline: none;
-    border-color: #0d203b;
+    border-color: #191919;
     background-color: #ffffff;
-    box-shadow: 0 0 0 3px rgba(13, 32, 59, 0.08);
+    box-shadow: 0 0 0 3px rgba(25, 25, 25, 0.08);
 }
 
 .form-field textarea {
@@ -207,7 +242,7 @@
 
 .form-submit .btn:hover {
     transform: translateY(-1px);
-    box-shadow: 0 8px 20px rgba(13, 32, 59, 0.18);
+    box-shadow: 0 8px 20px rgba(25, 25, 25, 0.18);
 }
 
 .form-status {
@@ -220,9 +255,9 @@
 }
 
 .form-status--success {
-    background-color: rgba(13, 32, 59, 0.07);
-    color: #0d203b;
-    border: 1px solid rgba(13, 32, 59, 0.12);
+    background-color: rgba(25, 25, 25, 0.07);
+    color: #191919;
+    border: 1px solid rgba(25, 25, 25, 0.12);
 }
 
 .form-status--error {

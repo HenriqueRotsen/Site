@@ -1,8 +1,8 @@
 import '../App.css';
 import '../styles/Home.css';
 import React from 'react';
-import Logo from '../components/images/logo-no-background.png';
-import LogoMark from '../components/images/logo-no-background-canto.png';
+import Logo from '../components/images/logo-branca.png';
+import LogoHr from '../components/images/hr-branca.png';
 import ProfessionalFoto from '../components/images/profissional2.jpg';
 import Button from '../components/Button.js';
 import { useTranslation } from 'react-i18next';
@@ -25,8 +25,8 @@ const SKILL_GROUPS = [
 
 export const Home = () => {
   const { t } = useTranslation();
-  const heroTextRef = useReveal('up');
-  const heroImageRef = useReveal('right', 180);
+  const heroTextRef = useReveal('up', 0);
+  const heroImageRef = useReveal('up', 0);
   const aboutRef = useReveal('up', 80);
   const skillsRef = useRevealChildren('.skill-group', 100, 'up');
   const closeCopyRef = useReveal('up', 80);
@@ -36,15 +36,17 @@ export const Home = () => {
   return (
     <div className="home-page">
       <div className="home-watermarks" aria-hidden="true">
-        <img src={LogoMark} alt="" className="home-watermark home-watermark--1" />
-        <img src={LogoMark} alt="" className="home-watermark home-watermark--2" />
-        <img src={LogoMark} alt="" className="home-watermark home-watermark--3" />
+        <img src={LogoHr} alt="" className="home-watermark home-watermark--1" />
+        <img src={LogoHr} alt="" className="home-watermark home-watermark--2" />
+        <img src={LogoHr} alt="" className="home-watermark home-watermark--3" />
       </div>
 
       <section className="home-hero">
         <div className="home-shell home-hero-grid">
           <div className="home-hero-copy" ref={heroTextRef}>
-            <h1 className="home-brand">{t('home.marca')}</h1>
+            <h1 className="home-brand">
+              Henrique Rotsen
+            </h1>
             <p className="home-headline">{t('home.headline')}</p>
             <p className="home-lead">{t('home.subtitulo')}</p>
             <div className="home-hero-cta">

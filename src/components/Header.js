@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import '../styles/Header.css';
-import LogoCantoPagina from './images/logo-no-background-canto.png';
+import LogoHr from './images/hr-branca.png';
 import LanguageSelector from './LanguageSelector';
 import { useTranslation } from 'react-i18next';
 
@@ -18,7 +18,7 @@ function Header() {
       <nav className='navbar'>
         <div className='navbar-container'>
           <Link to='/' className='navbar-logo' onClick={closeMobileMenu}>
-            <img src={LogoCantoPagina} alt='Henrique Rotsen' width='100%' height='auto' />
+            <img src={LogoHr} alt='Henrique Rotsen' width='56' height='40' />
           </Link>
           <div className='menu-icon' onClick={handleClick}>
             <i className={click ? 'fas fa-times' : 'fas fa-bars'} />
