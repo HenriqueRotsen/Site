@@ -79,7 +79,7 @@ export async function handleClientAuth(request, env, origin, path) {
     const client = await env.DB.prepare('SELECT id FROM clients WHERE cnpj_hash = ? AND status = ?')
       .bind(hash, 'active')
       .first();
-    if (!client) return json({ error: 'Código inválido ou expirado.' }, 401, origin);
+    if (!client) return json({ error: 'CNPJ não encontrado ou inativo.' }, 401, origin);
 
     const otp = await env.DB.prepare(
       `SELECT * FROM client_otp WHERE client_id = ? ORDER BY created_at DESC LIMIT 1`
@@ -87,8 +87,12 @@ export async function handleClientAuth(request, env, origin, path) {
       .bind(client.id)
       .first();
 
-    if (!otp || new Date(otp.expires_at) < new Date()) {
-      return json({ error: 'Código inválido ou expirado.' }, 401, origin);
+    if (!otp) {
+      return json({ error: 'Nenhum código ativo. Solicite um novo código.' }, 401, origin);
+    }
+
+    if (new Date(otp.expires_at) < new Date()) {
+      return json({ error: 'Código expirado. Solicite um novo código.' }, 401, origin);
     }
 
     const maxAttempts = parseInt(env.OTP_MAX_ATTEMPTS || '5', 10);
@@ -101,7 +105,7 @@ export async function handleClientAuth(request, env, origin, path) {
       await env.DB.prepare('UPDATE client_otp SET attempts = attempts + 1 WHERE id = ?')
         .bind(otp.id)
         .run();
-      return json({ error: 'Código inválido ou expirado.' }, 401, origin);
+      return json({ error: 'Código incorreto. Use o código do e-mail mais recente.' }, 401, origin);
     }
 
     await env.DB.prepare('DELETE FROM client_otp WHERE client_id = ?').bind(client.id).run();

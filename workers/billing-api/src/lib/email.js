@@ -101,8 +101,9 @@ export async function sendEmail(apiKey, { from, to, subject, html, attachments }
 export function otpEmailHtml({ code, siteUrl }) {
   const bodyHtml = `
     <p style="margin:0 0 16px;font-size:16px;line-height:1.65;color:#ffffff;">Use o código abaixo para acessar suas faturas.</p>
-    <p style="margin:0 0 16px;font-size:32px;letter-spacing:0.3em;font-weight:700;color:#ffffff;">${escapeHtml(code)}</p>
-    <p style="margin:0;font-size:14px;line-height:1.65;color:rgba(255,255,255,0.78);">O código expira em 10 minutos. Se você não solicitou este acesso, ignore este e-mail.</p>`;
+    <p style="margin:0 0 8px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:36px;font-weight:700;letter-spacing:0.14em;color:#ffffff;">${escapeHtml(code)}</p>
+    <p style="margin:0 0 16px;font-family:Arial,Helvetica,sans-serif;font-size:13px;line-height:1.5;color:rgba(255,255,255,0.65);">Digite os 6 dígitos exatamente como aparecem acima.</p>
+    <p style="margin:0;font-size:14px;line-height:1.65;color:rgba(255,255,255,0.78);">O código expira em 10 minutos. Se solicitar um novo código, apenas o mais recente vale.</p>`;
 
   return brandedEmailShell({
     siteUrl,
