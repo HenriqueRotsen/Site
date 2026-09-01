@@ -1,13 +1,13 @@
 {
   "files": {
     "main.css": "/static/css/main.f4230afb.css",
-    "main.js": "/static/js/main.27b34466.js",
+    "main.js": "/static/js/main.86e558da.js",
     "static/css/739.363dbd50.chunk.css": "/static/css/739.363dbd50.chunk.css",
     "static/js/739.19be07cd.chunk.js": "/static/js/739.19be07cd.chunk.js",
     "static/css/298.3f2a4eae.chunk.css": "/static/css/298.3f2a4eae.chunk.css",
     "static/js/298.26472124.chunk.js": "/static/js/298.26472124.chunk.js",
     "static/css/331.363dbd50.chunk.css": "/static/css/331.363dbd50.chunk.css",
-    "static/js/331.91f1dbce.chunk.js": "/static/js/331.91f1dbce.chunk.js",
+    "static/js/331.6147b272.chunk.js": "/static/js/331.6147b272.chunk.js",
     "static/js/38.f9dcf4f8.chunk.js": "/static/js/38.f9dcf4f8.chunk.js",
     "static/media/background-home-page.png": "/static/media/background-home-page.943ab84ed4678e78e939.png",
     "static/media/profissional2.jpg": "/static/media/profissional2.451bd83b13013457281d.jpg",
@@ -22,17 +22,17 @@
     "static/media/wordmark-branca.png": "/static/media/wordmark-branca.bf03b7b93e8a878cdd69.png",
     "index.html": "/index.html",
     "main.f4230afb.css.map": "/static/css/main.f4230afb.css.map",
-    "main.27b34466.js.map": "/static/js/main.27b34466.js.map",
+    "main.86e558da.js.map": "/static/js/main.86e558da.js.map",
     "739.363dbd50.chunk.css.map": "/static/css/739.363dbd50.chunk.css.map",
     "739.19be07cd.chunk.js.map": "/static/js/739.19be07cd.chunk.js.map",
     "298.3f2a4eae.chunk.css.map": "/static/css/298.3f2a4eae.chunk.css.map",
     "298.26472124.chunk.js.map": "/static/js/298.26472124.chunk.js.map",
     "331.363dbd50.chunk.css.map": "/static/css/331.363dbd50.chunk.css.map",
-    "331.91f1dbce.chunk.js.map": "/static/js/331.91f1dbce.chunk.js.map",
+    "331.6147b272.chunk.js.map": "/static/js/331.6147b272.chunk.js.map",
     "38.f9dcf4f8.chunk.js.map": "/static/js/38.f9dcf4f8.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.f4230afb.css",
-    "static/js/main.27b34466.js"
+    "static/js/main.86e558da.js"
   ]
 }
