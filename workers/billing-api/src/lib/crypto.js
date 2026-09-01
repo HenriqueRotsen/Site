@@ -31,7 +31,7 @@ export async function hmacSha256Hex(secret, value) {
   return Array.from(new Uint8Array(sig), (b) => b.toString(16).padStart(2, '0')).join('');
 }
 
-const PBKDF2_ITERATIONS = 210000;
+const PBKDF2_ITERATIONS = 100000;
 
 export async function hashPassword(password) {
   const salt = crypto.getRandomValues(new Uint8Array(16));

@@ -1,7 +1,6 @@
 const API_URL =
-  typeof process.env.REACT_APP_BILLING_API_URL === 'string'
-    ? process.env.REACT_APP_BILLING_API_URL
-    : 'https://billing-api.henriquerotsen.com.br';
+  process.env.REACT_APP_BILLING_API_URL?.trim() ||
+  'https://billing-api.henriquerotsen.com.br';
 
 async function request(path, options = {}) {
   let response;
