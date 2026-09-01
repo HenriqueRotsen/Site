@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { billingApi, formatBRL, formatDate, maskCnpjInput, downloadBlob } from '../../api/billing';
+import { billingApi, formatBRL, formatDate, maskCnpjInput, downloadBlob, invoicePdfFilename } from '../../api/billing';
 import { AreaRestritaLayout, AreaCard, AreaBack } from './AreaRestritaLayout';
 import '../../styles/AreaRestrita.css';
 
@@ -78,7 +78,7 @@ export function ClientPortal() {
   const handleDownload = async (id, number) => {
     try {
       const blob = await billingApi.downloadClientPdf(id);
-      await downloadBlob(blob, `${number}.pdf`);
+      await downloadBlob(blob, invoicePdfFilename(number));
     } catch (err) {
       setError(err.message);
     }

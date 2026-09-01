@@ -1,6 +1,7 @@
 name = "billing-api-henrique"
 main = "src/index.js"
 compatibility_date = "2025-01-01"
+compatibility_flags = ["nodejs_compat"]
 
 # Custom domain: billing-api.henriquerotsen.com.br
 # Secrets: RESEND_API_KEY, SESSION_SECRET, CNPJ_HMAC_SECRET
@@ -15,6 +16,19 @@ database_id = "5e56e2b3-2439-4bb5-8e6a-cf3b7a075dbc"
 binding = "PDFS"
 bucket_name = "billing-pdfs-henrique"
 
+[browser]
+binding = "BROWSER"
+
+[[rules]]
+type = "Data"
+globs = ["**/*.png"]
+fallthrough = true
+
+[[rules]]
+type = "Text"
+globs = ["**/*.css"]
+fallthrough = true
+
 [vars]
 SITE_URL = "https://henriquerotsen.com.br"
 FROM_EMAIL = "Henrique Rotsen <no-reply@henriquerotsen.com.br>"
@@ -22,6 +36,17 @@ SESSION_HOURS = "8"
 OTP_MINUTES = "10"
 OTP_MAX_ATTEMPTS = "5"
 ADMIN_EMAIL = "comercial.henriquerotsen@gmail.com"
+ISSUER_NAME = "Henrique Rotsen"
+ISSUER_LEGAL_NAME = "66.268.938 HENRIQUE ROTSEN SANTOS FERREIRA"
+ISSUER_EMAIL = "contato@henriquerotsen.com.br"
+ISSUER_ADDRESS = "Rua Alvarenga Peixoto, 1408 - Santo Agostinho, Belo Horizonte - MG, 30180-003"
+ISSUER_PHONE = "(31) 3234-0271"
+ISSUER_BANK = "336 - Banco C6 S.A."
+ISSUER_AGENCY = "0001"
+ISSUER_ACCOUNT = "42115929-4"
+ISSUER_CNPJ = "66.268.938/0001-03"
+ISSUER_PIX_KEY = "66.268.938/0001-03"
+ISSUER_SITE = "henriquerotsen.com.br"
 
 [triggers]
 crons = ["0 12 * * *"]

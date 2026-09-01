@@ -2,12 +2,18 @@ import { randomToken, sha256Hex, uuid, nowIso, addHours, isExpired } from './cry
 
 const COOKIE_NAME = 'billing_session';
 
-export function sessionCookie(token, maxAgeSeconds) {
-  return `${COOKIE_NAME}=${token}; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=${maxAgeSeconds}`;
+function cookieFlags(maxAgeSeconds, { secure = true } = {}) {
+  const parts = [`Path=/`, `HttpOnly`, `SameSite=Strict`, `Max-Age=${maxAgeSeconds}`];
+  if (secure) parts.splice(2, 0, 'Secure');
+  return parts.join('; ');
 }
 
-export function clearSessionCookie() {
-  return `${COOKIE_NAME}=; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=0`;
+export function sessionCookie(token, maxAgeSeconds, options = {}) {
+  return `${COOKIE_NAME}=${token}; ${cookieFlags(maxAgeSeconds, options)}`;
+}
+
+export function clearSessionCookie(options = {}) {
+  return `${COOKIE_NAME}=; ${cookieFlags(0, options)}`;
 }
 
 export function parseSessionCookie(request) {

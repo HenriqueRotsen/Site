@@ -37,6 +37,7 @@ export async function handleCron(env) {
           totalFormatted: formatBRL(inv.total_cents),
           portalUrl,
           paymentLink: inv.payment_link,
+          siteUrl: env.SITE_URL,
         }),
       });
 

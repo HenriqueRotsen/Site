@@ -1,0 +1,5 @@
+ADMIN_PASSWORD=sua-senha-local
+PDF_RENDER_URL=http://127.0.0.1:8789/render
+SESSION_SECRET=dev-session-secret-change-me-32chars
+CNPJ_HMAC_SECRET=dev-cnpj-hmac-secret-change-me-32
+DEV_BOOTSTRAP_ADMIN=true

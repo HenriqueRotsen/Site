@@ -53,7 +53,7 @@ export async function handleClientAuth(request, env, origin, path) {
       from: env.FROM_EMAIL,
       to: client.billing_email,
       subject: 'Código de acesso — Área do cliente',
-      html: otpEmailHtml({ code, siteUrl: `${env.SITE_URL}/#/area-restrita/cliente` }),
+      html: otpEmailHtml({ code, siteUrl: env.SITE_URL }),
     });
 
     await audit(env.DB, {
@@ -116,6 +116,8 @@ export async function handleClientAuth(request, env, origin, path) {
       .bind(client.id)
       .first();
 
+    const cookieOptions = { secure: env.DEV_BOOTSTRAP_ADMIN !== 'true' };
+
     return json(
       {
         ok: true,
@@ -129,7 +131,7 @@ export async function handleClientAuth(request, env, origin, path) {
       },
       200,
       origin,
-      { 'Set-Cookie': sessionCookie(session.token, hours * 3600) }
+      { 'Set-Cookie': sessionCookie(session.token, hours * 3600, cookieOptions) }
     );
   }
 
@@ -139,7 +141,8 @@ export async function handleClientAuth(request, env, origin, path) {
       await audit(env.DB, { actorRole: 'client', actorId: session.client_id, action: 'client_logout', ip });
     }
     await destroySession(env.DB, request);
-    return json({ ok: true }, 200, origin, { 'Set-Cookie': clearSessionCookie() });
+    const cookieOptions = { secure: env.DEV_BOOTSTRAP_ADMIN !== 'true' };
+    return json({ ok: true }, 200, origin, { 'Set-Cookie': clearSessionCookie(cookieOptions) });
   }
 
   if (path === '/auth/client/me' && request.method === 'GET') {

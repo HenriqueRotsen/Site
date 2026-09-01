@@ -2,6 +2,7 @@ import { json } from '../lib/http.js';
 import { requireClient } from '../lib/session.js';
 import { audit } from '../lib/audit.js';
 import { corsHeaders } from '../lib/http.js';
+import { invoicePdfFilename } from '../lib/invoice-files.js';
 
 export async function handleClientPortal(request, env, origin, path) {
   const ip = request.headers.get('CF-Connecting-IP') || '';
@@ -69,7 +70,7 @@ export async function handleClientPortal(request, env, origin, path) {
       status: 200,
       headers: {
         'Content-Type': 'application/pdf',
-        'Content-Disposition': `attachment; filename="${row.number}.pdf"`,
+        'Content-Disposition': `attachment; filename="${invoicePdfFilename(row.number)}"`,
         ...corsHeaders(origin),
       },
     });

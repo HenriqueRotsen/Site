@@ -1,9 +1,12 @@
-import { json, readJson } from '../lib/http.js';
+import { json, readJson, corsHeaders } from '../lib/http.js';
 import { uuid, nowIso } from '../lib/crypto.js';
 import { requireAdmin } from '../lib/session.js';
 import { audit } from '../lib/audit.js';
-import { generateInvoicePdf, sha256Bytes } from '../lib/pdf.js';
+import { generateInvoicePdf, issuerFromEnv, sha256Bytes } from '../lib/pdf.js';
+import { buildInvoiceHtml } from '../lib/invoice-template.js';
 import { sendEmail, invoiceEmailHtml, formatBRL, formatDateBR } from '../lib/email.js';
+import { parsePagination, paginationMeta } from '../lib/pagination.js';
+import { invoicePdfFilename } from '../lib/invoice-files.js';
 
 function bytesToBase64(bytes) {
   const arr = new Uint8Array(bytes);
@@ -25,7 +28,7 @@ async function nextInvoiceNumber(db) {
   } else {
     await db.prepare('INSERT INTO invoice_sequences (year, last_number) VALUES (?, ?)').bind(year, next).run();
   }
-  return `INV-${year}-${String(next).padStart(4, '0')}`;
+  return `NF-${year}-${String(next).padStart(4, '0')}`;
 }
 
 function invoiceDto(row, items = []) {
@@ -59,7 +62,9 @@ function invoiceDto(row, items = []) {
 async function loadInvoice(db, id) {
   const row = await db
     .prepare(
-      `SELECT i.*, c.legal_name as client_name, c.cnpj_last4, c.billing_email
+      `SELECT i.*, c.legal_name as client_name, c.cnpj_last4, c.cnpj_formatted, c.billing_email, c.contact_phone,
+              c.address_street, c.address_number, c.address_complement, c.address_neighborhood,
+              c.address_city, c.address_state, c.address_zip
        FROM invoices i JOIN clients c ON c.id = i.client_id WHERE i.id = ?`
     )
     .bind(id)
@@ -77,6 +82,76 @@ function calcTotals(items) {
   return { subtotal, total: subtotal };
 }
 
+function clientAddressFromRow(row) {
+  const zip = String(row.address_zip || '').replace(/\D/g, '');
+  const zipFormatted = zip.length === 8 ? `${zip.slice(0, 5)}-${zip.slice(5)}` : null;
+  const parts = [
+    row.address_street,
+    row.address_number ? `nº ${row.address_number}` : null,
+    row.address_complement,
+    row.address_neighborhood,
+    row.address_city && row.address_state ? `${row.address_city} - ${row.address_state}` : row.address_city,
+    zipFormatted,
+  ].filter(Boolean);
+  return parts.join(', ');
+}
+
+function normalizeInvoiceItems(bodyItems) {
+  return bodyItems.map((item, idx) => ({
+    description: String(item.description || '').trim(),
+    quantity: parseFloat(item.quantity) || 1,
+    unit_price_cents: Math.round(parseFloat(item.unitPriceCents ?? item.unit_price_cents) || 0),
+    sort_order: idx,
+  }));
+}
+
+function invoiceTemplateData(env, row, items) {
+  return {
+    issuer: issuerFromEnv(env),
+    clientName: row.client_name,
+    clientCnpj: row.cnpj_formatted || null,
+    clientPhone: row.contact_phone,
+    clientAddress: clientAddressFromRow(row),
+    invoiceNumber: row.number,
+    issueDate: row.issue_date,
+    dueDate: row.due_date,
+    items,
+    totalCents: row.total_cents,
+    paymentLink: row.payment_link,
+    notes: row.notes,
+  };
+}
+
+async function generateInvoicePdfBytes(env, row, items) {
+  return generateInvoicePdf(env, invoiceTemplateData(env, row, items));
+}
+
+async function generateInvoiceHtmlBytes(env, row, items) {
+  return buildInvoiceHtml(invoiceTemplateData(env, row, items));
+}
+
+function htmlResponse(html, origin) {
+  return new Response(html, {
+    status: 200,
+    headers: {
+      'Content-Type': 'text/html; charset=utf-8',
+      ...corsHeaders(origin),
+    },
+  });
+}
+
+function pdfResponse(bytes, filename, origin, inline = false) {
+  const disposition = inline ? 'inline' : 'attachment';
+  return new Response(bytes, {
+    status: 200,
+    headers: {
+      'Content-Type': 'application/pdf',
+      'Content-Disposition': `${disposition}; filename="${filename}"`,
+      ...corsHeaders(origin),
+    },
+  });
+}
+
 export async function handleAdminInvoices(request, env, origin, path) {
   const session = await requireAdmin(env.DB, request);
   if (!session) return json({ error: 'Não autenticado.' }, 401, origin);
@@ -86,20 +161,39 @@ export async function handleAdminInvoices(request, env, origin, path) {
     const url = new URL(request.url);
     const clientId = url.searchParams.get('clientId');
     const status = url.searchParams.get('status');
+    const { page, limit, offset } = parsePagination(url);
+
+    let countQuery = `SELECT COUNT(*) as total FROM invoices i WHERE 1=1`;
     let query = `SELECT i.*, c.legal_name as client_name FROM invoices i JOIN clients c ON c.id = i.client_id WHERE 1=1`;
     const binds = [];
+
     if (clientId) {
+      countQuery += ' AND i.client_id = ?';
       query += ' AND i.client_id = ?';
       binds.push(clientId);
     }
     if (status) {
+      countQuery += ' AND i.status = ?';
       query += ' AND i.status = ?';
       binds.push(status);
     }
-    query += ' ORDER BY i.created_at DESC';
-    const stmt = env.DB.prepare(query);
-    const { results } = binds.length ? await stmt.bind(...binds).all() : await stmt.all();
-    return json({ invoices: results.map((r) => invoiceDto(r)) }, 200, origin);
+
+    query += ' ORDER BY i.created_at DESC LIMIT ? OFFSET ?';
+    const countRow = binds.length
+      ? await env.DB.prepare(countQuery).bind(...binds).first()
+      : await env.DB.prepare(countQuery).first();
+
+    const listBinds = [...binds, limit, offset];
+    const { results } = await env.DB.prepare(query).bind(...listBinds).all();
+
+    return json(
+      {
+        invoices: results.map((r) => invoiceDto(r)),
+        pagination: paginationMeta(page, limit, countRow.total),
+      },
+      200,
+      origin
+    );
   }
 
   if (path === '/admin/invoices' && request.method === 'POST') {
@@ -171,6 +265,61 @@ export async function handleAdminInvoices(request, env, origin, path) {
     return json({ invoice: invoiceDto(loaded.row, loaded.items) }, 201, origin);
   }
 
+  if (path === '/admin/invoices/preview' && request.method === 'POST') {
+    const body = await readJson(request);
+    if (!body?.clientId || !body?.dueDate || !Array.isArray(body.items) || body.items.length === 0) {
+      return json({ error: 'Cliente, vencimento e itens são obrigatórios.' }, 400, origin);
+    }
+
+    const client = await env.DB.prepare('SELECT * FROM clients WHERE id = ? AND status = ?')
+      .bind(body.clientId, 'active')
+      .first();
+    if (!client) return json({ error: 'Cliente não encontrado.' }, 404, origin);
+
+    const items = normalizeInvoiceItems(body.items);
+    if (items.some((i) => !i.description || i.unit_price_cents < 0)) {
+      return json({ error: 'Itens inválidos.' }, 400, origin);
+    }
+
+    const { total } = calcTotals(items);
+    const issueDate = body.issueDate || nowIso().slice(0, 10);
+    const previewRow = {
+      client_name: client.legal_name,
+      cnpj_formatted: client.cnpj_formatted,
+      cnpj_last4: client.cnpj_last4,
+      contact_phone: client.contact_phone,
+      address_street: client.address_street,
+      address_number: client.address_number,
+      address_complement: client.address_complement,
+      address_neighborhood: client.address_neighborhood,
+      address_city: client.address_city,
+      address_state: client.address_state,
+      address_zip: client.address_zip,
+      number: 'PRÉVIA',
+      issue_date: issueDate,
+      due_date: body.dueDate,
+      total_cents: total,
+      payment_link: body.paymentLink?.trim() || null,
+      notes: body.notes?.trim() || null,
+    };
+
+    const html = await generateInvoiceHtmlBytes(env, previewRow, items);
+    return htmlResponse(html, origin);
+  }
+
+  const previewMatch = path.match(/^\/admin\/invoices\/([^/]+)\/preview$/);
+  if (previewMatch && request.method === 'GET') {
+    const invoiceId = previewMatch[1];
+    const loaded = await loadInvoice(env.DB, invoiceId);
+    if (!loaded) return json({ error: 'Fatura não encontrada.' }, 404, origin);
+    if (loaded.row.status !== 'rascunho') {
+      return json({ error: 'Somente rascunhos podem ser visualizados como prévia.' }, 400, origin);
+    }
+
+    const html = await generateInvoiceHtmlBytes(env, loaded.row, loaded.items);
+    return htmlResponse(html, origin);
+  }
+
   const emitMatch = path.match(/^\/admin\/invoices\/([^/]+)\/emit$/);
   if (emitMatch && request.method === 'POST') {
     const invoiceId = emitMatch[1];
@@ -182,22 +331,11 @@ export async function handleAdminInvoices(request, env, origin, path) {
       return json({ error: 'Fatura cancelada.' }, 400, origin);
     }
 
-    const pdfBytes = await generateInvoicePdf({
-      issuerName: 'Henrique Rotsen',
-      issuerEmail: 'contato@henriquerotsen.com.br',
-      clientName: row.client_name,
-      clientCnpjMasked: `**.***.***/****-${row.cnpj_last4}`,
-      invoiceNumber: row.number,
-      issueDate: row.issue_date,
-      dueDate: row.due_date,
-      items,
-      totalCents: row.total_cents,
-      paymentLink: row.payment_link,
-      notes: row.notes,
-    });
+    const pdfBytes = await generateInvoicePdfBytes(env, row, items);
 
     const checksum = await sha256Bytes(pdfBytes);
-    const pdfKey = `invoices/${row.client_id}/${row.number}.pdf`;
+    const pdfFilename = invoicePdfFilename(row.number);
+    const pdfKey = `invoices/${row.client_id}/${pdfFilename}`;
     await env.PDFS.put(pdfKey, pdfBytes, {
       httpMetadata: { contentType: 'application/pdf' },
       customMetadata: { checksum, invoiceId: row.id },
@@ -219,27 +357,22 @@ export async function handleAdminInvoices(request, env, origin, path) {
         totalFormatted: formatBRL(row.total_cents),
         portalUrl,
         paymentLink: row.payment_link,
+        siteUrl: env.SITE_URL,
+        pdfFilename,
       });
 
       const pdfBase64 = bytesToBase64(pdfBytes);
-      await fetch('https://api.resend.com/emails', {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${env.RESEND_API_KEY}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          from: env.FROM_EMAIL,
-          to: row.billing_email,
-          subject: `Fatura ${row.number} — Henrique Rotsen`,
-          html,
-          attachments: [
-            {
-              filename: `${row.number}.pdf`,
-              content: pdfBase64,
-            },
-          ],
-        }),
+      await sendEmail(env.RESEND_API_KEY, {
+        from: env.FROM_EMAIL,
+        to: row.billing_email,
+        subject: `Sua fatura ${row.number} chegou — Henrique Rotsen`,
+        html,
+        attachments: [
+          {
+            filename: pdfFilename,
+            content: pdfBase64,
+          },
+        ],
       });
     }
 
@@ -290,19 +423,12 @@ export async function handleAdminInvoices(request, env, origin, path) {
   const pdfMatch = path.match(/^\/admin\/invoices\/([^/]+)\/pdf$/);
   if (pdfMatch && request.method === 'GET') {
     const invoiceId = pdfMatch[1];
-    const row = await env.DB.prepare('SELECT pdf_key FROM invoices WHERE id = ?').bind(invoiceId).first();
+    const row = await env.DB.prepare('SELECT pdf_key, number FROM invoices WHERE id = ?').bind(invoiceId).first();
     if (!row?.pdf_key) return json({ error: 'PDF não disponível.' }, 404, origin);
     const obj = await env.PDFS.get(row.pdf_key);
     if (!obj) return json({ error: 'PDF não encontrado.' }, 404, origin);
     const bytes = await obj.arrayBuffer();
-    return new Response(bytes, {
-      status: 200,
-      headers: {
-        'Content-Type': 'application/pdf',
-        'Content-Disposition': `attachment; filename="fatura.pdf"`,
-        ...((await import('../lib/http.js')).corsHeaders(origin)),
-      },
-    });
+    return pdfResponse(bytes, invoicePdfFilename(row.number), origin, false);
   }
 
   const match = path.match(/^\/admin\/invoices\/([^/]+)$/);
@@ -355,6 +481,32 @@ export async function handleAdminInvoices(request, env, origin, path) {
 
       const updated = await loadInvoice(env.DB, invoiceId);
       return json({ invoice: invoiceDto(updated.row, updated.items) }, 200, origin);
+    }
+
+    if (request.method === 'DELETE') {
+      const loaded = await loadInvoice(env.DB, invoiceId);
+      if (!loaded) return json({ error: 'Fatura não encontrada.' }, 404, origin);
+      if (loaded.row.status !== 'rascunho') {
+        return json({ error: 'Somente faturas não enviadas podem ser excluídas.' }, 400, origin);
+      }
+
+      if (loaded.row.pdf_key) {
+        await env.PDFS.delete(loaded.row.pdf_key);
+      }
+
+      await env.DB.prepare('DELETE FROM invoices WHERE id = ?').bind(invoiceId).run();
+
+      await audit(env.DB, {
+        actorRole: 'admin',
+        actorId: session.admin_id,
+        action: 'invoice_deleted',
+        resourceType: 'invoice',
+        resourceId: invoiceId,
+        ip,
+        metadata: { number: loaded.row.number },
+      });
+
+      return json({ ok: true }, 200, origin);
     }
   }
 

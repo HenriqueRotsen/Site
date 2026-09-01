@@ -4,14 +4,18 @@
   "type": "module",
   "scripts": {
     "dev": "wrangler dev",
+    "dev:pdf": "node scripts/dev-pdf-server.mjs",
     "deploy": "wrangler deploy",
+    "preview:pdf": "node scripts/preview-pdf.mjs",
     "db:migrate:local": "wrangler d1 migrations apply billing-henrique --local",
     "db:migrate:remote": "wrangler d1 migrations apply billing-henrique --remote"
   },
   "dependencies": {
-    "pdf-lib": "^1.17.1"
+    "@cloudflare/puppeteer": "^1.0.4",
+    "qrcode-generator": "^2.0.4"
   },
   "devDependencies": {
+    "puppeteer": "^24.0.0",
     "wrangler": "^4.0.0"
   }
 }

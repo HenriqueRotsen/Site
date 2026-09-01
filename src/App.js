@@ -1,6 +1,6 @@
 import './styles/animations.css';
 import Header from './components/Header.js';
-import { HashRouter, Routes, Route } from "react-router-dom";
+import { HashRouter, Routes, Route, useLocation } from "react-router-dom";
 import { lazy, Suspense } from 'react';
 import { Home } from './pages/Home.js'
 import { Curriculo } from './pages/Curriculo.js'
@@ -17,11 +17,14 @@ function AreaLoading() {
   return <div style={{ minHeight: '40vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Carregando...</div>;
 }
 
-function App() {
+function AppRoutes() {
+  const location = useLocation();
+  const isAreaRestrita = location.pathname.startsWith('/area-restrita');
+
   return (
-    <HashRouter>
+    <>
       <ScrollToTop />
-      <Header />
+      {!isAreaRestrita && <Header />}
       <Suspense fallback={<AreaLoading />}>
         <Routes>
           <Route path="/" element={<Home />} />
@@ -30,10 +33,19 @@ function App() {
           <Route path="/trabalhos" element={<Trabalhos />} />
           <Route path="/area-restrita" element={<AreaRestrita />} />
           <Route path="/area-restrita/admin" element={<AdminPortal />} />
+          <Route path="/area-restrita/admin/clientes/:slug" element={<AdminPortal />} />
           <Route path="/area-restrita/cliente" element={<ClientPortal />} />
         </Routes>
       </Suspense>
-      <Footer />
+      {!isAreaRestrita && <Footer />}
+    </>
+  );
+}
+
+function App() {
+  return (
+    <HashRouter>
+      <AppRoutes />
     </HashRouter>
   )
 }

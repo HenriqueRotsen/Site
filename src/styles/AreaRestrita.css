@@ -1,7 +1,7 @@
 .area-page {
   position: relative;
   min-height: 100vh;
-  padding: 110px 24px 100px;
+  padding: 48px 24px 64px;
   background-color: #191919;
   color: #191919;
   overflow: hidden;
@@ -224,6 +224,37 @@
   box-shadow: 0 0 0 3px rgba(25, 25, 25, 0.08);
 }
 
+.area-password-wrap {
+  position: relative;
+  margin-bottom: 1rem;
+}
+
+.area-password-wrap input {
+  margin-bottom: 0;
+  padding-right: 48px;
+}
+
+.area-password-toggle {
+  position: absolute;
+  top: 50%;
+  right: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  border: none;
+  background: transparent;
+  color: rgba(25, 25, 25, 0.45);
+  cursor: pointer;
+  transform: translateY(-50%);
+}
+
+.area-password-toggle:hover,
+.area-password-toggle:focus-visible {
+  color: #191919;
+  outline: none;
+}
+
 .area-btn {
   background: #191919;
   color: #fff;
@@ -424,7 +455,7 @@
 
 @media (max-width: 768px) {
   .area-page {
-    padding: 100px 16px 80px;
+    padding: 32px 16px 48px;
   }
 
   .area-card {

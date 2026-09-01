@@ -113,8 +113,61 @@ Acesse: `http://localhost:3000/#/area-restrita`
 
 1. Cadastre o cliente (CNPJ + e-mail)
 2. Crie fatura em rascunho (itens + link PIX do banco)
-3. Clique **Emitir** → gera PDF, salva no R2, envia e-mail
+3. Clique **Emitir** → gera PDF compacto, salva no R2, envia e-mail com anexo
 4. Cliente acessa portal com CNPJ + código
+
+## Colocar no ar (checklist)
+
+### API (Cloudflare Worker)
+
+```bash
+cd workers/billing-api
+npm install
+npx wrangler d1 migrations apply billing-henrique --remote
+npx wrangler secret put RESEND_API_KEY
+npx wrangler secret put SESSION_SECRET
+npx wrangler secret put CNPJ_HMAC_SECRET
+npx wrangler deploy
+```
+
+**Obrigatório para PDF em produção:**
+
+1. **Browser Run** habilitado na conta Cloudflare (Workers → Browser Rendering)
+2. Binding `[browser]` já está no `wrangler.toml`
+3. Plano Workers compatível com Browser Run (ver limites no dashboard)
+
+**Obrigatório para e-mail com anexo:**
+
+1. `RESEND_API_KEY` configurado como secret no Worker
+2. Domínio `henriquerotsen.com.br` verificado no Resend
+3. `FROM_EMAIL` em `wrangler.toml` usando esse domínio (`no-reply@...`)
+4. E-mail de cobrança do cliente (`billing_email`) cadastrado no admin
+
+Ao **Emitir**, o Worker:
+
+- Gera o PDF via Puppeteer (Browser Run)
+- Salva em R2 como `NF-AAAA-NNNN.pdf`
+- Envia e-mail HTML (mesmo visual do formulário de contato) com o PDF em anexo
+
+### Frontend (GitHub Pages)
+
+Variável no repositório / Actions:
+
+`REACT_APP_BILLING_API_URL=https://billing-api.henriquerotsen.com.br`
+
+Depois do deploy do site, acesse `https://henriquerotsen.com.br/#/area-restrita`.
+
+### Desenvolvimento local
+
+Para PDF local (sem download do browser do Wrangler):
+
+```bash
+cd workers/billing-api
+npm run dev:pdf      # terminal 1
+npx wrangler dev --port 8788   # terminal 2
+```
+
+Para testar e-mail localmente, adicione `RESEND_API_KEY` em `.dev.vars`.
 
 ## Segurança
 

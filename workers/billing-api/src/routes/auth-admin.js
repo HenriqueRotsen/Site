@@ -11,17 +11,28 @@ import {
 import { audit } from '../lib/audit.js';
 
 async function ensureAdminExists(env) {
-  const count = await env.DB.prepare('SELECT COUNT(*) as c FROM admins').first();
-  if (count.c > 0) return;
-
-  const email = env.ADMIN_EMAIL;
+  const email = env.ADMIN_EMAIL?.toLowerCase().trim();
   const password = env.ADMIN_PASSWORD;
   if (!email || !password) return;
 
   const passwordHash = await hashPassword(password);
-  await env.DB.prepare('INSERT INTO admins (id, email, password_hash) VALUES (?, ?, ?)')
-    .bind(uuid(), email.toLowerCase().trim(), passwordHash)
-    .run();
+  const count = await env.DB.prepare('SELECT COUNT(*) as c FROM admins').first();
+
+  if (count.c === 0) {
+    await env.DB.prepare('INSERT INTO admins (id, email, password_hash) VALUES (?, ?, ?)')
+      .bind(uuid(), email, passwordHash)
+      .run();
+    return;
+  }
+
+  // Local dev only (.dev.vars): mantém senha do admin alinhada ao ADMIN_PASSWORD
+  if (env.DEV_BOOTSTRAP_ADMIN === 'true') {
+    await env.DB.prepare(
+      'UPDATE admins SET password_hash = ?, failed_attempts = 0, locked_until = NULL WHERE email = ?'
+    )
+      .bind(passwordHash, email)
+      .run();
+  }
 }
 
 export async function handleAdminAuth(request, env, origin, path) {
@@ -70,11 +81,13 @@ export async function handleAdminAuth(request, env, origin, path) {
     const session = await createSession(env.DB, { role: 'admin', adminId: admin.id, hours });
     await audit(env.DB, { actorRole: 'admin', actorId: admin.id, action: 'admin_login', ip });
 
+    const cookieOptions = { secure: env.DEV_BOOTSTRAP_ADMIN !== 'true' };
+
     return json(
       { ok: true, role: 'admin', email: admin.email, expiresAt: session.expiresAt },
       200,
       origin,
-      { 'Set-Cookie': sessionCookie(session.token, hours * 3600) }
+      { 'Set-Cookie': sessionCookie(session.token, hours * 3600, cookieOptions) }
     );
   }
 
@@ -89,7 +102,8 @@ export async function handleAdminAuth(request, env, origin, path) {
       });
     }
     await destroySession(env.DB, request);
-    return json({ ok: true }, 200, origin, { 'Set-Cookie': clearSessionCookie() });
+    const cookieOptions = { secure: env.DEV_BOOTSTRAP_ADMIN !== 'true' };
+    return json({ ok: true }, 200, origin, { 'Set-Cookie': clearSessionCookie(cookieOptions) });
   }
 
   if (path === '/auth/admin/me' && request.method === 'GET') {
