@@ -29,6 +29,7 @@ jobs:
       run: npm run build
       env:
         REACT_APP_CONTACT_API_URL: https://contact-api.henriquerotsen.com.br
+        REACT_APP_BILLING_API_URL: https://billing-api.henriquerotsen.com.br
 
     - name: Deploy para GitHub Pages
       uses: peaceiris/actions-gh-pages@v4

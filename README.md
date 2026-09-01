@@ -76,6 +76,7 @@ npx serve .
 ## Deployment
 Common hosting options:
 - GitHub Pages — push the build or static files to gh-pages branch (or use Actions).
+- **Área restrita (faturas):** ver [BILLING_API.md](./BILLING_API.md) — Worker `billing-api-henrique` na Cloudflare.
 - Vercel — connect the repository and configure build settings.
 - Netlify — connect the repository and configure build/deploy settings.
 - Any static hosting provider that serves the output directory.

@@ -20,9 +20,7 @@ function Header() {
           <Link to='/' className='navbar-logo' onClick={closeMobileMenu}>
             <img src={LogoHr} alt='Henrique Rotsen' width='56' height='40' />
           </Link>
-          <div className='menu-icon' onClick={handleClick}>
-            <i className={click ? 'fas fa-times' : 'fas fa-bars'} />
-          </div>
+
           <ul className={click ? 'nav-menu active' : 'nav-menu'}>
             <li className='nav-item'>
               <Link to='/' className='nav-links' onClick={closeMobileMenu}>
@@ -44,13 +42,34 @@ function Header() {
                 {t('header.contato')}
               </Link>
             </li>
+            <li className='nav-item'>
+              <Link
+                to='/area-restrita'
+                className='nav-links'
+                onClick={closeMobileMenu}
+                title={t('header.areaRestritaTitle')}
+              >
+                <i className='fas fa-lock nav-link-icon' aria-hidden='true' />
+                <span>{t('header.areaRestrita')}</span>
+              </Link>
+            </li>
 
             <li className='nav-item language-selector-mobile'>
               <LanguageSelector variant='mobile' />
             </li>
           </ul>
 
-          <LanguageSelector variant='desktop' />
+          <div className='navbar-end'>
+            <LanguageSelector variant='desktop' />
+            <button
+              type='button'
+              className='menu-icon'
+              onClick={handleClick}
+              aria-label={click ? 'Fechar menu' : 'Abrir menu'}
+            >
+              <i className={click ? 'fas fa-times' : 'fas fa-bars'} />
+            </button>
+          </div>
         </div>
         <hr className='nav-hr' />
       </nav>

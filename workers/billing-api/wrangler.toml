@@ -1,0 +1,27 @@
+name = "billing-api-henrique"
+main = "src/index.js"
+compatibility_date = "2025-01-01"
+
+# Custom domain: billing-api.henriquerotsen.com.br
+# Secrets: RESEND_API_KEY, SESSION_SECRET, CNPJ_HMAC_SECRET
+# Optional bootstrap: ADMIN_EMAIL, ADMIN_PASSWORD (first deploy only)
+
+[[d1_databases]]
+binding = "DB"
+database_name = "billing-henrique"
+database_id = "5e56e2b3-2439-4bb5-8e6a-cf3b7a075dbc"
+
+[[r2_buckets]]
+binding = "PDFS"
+bucket_name = "billing-pdfs-henrique"
+
+[vars]
+SITE_URL = "https://henriquerotsen.com.br"
+FROM_EMAIL = "Henrique Rotsen <no-reply@henriquerotsen.com.br>"
+SESSION_HOURS = "8"
+OTP_MINUTES = "10"
+OTP_MAX_ATTEMPTS = "5"
+ADMIN_EMAIL = "comercial.henriquerotsen@gmail.com"
+
+[triggers]
+crons = ["0 12 * * *"]
