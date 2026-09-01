@@ -24,10 +24,20 @@
     "trabalhos": "Projects",
     "curriculo": "Resume",
     "contato": "Contact",
+    "areaRestrita": "Portal",
+    "areaRestritaTitle": "Restricted area — administration and clients",
     "idioma": "Select language"
   },
+  "areaRestrita": {
+    "titulo": "Restricted area",
+    "subtitulo": "Exclusive access for administration and clients.",
+    "adminTitulo": "Administration",
+    "adminDesc": "Clients, invoices, insights, and automated delivery",
+    "clienteTitulo": "Client portal",
+    "clienteDesc": "CNPJ + email code · 8-hour session"
+  },
   "footer": {
-    "texto1": "All rights reserved",
+    "texto1": "All rights reserved"
   },
   "trabalhos": {
     "titulo": "Main Projects",
@@ -61,7 +71,7 @@
     "santiago_desc": "Internal software for contract management and monitoring at Santiago Cotton LTDA, developed in C# using .NET framework with Windows Forms.",
     "ia": "Artificial Intelligence",
     "ia_desc": "Works as a developer at Radio Memory, focusing on neural network development and supporting AI innovations aimed at radiology solutions."
-},
+  },
   "curriculo": {
     "titulo": "Resume Models",
     "cv": "Curriculum Vitae",

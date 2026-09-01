@@ -25,7 +25,17 @@
     "trabalhos": "Trabalhos",
     "curriculo": "Currículo",
     "contato": "Contato",
+    "areaRestrita": "Portal",
+    "areaRestritaTitle": "Área restrita — administração e clientes",
     "idioma": "Selecionar idioma"
+  },
+  "areaRestrita": {
+    "titulo": "Área restrita",
+    "subtitulo": "Acesso exclusivo para administração e clientes.",
+    "adminTitulo": "Administração",
+    "adminDesc": "Clientes, faturas, insights e envio automático",
+    "clienteTitulo": "Portal do cliente",
+    "clienteDesc": "CNPJ + código por e-mail · sessão de 8 horas"
   },
   "footer": {
     "texto1": "Todos os direitos reservados"
