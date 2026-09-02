@@ -25,11 +25,11 @@ async function route(request, env) {
   const handlers = [
     handleAdminAuth,
     handleClientAuth,
+    handleClientPortal,
     handleAdminClients,
     handleAdminInvoices,
     handleAdminDashboard,
     handleAdminCnpjLookup,
-    handleClientPortal,
   ];
 
   for (const handler of handlers) {

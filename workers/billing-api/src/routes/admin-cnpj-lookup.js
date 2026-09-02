@@ -21,10 +21,12 @@ function formatPhoneFromApi(raw) {
 }
 
 export async function handleAdminCnpjLookup(request, env, origin, path) {
+  if (path !== '/admin/cnpj-lookup') return null;
+
   const session = await requireAdmin(env.DB, request);
   if (!session) return json({ error: 'Não autenticado.' }, 401, origin);
 
-  if (path !== '/admin/cnpj-lookup' || request.method !== 'GET') return null;
+  if (request.method !== 'GET') return null;
 
   const url = new URL(request.url);
   const cnpj = normalizeCnpj(url.searchParams.get('cnpj') || '');

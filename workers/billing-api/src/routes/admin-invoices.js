@@ -153,6 +153,8 @@ function pdfResponse(bytes, filename, origin, inline = false) {
 }
 
 export async function handleAdminInvoices(request, env, origin, path) {
+  if (!path.startsWith('/admin/invoices')) return null;
+
   const session = await requireAdmin(env.DB, request);
   if (!session) return json({ error: 'Não autenticado.' }, 401, origin);
   const ip = request.headers.get('CF-Connecting-IP') || '';

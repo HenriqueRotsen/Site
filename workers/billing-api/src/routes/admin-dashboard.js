@@ -3,6 +3,8 @@ import { requireAdmin } from '../lib/session.js';
 import { parsePagination, paginationMeta } from '../lib/pagination.js';
 
 export async function handleAdminDashboard(request, env, origin, path) {
+  if (path !== '/admin/dashboard') return null;
+
   const session = await requireAdmin(env.DB, request);
   if (!session) return json({ error: 'Não autenticado.' }, 401, origin);
 

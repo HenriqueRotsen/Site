@@ -149,6 +149,8 @@ async function deactivateClient(db, row, body, env) {
 }
 
 export async function handleAdminClients(request, env, origin, path) {
+  if (!path.startsWith('/admin/clients')) return null;
+
   const session = await requireAdmin(env.DB, request);
   if (!session) return json({ error: 'Não autenticado.' }, 401, origin);
   const ip = request.headers.get('CF-Connecting-IP') || '';
