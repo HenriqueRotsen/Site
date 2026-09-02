@@ -332,11 +332,27 @@
   border-bottom: 1px solid #e5e5e5;
 }
 
+.admin-panel__header > div {
+  min-width: 0;
+}
+
 .admin-panel__header h2 {
   margin: 0;
   font-family: 'Cormorant Garamond', serif;
   font-size: 1.25rem;
   font-weight: 600;
+}
+
+.admin-panel__header p {
+  margin: 4px 0 0;
+  font-size: 0.8125rem;
+  color: #6b6b6b;
+  font-weight: 400;
+  line-height: 1.4;
+}
+
+.admin-panel__body {
+  padding: 20px;
 }
 
 .admin-table-wrap {
@@ -956,7 +972,8 @@
 
 .admin-panel__title {
   margin: 0 0 4px;
-  font-size: 1.125rem;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.25rem;
   font-weight: 600;
 }
 
@@ -966,9 +983,17 @@
   gap: 20px 28px;
 }
 
+.admin-detail-grid--account {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.admin-detail-grid__item--wide {
+  grid-column: 1 / -1;
+}
+
 .admin-detail-grid dt,
 .admin-detail-grid .admin-detail-grid__label {
-  margin: 0 0 4px;
+  margin: 0 0 6px;
   font-size: 0.75rem;
   font-weight: 600;
   letter-spacing: 0.06em;
@@ -981,6 +1006,14 @@
   margin: 0;
   font-size: 0.9375rem;
   color: #000000;
+  line-height: 1.45;
+  word-break: break-word;
+}
+
+.admin-detail-grid__value--emphasis {
+  font-size: 1rem;
+  font-weight: 500;
+  line-height: 1.5;
 }
 
 .admin-loading-inline {
@@ -1016,6 +1049,45 @@
     white-space: nowrap;
   }
 
+  .admin-main__inner {
+    padding: 20px 16px 32px;
+  }
+
+  .admin-page-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+
+  .admin-page-header .admin-btn {
+    align-self: flex-start;
+  }
+
+  .admin-panel__header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+
+  .admin-panel__header .admin-btn {
+    align-self: flex-start;
+    flex-shrink: 0;
+  }
+
+  .admin-detail-grid--account {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+
+  .admin-table__actions {
+    flex-wrap: wrap;
+  }
+
   .admin-form-grid,
   .admin-form-grid--3 {
     grid-template-columns: 1fr;
@@ -1049,5 +1121,15 @@
 
   .admin-pagination__controls {
     justify-content: center;
+  }
+}
+
+@media (max-width: 520px) {
+  .admin-stats {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-page-header h1 {
+    font-size: 1.625rem;
   }
 }

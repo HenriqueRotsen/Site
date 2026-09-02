@@ -270,38 +270,42 @@ export function ClientPortal() {
             />
           </div>
 
-          <div className="admin-panel" style={{ marginTop: 24 }}>
-            <h2 className="admin-panel__title">Dados da conta</h2>
-            <dl className="admin-detail-grid">
-              <div>
-                <dt>Razão social</dt>
-                <dd>{client.name}</dd>
-              </div>
-              <div>
-                <dt>CNPJ</dt>
-                <dd>{client.cnpjMasked}</dd>
-              </div>
-              <div>
-                <dt>E-mail de faturamento</dt>
-                <dd>{client.email}</dd>
-              </div>
-              {client.contactName && (
-                <div>
-                  <dt>Contato</dt>
-                  <dd>{client.contactName}</dd>
+          <div className="admin-panel">
+            <div className="admin-panel__header">
+              <h2>Dados da conta</h2>
+            </div>
+            <div className="admin-panel__body">
+              <dl className="admin-detail-grid admin-detail-grid--account">
+                <div className="admin-detail-grid__item admin-detail-grid__item--wide">
+                  <dt>Razão social</dt>
+                  <dd className="admin-detail-grid__value--emphasis">{client.name}</dd>
                 </div>
-              )}
-            </dl>
+                <div>
+                  <dt>CNPJ</dt>
+                  <dd>{client.cnpjMasked}</dd>
+                </div>
+                <div>
+                  <dt>E-mail de faturamento</dt>
+                  <dd>{client.email}</dd>
+                </div>
+                {client.contactName && (
+                  <div>
+                    <dt>Contato</dt>
+                    <dd>{client.contactName}</dd>
+                  </div>
+                )}
+              </dl>
+            </div>
           </div>
 
           {invoices.length > 0 && (
-            <div className="admin-panel" style={{ marginTop: 24 }}>
-              <div className="admin-page-header">
+            <div className="admin-panel">
+              <div className="admin-panel__header">
                 <div>
-                  <h2 className="admin-panel__title">Últimas faturas</h2>
+                  <h2>Últimas faturas</h2>
                   <p>Clique em uma fatura para ver os detalhes</p>
                 </div>
-                <button type="button" className="admin-btn admin-btn--secondary" onClick={() => setPage('invoices')}>
+                <button type="button" className="admin-btn admin-btn--secondary admin-btn--sm" onClick={() => setPage('invoices')}>
                   Ver todas
                 </button>
               </div>
@@ -343,17 +347,18 @@ export function ClientPortal() {
 
           {selectedInvoice && (
             <div className="admin-panel" style={{ marginBottom: 24 }}>
-              <div className="admin-page-header">
+              <div className="admin-panel__header">
                 <div>
-                  <h2 className="admin-panel__title">{selectedInvoice.number}</h2>
+                  <h2>{selectedInvoice.number}</h2>
                   <p>
                     Emitida em {formatDate(selectedInvoice.issueDate)} · Vencimento {formatDate(selectedInvoice.dueDate)}
                   </p>
                 </div>
-                <button type="button" className="admin-btn admin-btn--secondary" onClick={() => setSelectedInvoice(null)}>
-                  Fechar detalhes
+                <button type="button" className="admin-btn admin-btn--secondary admin-btn--sm" onClick={() => setSelectedInvoice(null)}>
+                  Fechar
                 </button>
               </div>
+              <div className="admin-panel__body">
               <dl className="admin-detail-grid" style={{ marginBottom: 20 }}>
                 <div>
                   <dt>Status</dt>
@@ -427,6 +432,7 @@ export function ClientPortal() {
                   </a>
                 )}
               </div>
+              </div>
             </div>
           )}
 
@@ -434,7 +440,9 @@ export function ClientPortal() {
 
           <div className="admin-panel">
             {invoices.length === 0 ? (
-              <p className="area-lead">Nenhuma fatura disponível no momento.</p>
+              <div className="admin-panel__body">
+                <p className="area-lead">Nenhuma fatura disponível no momento.</p>
+              </div>
             ) : (
               <div className="admin-table-wrap">
                 <table className="admin-table">
