@@ -1,13 +1,13 @@
 {
   "files": {
     "main.css": "/static/css/main.f4230afb.css",
-    "main.js": "/static/js/main.632acb76.js",
+    "main.js": "/static/js/main.9bdf38f2.js",
     "static/css/739.e19e9e9f.chunk.css": "/static/css/739.e19e9e9f.chunk.css",
     "static/js/739.19be07cd.chunk.js": "/static/js/739.19be07cd.chunk.js",
     "static/js/316.ad216223.chunk.js": "/static/js/316.ad216223.chunk.js",
-    "static/js/690.99242bd9.chunk.js": "/static/js/690.99242bd9.chunk.js",
+    "static/js/690.21271542.chunk.js": "/static/js/690.21271542.chunk.js",
     "static/js/38.f9dcf4f8.chunk.js": "/static/js/38.f9dcf4f8.chunk.js",
-    "static/css/331.84520bb1.chunk.css": "/static/css/331.84520bb1.chunk.css",
+    "static/css/331.c88123e3.chunk.css": "/static/css/331.c88123e3.chunk.css",
     "static/media/background-home-page.png": "/static/media/background-home-page.943ab84ed4678e78e939.png",
     "static/media/profissional2.jpg": "/static/media/profissional2.451bd83b13013457281d.jpg",
     "static/media/foto-profissional-trabalhos.jpeg": "/static/media/foto-profissional-trabalhos.a01eba20e435f26a351a.jpeg",
@@ -21,16 +21,16 @@
     "static/media/wordmark-branca.png": "/static/media/wordmark-branca.bf03b7b93e8a878cdd69.png",
     "index.html": "/index.html",
     "main.f4230afb.css.map": "/static/css/main.f4230afb.css.map",
-    "main.632acb76.js.map": "/static/js/main.632acb76.js.map",
+    "main.9bdf38f2.js.map": "/static/js/main.9bdf38f2.js.map",
     "739.e19e9e9f.chunk.css.map": "/static/css/739.e19e9e9f.chunk.css.map",
     "739.19be07cd.chunk.js.map": "/static/js/739.19be07cd.chunk.js.map",
     "316.ad216223.chunk.js.map": "/static/js/316.ad216223.chunk.js.map",
-    "690.99242bd9.chunk.js.map": "/static/js/690.99242bd9.chunk.js.map",
+    "690.21271542.chunk.js.map": "/static/js/690.21271542.chunk.js.map",
     "38.f9dcf4f8.chunk.js.map": "/static/js/38.f9dcf4f8.chunk.js.map",
-    "331.84520bb1.chunk.css.map": "/static/css/331.84520bb1.chunk.css.map"
+    "331.c88123e3.chunk.css.map": "/static/css/331.c88123e3.chunk.css.map"
   },
   "entrypoints": [
     "static/css/main.f4230afb.css",
-    "static/js/main.632acb76.js"
+    "static/js/main.9bdf38f2.js"
   ]
 }
