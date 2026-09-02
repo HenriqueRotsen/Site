@@ -1,19 +1,17 @@
-import React, { useEffect, useState } from 'react';
-import { billingApi, formatBRL, formatDate, maskCnpjInput, downloadBlob, invoicePdfFilename } from '../../api/billing';
+import React, { useEffect, useMemo, useState } from 'react';
+import {
+  billingApi,
+  formatBRL,
+  formatDate,
+  maskCnpjInput,
+  maskCnpjDisplay,
+  downloadBlob,
+  invoicePdfFilename,
+} from '../../api/billing';
 import { AreaRestritaLayout, AreaCard, AreaBack } from './AreaRestritaLayout';
+import { ClientShell, AdminPageHeader, StatusBadge, StatCard } from './admin/ClientShell';
 import '../../styles/AreaRestrita.css';
-
-const STATUS_LABELS = {
-  rascunho: 'Rascunho',
-  enviada: 'Enviada',
-  paga: 'Paga',
-  atrasada: 'Atrasada',
-  cancelada: 'Cancelada',
-};
-
-function StatusBadge({ status }) {
-  return <span className={`status-badge status-${status}`}>{STATUS_LABELS[status] || status}</span>;
-}
+import '../../styles/AdminShell.css';
 
 const CLIENT_CNPJ_STORAGE_KEY = 'billing_client_cnpj_digits';
 
@@ -21,14 +19,21 @@ function getCnpjDigits(value) {
   return String(value || '').replace(/\D/g, '');
 }
 
+function isOpenInvoice(status) {
+  return status === 'enviada' || status === 'atrasada';
+}
+
 export function ClientPortal() {
   const [step, setStep] = useState('loading');
+  const [page, setPage] = useState('home');
   const [cnpj, setCnpj] = useState('');
   const [code, setCode] = useState('');
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
   const [client, setClient] = useState(null);
   const [invoices, setInvoices] = useState([]);
+  const [selectedInvoice, setSelectedInvoice] = useState(null);
+  const [detailLoading, setDetailLoading] = useState(false);
 
   const loadSession = async () => {
     try {
@@ -45,6 +50,26 @@ export function ClientPortal() {
   useEffect(() => {
     loadSession();
   }, []);
+
+  const summary = useMemo(() => {
+    const open = invoices.filter((inv) => isOpenInvoice(inv.status));
+    const paid = invoices.filter((inv) => inv.status === 'paga');
+    const openTotal = open.reduce((sum, inv) => sum + inv.totalCents, 0);
+    const paidTotal = paid.reduce((sum, inv) => sum + inv.totalCents, 0);
+    const nextDue = open
+      .map((inv) => inv.dueDate)
+      .filter(Boolean)
+      .sort()[0];
+
+    return {
+      openCount: open.length,
+      openTotal,
+      paidCount: paid.length,
+      paidTotal,
+      nextDue,
+      totalCount: invoices.length,
+    };
+  }, [invoices]);
 
   const handleRequestCode = async (e) => {
     e.preventDefault();
@@ -76,6 +101,7 @@ export function ClientPortal() {
       const inv = await billingApi.clientInvoices();
       setInvoices(inv.invoices);
       setStep('portal');
+      setPage('home');
     } catch (err) {
       setError(err.message);
     }
@@ -105,10 +131,13 @@ export function ClientPortal() {
     setStep('cnpj');
     setClient(null);
     setInvoices([]);
+    setSelectedInvoice(null);
     setCode('');
+    setPage('home');
   };
 
   const handleDownload = async (id, number) => {
+    setError('');
     try {
       const blob = await billingApi.downloadClientPdf(id);
       await downloadBlob(blob, invoicePdfFilename(number));
@@ -117,125 +146,355 @@ export function ClientPortal() {
     }
   };
 
+  const handleOpenInvoice = async (invoice) => {
+    setDetailLoading(true);
+    setError('');
+    try {
+      const data = await billingApi.clientInvoice(invoice.id);
+      setSelectedInvoice(data.invoice);
+      setPage('invoices');
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setDetailLoading(false);
+    }
+  };
+
+  const storedCnpjMasked = maskCnpjDisplay(
+    getCnpjDigits(cnpj) || sessionStorage.getItem(CLIENT_CNPJ_STORAGE_KEY) || ''
+  );
+
   if (step === 'loading') {
+    return <div className="admin-loading">Carregando...</div>;
+  }
+
+  if (step === 'cnpj' || step === 'code') {
     return (
       <AreaRestritaLayout>
-        <AreaCard>Carregando...</AreaCard>
+        <AreaBack />
+        {step === 'cnpj' && (
+          <AreaCard mark>
+            <h2>Portal do cliente</h2>
+            <p className="area-lead">
+              Informe o CNPJ cadastrado. Enviaremos um código de acesso ao e-mail de faturamento.
+            </p>
+            {error && <div className="area-alert area-alert-error">{error}</div>}
+            <form className="area-form" onSubmit={handleRequestCode}>
+              <label htmlFor="cnpj">CNPJ</label>
+              <input
+                id="cnpj"
+                value={cnpj}
+                onChange={(e) => setCnpj(maskCnpjInput(e.target.value))}
+                placeholder="00.000.000/0000-00"
+                required
+              />
+              <button type="submit" className="area-btn">Enviar código</button>
+            </form>
+          </AreaCard>
+        )}
+        {step === 'code' && (
+          <AreaCard mark>
+            <h2>Código de acesso</h2>
+            <p className="area-lead">CNPJ: {storedCnpjMasked}</p>
+            {message && <div className="area-alert area-alert-success">{message}</div>}
+            {error && <div className="area-alert area-alert-error">{error}</div>}
+            <form className="area-form" onSubmit={handleVerify}>
+              <label htmlFor="code">Código de 6 dígitos</label>
+              <input
+                id="code"
+                value={code}
+                onChange={(e) => setCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                placeholder="000000"
+                inputMode="numeric"
+                autoComplete="one-time-code"
+                required
+              />
+              <button type="submit" className="area-btn">Entrar</button>
+              <button type="button" className="area-btn area-btn-secondary" style={{ marginLeft: 8 }} onClick={handleResendCode}>
+                Reenviar código
+              </button>
+              <button type="button" className="area-btn area-btn-secondary" style={{ marginLeft: 8 }} onClick={() => setStep('cnpj')}>
+                Voltar
+              </button>
+            </form>
+          </AreaCard>
+        )}
       </AreaRestritaLayout>
     );
   }
 
   return (
-    <AreaRestritaLayout wide={step === 'portal'}>
-      <AreaBack />
+    <ClientShell
+      clientName={client.name}
+      clientCnpjMasked={client.cnpjMasked}
+      clientEmail={client.email}
+      activePage={page}
+      onNavigate={setPage}
+      onLogout={handleLogout}
+    >
+      {error && <div className="admin-alert admin-alert--error">{error}</div>}
 
-      {step === 'cnpj' && (
-        <AreaCard mark>
-          <h2>Portal do cliente</h2>
-          <p className="area-lead">
-            Informe o CNPJ cadastrado. Enviaremos um código de acesso ao e-mail de faturamento.
-          </p>
-          {error && <div className="area-alert area-alert-error">{error}</div>}
-          <form className="area-form" onSubmit={handleRequestCode}>
-            <label htmlFor="cnpj">CNPJ</label>
-            <input
-              id="cnpj"
-              value={cnpj}
-              onChange={(e) => setCnpj(maskCnpjInput(e.target.value))}
-              placeholder="00.000.000/0000-00"
-              required
-            />
-            <button type="submit" className="area-btn">Enviar código</button>
-          </form>
-        </AreaCard>
-      )}
-
-      {step === 'code' && (
-        <AreaCard mark>
-          <h2>Código de acesso</h2>
-          <p className="area-lead">
-            CNPJ: {maskCnpjInput(getCnpjDigits(cnpj) || sessionStorage.getItem(CLIENT_CNPJ_STORAGE_KEY) || '')}
-          </p>
-          {message && <div className="area-alert area-alert-success">{message}</div>}
-          {error && <div className="area-alert area-alert-error">{error}</div>}
-          <form className="area-form" onSubmit={handleVerify}>
-            <label htmlFor="code">Código de 6 dígitos</label>
-            <input
-              id="code"
-              value={code}
-              onChange={(e) => setCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
-              placeholder="000000"
-              inputMode="numeric"
-              autoComplete="one-time-code"
-              required
-            />
-            <button type="submit" className="area-btn">Entrar</button>
-            <button type="button" className="area-btn area-btn-secondary" style={{ marginLeft: 8 }} onClick={handleResendCode}>
-              Reenviar código
-            </button>
-            <button type="button" className="area-btn area-btn-secondary" style={{ marginLeft: 8 }} onClick={() => setStep('cnpj')}>
-              Voltar
-            </button>
-          </form>
-        </AreaCard>
-      )}
-
-      {step === 'portal' && client && (
+      {page === 'home' && (
         <>
-          <div className="area-header-row area-page-header">
-            <div>
-              <h2>{client.name}</h2>
-              <p>{client.cnpjMasked} · {client.email}</p>
-            </div>
-            <button type="button" className="area-btn area-btn-secondary" onClick={handleLogout}>Sair</button>
+          <AdminPageHeader
+            title="Visão geral"
+            subtitle="Resumo da sua conta e faturamento"
+          />
+          <div className="admin-stats">
+            <StatCard
+              icon="pending"
+              label="Em aberto"
+              value={formatBRL(summary.openTotal)}
+              hint={summary.openCount === 1 ? '1 fatura pendente' : `${summary.openCount} faturas pendentes`}
+              tone="soft"
+            />
+            <StatCard
+              icon="revenue"
+              label="Pagas"
+              value={formatBRL(summary.paidTotal)}
+              hint={summary.paidCount === 1 ? '1 fatura quitada' : `${summary.paidCount} faturas quitadas`}
+            />
+            <StatCard
+              icon="overdue"
+              label="Próximo vencimento"
+              value={summary.nextDue ? formatDate(summary.nextDue) : '—'}
+              hint={summary.openCount ? 'Fatura mais próxima do vencimento' : 'Nenhuma fatura em aberto'}
+              tone={summary.openCount ? 'default' : 'soft'}
+            />
+            <StatCard
+              icon="clients"
+              label="Total de faturas"
+              value={summary.totalCount}
+              hint="Histórico disponível no portal"
+              tone="soft"
+            />
           </div>
 
-          {error && <div className="area-alert area-alert-error">{error}</div>}
+          <div className="admin-panel" style={{ marginTop: 24 }}>
+            <h2 className="admin-panel__title">Dados da conta</h2>
+            <dl className="admin-detail-grid">
+              <div>
+                <dt>Razão social</dt>
+                <dd>{client.name}</dd>
+              </div>
+              <div>
+                <dt>CNPJ</dt>
+                <dd>{client.cnpjMasked}</dd>
+              </div>
+              <div>
+                <dt>E-mail de faturamento</dt>
+                <dd>{client.email}</dd>
+              </div>
+              {client.contactName && (
+                <div>
+                  <dt>Contato</dt>
+                  <dd>{client.contactName}</dd>
+                </div>
+              )}
+            </dl>
+          </div>
 
-          <AreaCard>
-            <h3>Suas faturas</h3>
-            {invoices.length === 0 ? (
-              <p className="area-lead">Nenhuma fatura disponível.</p>
-            ) : (
-              <table className="area-table">
-                <thead>
-                  <tr>
-                    <th>Número</th>
-                    <th>Vencimento</th>
-                    <th>Valor</th>
-                    <th>Status</th>
-                    <th></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {invoices.map((inv) => (
-                    <tr key={inv.id}>
-                      <td>{inv.number}</td>
-                      <td>{formatDate(inv.dueDate)}</td>
-                      <td>{formatBRL(inv.totalCents)}</td>
-                      <td><StatusBadge status={inv.status} /></td>
-                      <td>
-                        <div className="area-actions">
-                          {inv.hasPdf && (
-                            <button type="button" className="area-btn area-btn-secondary" onClick={() => handleDownload(inv.id, inv.number)}>
-                              PDF
-                            </button>
-                          )}
-                          {inv.paymentLink && (
-                            <a href={inv.paymentLink} target="_blank" rel="noopener noreferrer" className="area-btn area-btn-secondary">
-                              PIX
-                            </a>
-                          )}
-                        </div>
-                      </td>
+          {invoices.length > 0 && (
+            <div className="admin-panel" style={{ marginTop: 24 }}>
+              <div className="admin-page-header">
+                <div>
+                  <h2 className="admin-panel__title">Últimas faturas</h2>
+                  <p>Clique em uma fatura para ver os detalhes</p>
+                </div>
+                <button type="button" className="admin-btn admin-btn--secondary" onClick={() => setPage('invoices')}>
+                  Ver todas
+                </button>
+              </div>
+              <div className="admin-table-wrap">
+                <table className="admin-table">
+                  <thead>
+                    <tr>
+                      <th>Número</th>
+                      <th>Emissão</th>
+                      <th>Vencimento</th>
+                      <th>Valor</th>
+                      <th>Status</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
-          </AreaCard>
+                  </thead>
+                  <tbody>
+                    {invoices.slice(0, 5).map((inv) => (
+                      <tr key={inv.id} className="admin-table__row-link" onClick={() => handleOpenInvoice(inv)}>
+                        <td>{inv.number}</td>
+                        <td>{formatDate(inv.issueDate)}</td>
+                        <td>{formatDate(inv.dueDate)}</td>
+                        <td>{formatBRL(inv.totalCents)}</td>
+                        <td><StatusBadge status={inv.status} /></td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
         </>
       )}
-    </AreaRestritaLayout>
+
+      {page === 'invoices' && (
+        <>
+          <AdminPageHeader
+            title="Minhas faturas"
+            subtitle={`${invoices.length} fatura${invoices.length === 1 ? '' : 's'} no histórico`}
+          />
+
+          {selectedInvoice && (
+            <div className="admin-panel" style={{ marginBottom: 24 }}>
+              <div className="admin-page-header">
+                <div>
+                  <h2 className="admin-panel__title">{selectedInvoice.number}</h2>
+                  <p>
+                    Emitida em {formatDate(selectedInvoice.issueDate)} · Vencimento {formatDate(selectedInvoice.dueDate)}
+                  </p>
+                </div>
+                <button type="button" className="admin-btn admin-btn--secondary" onClick={() => setSelectedInvoice(null)}>
+                  Fechar detalhes
+                </button>
+              </div>
+              <dl className="admin-detail-grid" style={{ marginBottom: 20 }}>
+                <div>
+                  <dt>Status</dt>
+                  <dd><StatusBadge status={selectedInvoice.status} /></dd>
+                </div>
+                <div>
+                  <dt>Valor total</dt>
+                  <dd>{formatBRL(selectedInvoice.totalCents)}</dd>
+                </div>
+                {selectedInvoice.sentAt && (
+                  <div>
+                    <dt>Enviada em</dt>
+                    <dd>{formatDate(selectedInvoice.sentAt.slice(0, 10))}</dd>
+                  </div>
+                )}
+                {selectedInvoice.paidAt && (
+                  <div>
+                    <dt>Paga em</dt>
+                    <dd>{formatDate(selectedInvoice.paidAt.slice(0, 10))}</dd>
+                  </div>
+                )}
+              </dl>
+              {selectedInvoice.items?.length > 0 && (
+                <div className="admin-table-wrap">
+                  <table className="admin-table">
+                    <thead>
+                      <tr>
+                        <th>Descrição</th>
+                        <th>Qtd.</th>
+                        <th>Valor unit.</th>
+                        <th>Total</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {selectedInvoice.items.map((item, index) => (
+                        <tr key={`${item.description}-${index}`}>
+                          <td>{item.description}</td>
+                          <td>{item.quantity}</td>
+                          <td>{formatBRL(item.unitPriceCents)}</td>
+                          <td>{formatBRL(item.lineTotalCents)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+              {selectedInvoice.notes && (
+                <div style={{ marginTop: 16 }}>
+                  <p className="admin-stat-card__label">Observações</p>
+                  <p style={{ whiteSpace: 'pre-wrap', margin: '8px 0 0' }}>{selectedInvoice.notes}</p>
+                </div>
+              )}
+              <div className="admin-table__actions" style={{ marginTop: 20 }}>
+                {selectedInvoice.hasPdf && (isOpenInvoice(selectedInvoice.status) || selectedInvoice.status === 'paga') && (
+                  <button
+                    type="button"
+                    className="admin-btn admin-btn--sm admin-btn--secondary"
+                    onClick={() => handleDownload(selectedInvoice.id, selectedInvoice.number)}
+                  >
+                    Baixar PDF
+                  </button>
+                )}
+                {selectedInvoice.paymentLink && isOpenInvoice(selectedInvoice.status) && (
+                  <a
+                    href={selectedInvoice.paymentLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="admin-btn admin-btn--sm"
+                  >
+                    Pagar via PIX
+                  </a>
+                )}
+              </div>
+            </div>
+          )}
+
+          {detailLoading && <p className="admin-loading-inline">Carregando detalhes...</p>}
+
+          <div className="admin-panel">
+            {invoices.length === 0 ? (
+              <p className="area-lead">Nenhuma fatura disponível no momento.</p>
+            ) : (
+              <div className="admin-table-wrap">
+                <table className="admin-table">
+                  <thead>
+                    <tr>
+                      <th>Número</th>
+                      <th>Emissão</th>
+                      <th>Vencimento</th>
+                      <th>Valor</th>
+                      <th>Status</th>
+                      <th>Ações</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {invoices.map((inv) => (
+                      <tr key={inv.id}>
+                        <td>{inv.number}</td>
+                        <td>{formatDate(inv.issueDate)}</td>
+                        <td>{formatDate(inv.dueDate)}</td>
+                        <td>{formatBRL(inv.totalCents)}</td>
+                        <td><StatusBadge status={inv.status} /></td>
+                        <td>
+                          <div className="admin-table__actions">
+                            <button
+                              type="button"
+                              className="admin-btn admin-btn--sm admin-btn--secondary"
+                              onClick={() => handleOpenInvoice(inv)}
+                            >
+                              Detalhes
+                            </button>
+                            {inv.hasPdf && (inv.status === 'paga' || isOpenInvoice(inv.status)) && (
+                              <button
+                                type="button"
+                                className="admin-btn admin-btn--sm admin-btn--secondary"
+                                onClick={() => handleDownload(inv.id, inv.number)}
+                              >
+                                PDF
+                              </button>
+                            )}
+                            {inv.paymentLink && isOpenInvoice(inv.status) && (
+                              <a
+                                href={inv.paymentLink}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="admin-btn admin-btn--sm"
+                              >
+                                PIX
+                              </a>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        </>
+      )}
+    </ClientShell>
   );
 }

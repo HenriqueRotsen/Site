@@ -115,7 +115,7 @@ export async function handleClientAuth(request, env, origin, path) {
     await audit(env.DB, { actorRole: 'client', actorId: client.id, action: 'client_login', ip });
 
     const clientRow = await env.DB.prepare(
-      'SELECT legal_name, cnpj_last4, billing_email FROM clients WHERE id = ?'
+      'SELECT legal_name, cnpj_last4, billing_email, contact_name FROM clients WHERE id = ?'
     )
       .bind(client.id)
       .first();
@@ -130,6 +130,7 @@ export async function handleClientAuth(request, env, origin, path) {
           name: clientRow.legal_name,
           cnpjMasked: `**.***.***/****-${clientRow.cnpj_last4}`,
           email: clientRow.billing_email,
+          contactName: clientRow.contact_name,
         },
         expiresAt: session.expiresAt,
       },
@@ -153,7 +154,7 @@ export async function handleClientAuth(request, env, origin, path) {
     const session = await requireClient(env.DB, request);
     if (!session) return json({ error: 'Não autenticado.' }, 401, origin);
     const client = await env.DB.prepare(
-      'SELECT legal_name, cnpj_last4, billing_email FROM clients WHERE id = ?'
+      'SELECT legal_name, cnpj_last4, billing_email, contact_name FROM clients WHERE id = ?'
     )
       .bind(session.client_id)
       .first();
@@ -164,6 +165,7 @@ export async function handleClientAuth(request, env, origin, path) {
           name: client.legal_name,
           cnpjMasked: `**.***.***/****-${client.cnpj_last4}`,
           email: client.billing_email,
+          contactName: client.contact_name,
         },
         expiresAt: session.expires_at,
       },

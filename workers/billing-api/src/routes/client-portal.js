@@ -12,8 +12,8 @@ export async function handleClientPortal(request, env, origin, path) {
     if (!session) return json({ error: 'Não autenticado.' }, 401, origin);
 
     const { results } = await env.DB.prepare(
-      `SELECT id, number, status, issue_date, due_date, total_cents, payment_link, sent_at, paid_at, pdf_key
-       FROM invoices WHERE client_id = ? AND status != 'rascunho' AND status != 'cancelada'
+      `SELECT id, number, status, issue_date, due_date, total_cents, payment_link, sent_at, paid_at, pdf_key, notes
+       FROM invoices WHERE client_id = ? AND status != 'rascunho'
        ORDER BY due_date DESC`
     )
       .bind(session.client_id)
@@ -32,6 +32,7 @@ export async function handleClientPortal(request, env, origin, path) {
           sentAt: r.sent_at,
           paidAt: r.paid_at,
           hasPdf: !!r.pdf_key,
+          notes: r.notes,
         })),
       },
       200,
@@ -46,7 +47,7 @@ export async function handleClientPortal(request, env, origin, path) {
 
     const invoiceId = pdfMatch[1];
     const row = await env.DB.prepare(
-      `SELECT pdf_key, number FROM invoices WHERE id = ? AND client_id = ? AND status NOT IN ('rascunho', 'cancelada')`
+      `SELECT pdf_key, number FROM invoices WHERE id = ? AND client_id = ? AND status IN ('enviada', 'paga', 'atrasada')`
     )
       .bind(invoiceId, session.client_id)
       .first();
@@ -83,7 +84,7 @@ export async function handleClientPortal(request, env, origin, path) {
 
     const invoiceId = detailMatch[1];
     const row = await env.DB.prepare(
-      `SELECT * FROM invoices WHERE id = ? AND client_id = ? AND status NOT IN ('rascunho', 'cancelada')`
+      `SELECT * FROM invoices WHERE id = ? AND client_id = ? AND status != 'rascunho'`
     )
       .bind(invoiceId, session.client_id)
       .first();
