@@ -1,0 +1,64 @@
+name: CI e Deploy
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+jobs:
+  test:
+    name: Testes
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v4
+
+      - name: Instalar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20.11"
+          cache: "npm"
+
+      - name: Instalar dependências
+        run: npm ci --legacy-peer-deps
+        env:
+          npm_config_fetch_timeout: 60000
+          npm_config_fetch_retry_mintimeout: 20000
+          npm_config_fetch_retry_maxtimeout: 120000
+          npm_config_fetch_retries: 5
+
+      - name: Rodar testes
+        run: npm test
+        env:
+          CI: true
+
+  deploy:
+    name: Deploy GitHub Pages
+    needs: test
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v4
+
+      - name: Instalar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20.11"
+          cache: "npm"
+
+      - name: Instalar dependências
+        run: npm ci --legacy-peer-deps
+
+      - name: Build
+        run: npm run build
+        env:
+          REACT_APP_CONTACT_API_URL: https://contact-api.henriquerotsen.com.br
+          REACT_APP_BILLING_API_URL: https://billing-api.henriquerotsen.com.br
+
+      - name: Deploy para GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./build
