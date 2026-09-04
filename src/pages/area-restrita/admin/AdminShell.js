@@ -1,5 +1,6 @@
 import React from 'react';
 import LogoHr from '../../../components/images/hr-cinza.png';
+import NfseIcon from '../../../components/images/nfse-icon.png';
 import '../../../styles/AdminShell.css';
 
 function Icon({ children }) {
@@ -50,6 +51,17 @@ const icons = {
       </svg>
     </Icon>
   ),
+  nfse: (
+    <Icon>
+      <span
+        className="admin-nav-icon__mask"
+        style={{
+          WebkitMaskImage: `url(${NfseIcon})`,
+          maskImage: `url(${NfseIcon})`,
+        }}
+      />
+    </Icon>
+  ),
   logout: (
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75">
       <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9" />
@@ -61,6 +73,7 @@ const NAV_ITEMS = [
   { key: 'dashboard', label: 'Insights', icon: icons.dashboard },
   { key: 'clients', label: 'Clientes', icon: icons.clients },
   { key: 'invoices', label: 'Faturas', icon: icons.invoices },
+  { key: 'nfse', label: 'NFS-e', icon: icons.nfse },
   { key: 'new-client', label: 'Novo cliente', icon: icons.newClient },
   { key: 'new-invoice', label: 'Nova fatura', icon: icons.newInvoice, cta: true },
 ];

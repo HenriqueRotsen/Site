@@ -1,17 +1,19 @@
 const API_URL =
-  process.env.REACT_APP_BILLING_API_URL?.trim() ||
-  'https://billing-api.henriquerotsen.com.br';
+  process.env.REACT_APP_BILLING_API_URL !== undefined
+    ? String(process.env.REACT_APP_BILLING_API_URL).trim()
+    : 'https://billing-api.henriquerotsen.com.br';
 
 async function request(path, options = {}) {
   let response;
+  const headers = {
+    ...(options.body instanceof FormData ? {} : { 'Content-Type': 'application/json' }),
+    ...(options.headers || {}),
+  };
   try {
     response = await fetch(`${API_URL}${path}`, {
       credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json',
-        ...(options.headers || {}),
-      },
       ...options,
+      headers,
     });
   } catch {
     throw new Error(
@@ -102,10 +104,21 @@ export const billingApi = {
     request(`/admin/invoices/${id}/status`, { method: 'PATCH', body: JSON.stringify({ status }) }),
   downloadAdminPdf: (id) => request(`/admin/invoices/${id}/pdf`),
 
+  // NFS-e
+  listNfse: (params = {}) => {
+    const qs = new URLSearchParams(params).toString();
+    return request(`/admin/nfse${qs ? `?${qs}` : ''}`);
+  },
+  uploadNfse: (formData) => request('/admin/nfse', { method: 'POST', body: formData }),
+  deleteNfse: (id) => request(`/admin/nfse/${id}`, { method: 'DELETE' }),
+  downloadAdminNfsePdf: (id) => request(`/admin/nfse/${id}/pdf`),
+
   // Client portal
   clientInvoices: () => request('/client/invoices'),
   clientInvoice: (id) => request(`/client/invoices/${id}`),
   downloadClientPdf: (id) => request(`/client/invoices/${id}/pdf`),
+  clientNfse: () => request('/client/nfse'),
+  downloadClientNfsePdf: (id) => request(`/client/nfse/${id}/pdf`),
 };
 
 export function invoicePdfFilename(number) {
@@ -114,6 +127,15 @@ export function invoicePdfFilename(number) {
   if (value.startsWith('NF-')) return `${value}.pdf`;
   if (value.startsWith('INV-')) return `${value.replace(/^INV-/, 'NF-')}.pdf`;
   return `NF-${value}.pdf`;
+}
+
+export function nfsePdfFilename({ number, competenceDate } = {}) {
+  const num = String(number || 'sem-numero').replace(/[^\w.-]+/g, '-');
+  const date = String(competenceDate || '')
+    .slice(0, 10)
+    .replace(/-/g, '');
+  if (date) return `NFS-e-${num}-${date}.pdf`;
+  return `NFS-e-${num}.pdf`;
 }
 
 export function maskCnpjDisplay(value) {

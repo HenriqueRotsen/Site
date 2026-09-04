@@ -95,6 +95,19 @@
   justify-content: center;
 }
 
+.admin-nav-icon__mask {
+  display: block;
+  width: 18px;
+  height: 18px;
+  background-color: currentColor;
+  -webkit-mask-size: contain;
+  mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-position: center;
+}
+
 .admin-sidebar__footer {
   padding: 16px;
   border-top: 1px solid #e5e5e5;
@@ -321,6 +334,10 @@
   background: #ffffff;
   overflow: hidden;
   margin-bottom: 24px;
+}
+
+.admin-panel--nfse-form {
+  overflow: visible;
 }
 
 .admin-panel__header {
@@ -727,7 +744,7 @@
 
 .searchable-select__menu {
   position: absolute;
-  z-index: 30;
+  z-index: 80;
   top: calc(100% + 6px);
   left: 0;
   right: 0;
@@ -1020,6 +1037,197 @@
   margin: 0 0 16px;
   font-size: 0.875rem;
   color: #6b6b6b;
+}
+
+.nfse-upload {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.nfse-dropzone {
+  position: relative;
+  border: 1.5px dashed #d0d0d0;
+  border-radius: 16px;
+  background:
+    linear-gradient(180deg, #fafafa 0%, #ffffff 100%);
+  padding: 28px 24px;
+  transition: border-color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
+}
+
+.nfse-dropzone.is-dragover,
+.nfse-dropzone:hover {
+  border-color: #000000;
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.04);
+}
+
+.nfse-dropzone.has-file {
+  border-style: solid;
+  border-color: #e5e5e5;
+  background: #ffffff;
+}
+
+.nfse-dropzone__input {
+  display: none;
+}
+
+.nfse-dropzone__content {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.nfse-dropzone__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  background: #111111;
+  color: #ffffff;
+  flex-shrink: 0;
+}
+
+.nfse-dropzone__content strong {
+  display: block;
+  font-size: 0.975rem;
+  margin-bottom: 4px;
+}
+
+.nfse-dropzone__content p {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: #6b6b6b;
+  max-width: 42rem;
+  line-height: 1.45;
+}
+
+.nfse-dropzone__content .admin-btn {
+  margin-left: auto;
+}
+
+.nfse-extract-alert {
+  padding: 12px 16px;
+  border-radius: 12px;
+  font-size: 0.875rem;
+  line-height: 1.45;
+}
+
+.nfse-extract-alert--success {
+  background: rgba(46, 139, 87, 0.08);
+  border: 1px solid rgba(46, 139, 87, 0.2);
+  color: #1f5c38;
+}
+
+.nfse-extract-alert--warning {
+  background: rgba(180, 130, 20, 0.08);
+  border: 1px solid rgba(180, 130, 20, 0.22);
+  color: #7a5a10;
+}
+
+.nfse-extract-alert--error {
+  background: rgba(139, 46, 46, 0.08);
+  border: 1px solid rgba(139, 46, 46, 0.2);
+  color: #6b1f1f;
+}
+
+.nfse-extract-alert--info {
+  background: #f7f8fa;
+  border: 1px solid #e5e5e5;
+  color: #444;
+}
+
+.nfse-summary-cards {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.nfse-summary-card {
+  border: 1px solid #e5e5e5;
+  border-radius: 14px;
+  background: #ffffff;
+  padding: 14px 16px;
+  min-width: 0;
+}
+
+.nfse-summary-card span {
+  display: block;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #6b6b6b;
+  margin-bottom: 6px;
+}
+
+.nfse-summary-card strong {
+  display: block;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.35rem;
+  font-weight: 600;
+  line-height: 1.2;
+  word-break: break-word;
+}
+
+.nfse-summary-card small {
+  display: block;
+  margin-top: 4px;
+  font-size: 0.75rem;
+  color: #6b6b6b;
+}
+
+.nfse-summary-card--wide {
+  grid-column: span 1;
+}
+
+.nfse-card {
+  border: 1px solid #e5e5e5;
+  border-radius: 16px;
+  background: #ffffff;
+  overflow: visible;
+}
+
+.nfse-card__header {
+  padding: 16px 20px;
+  border-bottom: 1px solid #e5e5e5;
+  background: #fafafa;
+  border-radius: 16px 16px 0 0;
+}
+
+.nfse-card__header h3 {
+  margin: 0;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+.nfse-card__header p {
+  margin: 4px 0 0;
+  font-size: 0.8125rem;
+  color: #6b6b6b;
+}
+
+.nfse-card__body {
+  padding: 20px;
+}
+
+@media (max-width: 900px) {
+  .nfse-summary-cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .nfse-dropzone__content .admin-btn {
+    margin-left: 0;
+  }
+}
+
+@media (max-width: 520px) {
+  .nfse-summary-cards {
+    grid-template-columns: 1fr;
+  }
 }
 
 @media (max-width: 900px) {

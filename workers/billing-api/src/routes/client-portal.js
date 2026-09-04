@@ -3,9 +3,84 @@ import { requireClient } from '../lib/session.js';
 import { audit } from '../lib/audit.js';
 import { corsHeaders } from '../lib/http.js';
 import { invoicePdfFilename } from '../lib/invoice-files.js';
+import { nfsePdfFilename } from '../lib/nfse-files.js';
+
+function nfseDto(row) {
+  return {
+    id: row.id,
+    accessKey: row.access_key,
+    number: row.number,
+    competenceDate: row.competence_date,
+    issuedAt: row.issued_at,
+    dpsNumber: row.dps_number,
+    dpsSeries: row.dps_series,
+    takerName: row.taker_name,
+    takerCnpjFormatted: row.taker_cnpj_formatted,
+    serviceCode: row.service_code,
+    serviceDescription: row.service_description,
+    amountCents: row.amount_cents,
+    municipality: row.municipality,
+    hasPdf: !!row.pdf_key,
+    createdAt: row.created_at,
+  };
+}
 
 export async function handleClientPortal(request, env, origin, path) {
   const ip = request.headers.get('CF-Connecting-IP') || '';
+
+  if (path === '/client/nfse' && request.method === 'GET') {
+    const session = await requireClient(env.DB, request);
+    if (!session) return json({ error: 'Não autenticado.' }, 401, origin);
+
+    const { results } = await env.DB.prepare(
+      `SELECT * FROM nfse_documents
+       WHERE client_id = ?
+       ORDER BY competence_date DESC, number DESC`
+    )
+      .bind(session.client_id)
+      .all();
+
+    return json({ documents: results.map(nfseDto) }, 200, origin);
+  }
+
+  const nfsePdfMatch = path.match(/^\/client\/nfse\/([^/]+)\/pdf$/);
+  if (nfsePdfMatch && request.method === 'GET') {
+    const session = await requireClient(env.DB, request);
+    if (!session) return json({ error: 'Não autenticado.' }, 401, origin);
+
+    const id = nfsePdfMatch[1];
+    const row = await env.DB.prepare(
+      'SELECT * FROM nfse_documents WHERE id = ? AND client_id = ?'
+    )
+      .bind(id, session.client_id)
+      .first();
+
+    if (!row?.pdf_key) return json({ error: 'PDF não disponível.' }, 404, origin);
+    const obj = await env.PDFS.get(row.pdf_key);
+    if (!obj) return json({ error: 'PDF não encontrado.' }, 404, origin);
+
+    await audit(env.DB, {
+      actorRole: 'client',
+      actorId: session.client_id,
+      action: 'nfse_pdf_download',
+      resourceType: 'nfse',
+      resourceId: id,
+      ip,
+    });
+
+    const bytes = await obj.arrayBuffer();
+    return new Response(bytes, {
+      status: 200,
+      headers: {
+        'Content-Type': 'application/pdf',
+        'Content-Disposition': `attachment; filename="${nfsePdfFilename({
+          number: row.number,
+          competenceDate: row.competence_date,
+        })}"`,
+        ...corsHeaders(origin),
+      },
+    });
+  }
 
   if (path === '/client/invoices' && request.method === 'GET') {
     const session = await requireClient(env.DB, request);

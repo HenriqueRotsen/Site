@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { billingApi, formatBRL, formatDate, maskCnpjInput, downloadBlob, invoicePdfFilename } from '../../api/billing';
+import { billingApi, formatBRL, formatDate, maskCnpjInput, downloadBlob, invoicePdfFilename, nfsePdfFilename } from '../../api/billing';
 import { maskPhoneInput, maskCepInput, fetchCep, formatAddressLine } from '../../utils/brazilianInput';
 import { AreaRestritaLayout, AreaCard, AreaBack } from './AreaRestritaLayout';
 import { PasswordInput } from './PasswordInput';
@@ -8,6 +8,7 @@ import { AdminShell, AdminPageHeader, StatusBadge, StatCard } from './admin/Admi
 import { SearchableSelect } from './admin/SearchableSelect';
 import { DeleteClientModal } from './admin/DeleteClientModal';
 import { InvoicePdfPreviewModal } from './admin/InvoicePdfPreviewModal';
+import { NfseUploadForm } from './admin/NfseUploadForm';
 import { Pagination } from './admin/Pagination';
 import '../../styles/AreaRestrita.css';
 import '../../styles/AdminShell.css';
@@ -31,6 +32,31 @@ const emptyClient = {
 };
 
 const emptyItem = { description: '', quantity: 1, unitPriceCents: 0 };
+
+const emptyNfse = {
+  clientId: '',
+  accessKey: '',
+  number: '',
+  competenceDate: '',
+  issuedAt: '',
+  dpsNumber: '',
+  dpsSeries: '',
+  takerName: '',
+  takerCnpj: '',
+  serviceCode: '',
+  serviceDescription: '',
+  amount: '',
+  municipality: 'Belo Horizonte - MG',
+};
+
+function reaisInputToCents(value) {
+  const raw = String(value || '').trim();
+  if (!raw) return 0;
+  if (/^\d+$/.test(raw)) return parseInt(raw, 10) * 100;
+  const normalized = raw.replace(/[R$\s]/gi, '').replace(/\./g, '').replace(',', '.');
+  const amount = parseFloat(normalized);
+  return Number.isFinite(amount) ? Math.round(amount * 100) : 0;
+}
 
 const UF_LIST = [
   'AC', 'AL', 'AP', 'AM', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA', 'MT', 'MS', 'MG',
@@ -78,12 +104,15 @@ export function AdminPortal() {
   const [clients, setClients] = useState([]);
   const [clientSelectOptions, setClientSelectOptions] = useState([]);
   const [invoices, setInvoices] = useState([]);
+  const [nfseDocuments, setNfseDocuments] = useState([]);
   const [clientsPage, setClientsPage] = useState(1);
   const [invoicesPage, setInvoicesPage] = useState(1);
+  const [nfsePage, setNfsePage] = useState(1);
   const [dashboardRecentPage, setDashboardRecentPage] = useState(1);
   const [dashboardOverduePage, setDashboardOverduePage] = useState(1);
   const [clientsPagination, setClientsPagination] = useState({ page: 1, totalPages: 1, total: 0 });
   const [invoicesPagination, setInvoicesPagination] = useState({ page: 1, totalPages: 1, total: 0 });
+  const [nfsePagination, setNfsePagination] = useState({ page: 1, totalPages: 1, total: 0 });
   const [clientForm, setClientForm] = useState(emptyClient);
   const [invoiceForm, setInvoiceForm] = useState({
     clientId: '',
@@ -92,6 +121,9 @@ export function AdminPortal() {
     notes: '',
     items: [{ ...emptyItem }],
   });
+  const [nfseForm, setNfseForm] = useState(emptyNfse);
+  const [nfseFile, setNfseFile] = useState(null);
+  const [nfseUploading, setNfseUploading] = useState(false);
 
   const loadDashboard = useCallback(async (recentPage = 1, overduePage = 1) => {
     const dash = await billingApi.getDashboard({
@@ -114,6 +146,12 @@ export function AdminPortal() {
     setInvoicesPagination(data.pagination);
   }, []);
 
+  const loadNfse = useCallback(async (pageNumber = 1) => {
+    const data = await billingApi.listNfse({ page: pageNumber, limit: PAGE_SIZE });
+    setNfseDocuments(data.documents);
+    setNfsePagination(data.pagination);
+  }, []);
+
   const loadClientOptions = useCallback(async () => {
     const data = await billingApi.listClientOptions();
     setClientSelectOptions(data.clients);
@@ -126,6 +164,9 @@ export function AdminPortal() {
       await loadClients(clientsPage);
     } else if (page === 'invoices') {
       await loadInvoices(invoicesPage);
+    } else if (page === 'nfse' || page === 'new-nfse') {
+      if (page === 'nfse') await loadNfse(nfsePage);
+      await loadClientOptions();
     } else if (page === 'new-invoice') {
       await loadClientOptions();
     } else {
@@ -135,11 +176,13 @@ export function AdminPortal() {
     page,
     clientsPage,
     invoicesPage,
+    nfsePage,
     dashboardRecentPage,
     dashboardOverduePage,
     loadDashboard,
     loadClients,
     loadInvoices,
+    loadNfse,
     loadClientOptions,
   ]);
 
@@ -163,18 +206,21 @@ export function AdminPortal() {
     if (page === 'dashboard') loadDashboard(dashboardRecentPage, dashboardOverduePage);
     if (page === 'clients') loadClients(clientsPage);
     if (page === 'invoices') loadInvoices(invoicesPage);
-    if (page === 'new-invoice') loadClientOptions();
+    if (page === 'nfse') loadNfse(nfsePage);
+    if (page === 'new-invoice' || page === 'new-nfse') loadClientOptions();
   }, [
     step,
     page,
     clientSlug,
     clientsPage,
     invoicesPage,
+    nfsePage,
     dashboardRecentPage,
     dashboardOverduePage,
     loadDashboard,
     loadClients,
     loadInvoices,
+    loadNfse,
     loadClientOptions,
   ]);
 
@@ -209,6 +255,10 @@ export function AdminPortal() {
     }
     if (key === 'clients') setClientsPage(1);
     if (key === 'invoices') setInvoicesPage(1);
+    if (key === 'nfse') setNfsePage(1);
+    if (key === 'new-nfse' || key === 'new-invoice') {
+      loadClientOptions().catch(() => {});
+    }
     if (key === 'dashboard') {
       setDashboardRecentPage(1);
       setDashboardOverduePage(1);
@@ -415,6 +465,72 @@ export function AdminPortal() {
     }
   };
 
+  const handleUploadNfse = async (e) => {
+    e.preventDefault();
+    setError('');
+    setInfo('');
+    if (!nfseFile) {
+      setError('Selecione o PDF da NFS-e.');
+      return;
+    }
+    if (!nfseForm.clientId || !nfseForm.accessKey || !nfseForm.number || !nfseForm.competenceDate) {
+      setError('Cliente, chave de acesso, número e competência são obrigatórios.');
+      return;
+    }
+
+    setNfseUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append('pdf', nfseFile);
+      formData.append('clientId', nfseForm.clientId);
+      formData.append('accessKey', nfseForm.accessKey.replace(/\D/g, ''));
+      formData.append('number', nfseForm.number.trim());
+      formData.append('competenceDate', nfseForm.competenceDate);
+      if (nfseForm.issuedAt) formData.append('issuedAt', nfseForm.issuedAt.trim());
+      if (nfseForm.dpsNumber) formData.append('dpsNumber', nfseForm.dpsNumber.trim());
+      if (nfseForm.dpsSeries) formData.append('dpsSeries', nfseForm.dpsSeries.trim());
+      if (nfseForm.takerName) formData.append('takerName', nfseForm.takerName.trim());
+      if (nfseForm.takerCnpj) formData.append('takerCnpj', nfseForm.takerCnpj.replace(/\D/g, ''));
+      if (nfseForm.serviceCode) formData.append('serviceCode', nfseForm.serviceCode.trim());
+      if (nfseForm.serviceDescription) formData.append('serviceDescription', nfseForm.serviceDescription.trim());
+      formData.append('amountCents', String(reaisInputToCents(nfseForm.amount)));
+      if (nfseForm.municipality) formData.append('municipality', nfseForm.municipality.trim());
+
+      await billingApi.uploadNfse(formData);
+      setNfseForm(emptyNfse);
+      setNfseFile(null);
+      setInfo('NFS-e enviada com sucesso.');
+      setPage('nfse');
+      setNfsePage(1);
+      await loadNfse(1);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setNfseUploading(false);
+    }
+  };
+
+  const handleDeleteNfse = async (id, number) => {
+    if (!window.confirm(`Excluir a NFS-e ${number}? Esta ação não pode ser desfeita.`)) return;
+    setError('');
+    try {
+      await billingApi.deleteNfse(id);
+      setInfo('NFS-e excluída.');
+      await loadNfse(nfsePage);
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
+  const handleDownloadNfse = async (doc) => {
+    try {
+      const blob = await billingApi.downloadAdminNfsePdf(doc.id);
+      await downloadBlob(blob, nfsePdfFilename(doc));
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
   const buildInvoicePayload = () => ({
     clientId: invoiceForm.clientId,
     dueDate: invoiceForm.dueDate,
@@ -545,7 +661,7 @@ export function AdminPortal() {
   return (
     <AdminShell
       userEmail={adminEmail}
-      activePage={page === 'client-detail' ? 'clients' : page}
+      activePage={page === 'client-detail' ? 'clients' : page === 'new-nfse' ? 'nfse' : page}
       onNavigate={navigatePage}
       onLogout={handleLogout}
     >
@@ -812,6 +928,98 @@ export function AdminPortal() {
               totalPages={invoicesPagination.totalPages}
               total={invoicesPagination.total}
               onPageChange={setInvoicesPage}
+            />
+          </div>
+        </>
+      )}
+
+      {page === 'nfse' && (
+        <>
+          <AdminPageHeader
+            title="NFS-e"
+            subtitle={`${nfsePagination.total} documento${nfsePagination.total === 1 ? '' : 's'} arquivado${nfsePagination.total === 1 ? '' : 's'}. Essas notas também aparecerão para os clientes.`}
+            action={
+              <button type="button" className="admin-btn" onClick={() => navigatePage('new-nfse')}>
+                Enviar NFS-e
+              </button>
+            }
+          />
+          <div className="admin-panel">
+            <div className="admin-table-wrap">
+              <table className="admin-table">
+                <thead>
+                  <tr>
+                    <th>Número</th>
+                    <th>Cliente</th>
+                    <th>Competência</th>
+                    <th>Valor</th>
+                    <th>Tomador</th>
+                    <th>Ações</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {nfseDocuments.length === 0 ? (
+                    <tr>
+                      <td colSpan={6}>Nenhuma NFS-e arquivada.</td>
+                    </tr>
+                  ) : (
+                    nfseDocuments.map((doc) => (
+                      <tr key={doc.id}>
+                        <td>{doc.number}</td>
+                        <td>{doc.clientName}</td>
+                        <td>{formatDate(doc.competenceDate)}</td>
+                        <td>{formatBRL(doc.amountCents)}</td>
+                        <td>{doc.takerName || '—'}</td>
+                        <td>
+                          <div className="admin-table__actions">
+                            <button
+                              type="button"
+                              className="admin-btn admin-btn--sm admin-btn--secondary"
+                              onClick={() => handleDownloadNfse(doc)}
+                            >
+                              PDF
+                            </button>
+                            <button
+                              type="button"
+                              className="admin-btn admin-btn--sm admin-btn--danger"
+                              onClick={() => handleDeleteNfse(doc.id, doc.number)}
+                            >
+                              Excluir
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+            <Pagination
+              page={nfsePagination.page}
+              totalPages={nfsePagination.totalPages}
+              total={nfsePagination.total}
+              onPageChange={setNfsePage}
+            />
+          </div>
+        </>
+      )}
+
+      {page === 'new-nfse' && (
+        <>
+          <AdminPageHeader
+            title="Enviar NFS-e"
+            subtitle="Solte o PDF da DANFSe — os dados são lidos automaticamente. A nota também aparecerá no portal do cliente."
+          />
+          <div className="admin-panel admin-panel--nfse-form" style={{ padding: 20 }}>
+            <NfseUploadForm
+              form={nfseForm}
+              setForm={setNfseForm}
+              file={nfseFile}
+              setFile={setNfseFile}
+              clientOptions={invoiceClientOptions}
+              uploading={nfseUploading}
+              onCancel={() => navigatePage('nfse')}
+              onSubmit={handleUploadNfse}
             />
           </div>
         </>

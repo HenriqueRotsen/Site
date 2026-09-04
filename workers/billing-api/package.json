@@ -3,7 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "wrangler dev",
+    "dev": "wrangler dev --port 8788",
     "dev:pdf": "node scripts/dev-pdf-server.mjs",
     "deploy": "wrangler deploy",
     "preview:pdf": "node scripts/preview-pdf.mjs",

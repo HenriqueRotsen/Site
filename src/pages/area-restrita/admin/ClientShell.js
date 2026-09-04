@@ -1,5 +1,6 @@
 import React from 'react';
 import LogoHr from '../../../components/images/hr-cinza.png';
+import NfseIcon from '../../../components/images/nfse-icon.png';
 import '../../../styles/AdminShell.css';
 
 function Icon({ children }) {
@@ -20,6 +21,17 @@ const icons = {
         <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
         <path d="M14 2v6h6M16 13H8M16 17H8M10 9H8" />
       </svg>
+    </Icon>
+  ),
+  nfse: (
+    <Icon>
+      <span
+        className="admin-nav-icon__mask"
+        style={{
+          WebkitMaskImage: `url(${NfseIcon})`,
+          maskImage: `url(${NfseIcon})`,
+        }}
+      />
     </Icon>
   ),
   logout: (
@@ -56,6 +68,16 @@ export function ClientShell({ clientName, clientCnpjMasked, clientEmail, activeP
               >
                 {icons.invoices}
                 Minhas faturas
+              </button>
+            </li>
+            <li>
+              <button
+                type="button"
+                className={`admin-nav-item ${activePage === 'nfse' ? 'active' : ''}`}
+                onClick={() => onNavigate('nfse')}
+              >
+                {icons.nfse}
+                NFS-e
               </button>
             </li>
           </ul>

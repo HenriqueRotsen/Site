@@ -7,6 +7,7 @@ import {
   maskCnpjDisplay,
   downloadBlob,
   invoicePdfFilename,
+  nfsePdfFilename,
 } from '../../api/billing';
 import { AreaRestritaLayout, AreaCard, AreaBack } from './AreaRestritaLayout';
 import { ClientShell, AdminPageHeader, StatusBadge, StatCard } from './admin/ClientShell';
@@ -32,6 +33,7 @@ export function ClientPortal() {
   const [message, setMessage] = useState('');
   const [client, setClient] = useState(null);
   const [invoices, setInvoices] = useState([]);
+  const [nfseDocuments, setNfseDocuments] = useState([]);
   const [selectedInvoice, setSelectedInvoice] = useState(null);
   const [detailLoading, setDetailLoading] = useState(false);
 
@@ -39,8 +41,9 @@ export function ClientPortal() {
     try {
       const data = await billingApi.clientMe();
       setClient(data.client);
-      const inv = await billingApi.clientInvoices();
+      const [inv, nfse] = await Promise.all([billingApi.clientInvoices(), billingApi.clientNfse()]);
       setInvoices(inv.invoices);
+      setNfseDocuments(nfse.documents || []);
       setStep('portal');
     } catch {
       setStep('cnpj');
@@ -98,8 +101,9 @@ export function ClientPortal() {
       const data = await billingApi.clientVerifyCode(cnpjDigits, code.trim());
       sessionStorage.removeItem(CLIENT_CNPJ_STORAGE_KEY);
       setClient(data.client);
-      const inv = await billingApi.clientInvoices();
+      const [inv, nfse] = await Promise.all([billingApi.clientInvoices(), billingApi.clientNfse()]);
       setInvoices(inv.invoices);
+      setNfseDocuments(nfse.documents || []);
       setStep('portal');
       setPage('home');
     } catch (err) {
@@ -131,6 +135,7 @@ export function ClientPortal() {
     setStep('cnpj');
     setClient(null);
     setInvoices([]);
+    setNfseDocuments([]);
     setSelectedInvoice(null);
     setCode('');
     setPage('home');
@@ -141,6 +146,16 @@ export function ClientPortal() {
     try {
       const blob = await billingApi.downloadClientPdf(id);
       await downloadBlob(blob, invoicePdfFilename(number));
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
+  const handleDownloadNfse = async (doc) => {
+    setError('');
+    try {
+      const blob = await billingApi.downloadClientNfsePdf(doc.id);
+      await downloadBlob(blob, nfsePdfFilename(doc));
     } catch (err) {
       setError(err.message);
     }
@@ -269,6 +284,52 @@ export function ClientPortal() {
               tone="soft"
             />
           </div>
+
+          {nfseDocuments.length > 0 && (
+            <div className="admin-panel" style={{ marginBottom: 24 }}>
+              <div className="admin-panel__header">
+                <div>
+                  <h2>NFS-e recentes</h2>
+                  <p>{nfseDocuments.length} nota{nfseDocuments.length === 1 ? '' : 's'} fiscal{nfseDocuments.length === 1 ? '' : 'is'} de serviço</p>
+                </div>
+                <button type="button" className="admin-btn admin-btn--secondary admin-btn--sm" onClick={() => setPage('nfse')}>
+                  Ver todas
+                </button>
+              </div>
+              <div className="admin-table-wrap">
+                <table className="admin-table">
+                  <thead>
+                    <tr>
+                      <th>Número</th>
+                      <th>Competência</th>
+                      <th>Valor</th>
+                      <th></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {nfseDocuments.slice(0, 3).map((doc) => (
+                      <tr key={doc.id}>
+                        <td>{doc.number}</td>
+                        <td>{formatDate(doc.competenceDate)}</td>
+                        <td>{formatBRL(doc.amountCents)}</td>
+                        <td>
+                          {doc.hasPdf && (
+                            <button
+                              type="button"
+                              className="admin-btn admin-btn--sm admin-btn--secondary"
+                              onClick={() => handleDownloadNfse(doc)}
+                            >
+                              PDF
+                            </button>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
 
           <div className="admin-panel">
             <div className="admin-panel__header">
@@ -491,6 +552,59 @@ export function ClientPortal() {
                               >
                                 PIX
                               </a>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        </>
+      )}
+
+      {page === 'nfse' && (
+        <>
+          <AdminPageHeader
+            title="NFS-e"
+            subtitle={`${nfseDocuments.length} nota${nfseDocuments.length === 1 ? '' : 's'} fiscal${nfseDocuments.length === 1 ? '' : 'is'} de serviço`}
+          />
+          <div className="admin-panel">
+            {nfseDocuments.length === 0 ? (
+              <div className="admin-panel__body">
+                <p className="area-lead">Nenhuma NFS-e disponível no momento.</p>
+              </div>
+            ) : (
+              <div className="admin-table-wrap">
+                <table className="admin-table">
+                  <thead>
+                    <tr>
+                      <th>Número</th>
+                      <th>Competência</th>
+                      <th>Valor</th>
+                      <th>Serviço</th>
+                      <th>Ações</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {nfseDocuments.map((doc) => (
+                      <tr key={doc.id}>
+                        <td>{doc.number}</td>
+                        <td>{formatDate(doc.competenceDate)}</td>
+                        <td>{formatBRL(doc.amountCents)}</td>
+                        <td>{doc.serviceCode || doc.serviceDescription || '—'}</td>
+                        <td>
+                          <div className="admin-table__actions">
+                            {doc.hasPdf && (
+                              <button
+                                type="button"
+                                className="admin-btn admin-btn--sm admin-btn--secondary"
+                                onClick={() => handleDownloadNfse(doc)}
+                              >
+                                Baixar PDF
+                              </button>
                             )}
                           </div>
                         </td>

@@ -6,6 +6,7 @@ import { handleAdminClients } from './routes/admin-clients.js';
 import { handleAdminInvoices } from './routes/admin-invoices.js';
 import { handleAdminDashboard } from './routes/admin-dashboard.js';
 import { handleAdminCnpjLookup } from './routes/admin-cnpj-lookup.js';
+import { handleAdminNfse } from './routes/admin-nfse.js';
 import { handleClientPortal } from './routes/client-portal.js';
 import { handleCron } from './cron.js';
 
@@ -28,6 +29,7 @@ async function route(request, env) {
     handleClientPortal,
     handleAdminClients,
     handleAdminInvoices,
+    handleAdminNfse,
     handleAdminDashboard,
     handleAdminCnpjLookup,
   ];

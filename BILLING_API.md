@@ -107,7 +107,11 @@ Acesse: `http://localhost:3000/#/area-restrita`
 | GET/POST | `/admin/clients` | CRUD clientes |
 | GET/POST | `/admin/invoices` | Faturas |
 | POST | `/admin/invoices/:id/emit` | Gerar PDF + enviar e-mail |
+| GET/POST | `/admin/nfse` | Listar / enviar NFS-e (PDF + metadados) |
+| GET | `/admin/nfse/:id/pdf` | Baixar PDF da NFS-e |
+| DELETE | `/admin/nfse/:id` | Excluir NFS-e |
 | GET | `/client/invoices` | Portal do cliente |
+| GET | `/client/nfse` | NFS-e do cliente |
 
 ## Fluxo de fatura
 
