@@ -261,6 +261,10 @@ export function AdminPortal() {
     if (key === 'clients') setClientsPage(1);
     if (key === 'invoices') setInvoicesPage(1);
     if (key === 'nfse') setNfsePage(1);
+    if (key === 'new-client') {
+      setClientForm({ ...emptyClient });
+      setCnpjLoading(false);
+    }
     if (key === 'new-nfse' || key === 'new-invoice') {
       loadClientOptions().catch(() => {});
     }
@@ -411,7 +415,7 @@ export function AdminPortal() {
         addressZip: clientForm.addressZip,
         notes: clientForm.notes,
       });
-      setClientForm(emptyClient);
+      setClientForm({ ...emptyClient });
       await refreshCurrentView();
       openClient(client.slug);
     } catch (err) {
