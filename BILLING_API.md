@@ -100,7 +100,8 @@ Acesse: `http://localhost:3000/#/area-restrita`
 
 | Método | Rota | Descrição |
 |--------|------|-----------|
-| POST | `/auth/admin/login` | Login admin |
+| POST | `/auth/admin/login` | Valida senha e envia OTP por e-mail |
+| POST | `/auth/admin/verify-code` | Confirma OTP e cria sessão admin |
 | POST | `/auth/client/request-code` | OTP por CNPJ |
 | POST | `/auth/client/verify-code` | Verificar OTP (sessão 8h) |
 | GET | `/admin/dashboard` | Insights |

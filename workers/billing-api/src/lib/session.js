@@ -78,4 +78,5 @@ export async function requireClient(db, request) {
 export async function cleanupExpiredSessions(db) {
   await db.prepare(`DELETE FROM sessions WHERE expires_at < ?`).bind(nowIso()).run();
   await db.prepare(`DELETE FROM client_otp WHERE expires_at < ?`).bind(nowIso()).run();
+  await db.prepare(`DELETE FROM admin_otp WHERE expires_at < ?`).bind(nowIso()).run();
 }

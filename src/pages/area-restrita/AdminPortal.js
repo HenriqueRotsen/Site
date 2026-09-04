@@ -4,6 +4,7 @@ import { billingApi, formatBRL, formatDate, maskCnpjInput, downloadBlob, invoice
 import { maskPhoneInput, maskCepInput, fetchCep, formatAddressLine } from '../../utils/brazilianInput';
 import { AreaRestritaLayout, AreaCard, AreaBack } from './AreaRestritaLayout';
 import { PasswordInput } from './PasswordInput';
+import { OtpInput } from './OtpInput';
 import { AdminShell, AdminPageHeader, StatusBadge, StatCard } from './admin/AdminShell';
 import { SearchableSelect } from './admin/SearchableSelect';
 import { DeleteClientModal } from './admin/DeleteClientModal';
@@ -88,6 +89,10 @@ export function AdminPortal() {
   const [page, setPage] = useState('dashboard');
   const [email, setEmail] = useState('comercial.henriquerotsen@gmail.com');
   const [password, setPassword] = useState('');
+  const [otpCode, setOtpCode] = useState('');
+  const [otpMessage, setOtpMessage] = useState('');
+  const [emailMasked, setEmailMasked] = useState('');
+  const [otpBusy, setOtpBusy] = useState(false);
   const [error, setError] = useState('');
   const [info, setInfo] = useState('');
   const [adminEmail, setAdminEmail] = useState('');
@@ -273,13 +278,64 @@ export function AdminPortal() {
   const handleLogin = async (e) => {
     e.preventDefault();
     setError('');
+    setOtpMessage('');
+    setOtpBusy(true);
     try {
       const data = await billingApi.adminLogin(email, password);
+      if (data.requiresOtp) {
+        setEmailMasked(data.emailMasked || email);
+        setOtpMessage(data.message || 'Enviamos um código para o seu e-mail.');
+        if (data.devCode) setOtpCode(String(data.devCode));
+        setStep('otp');
+        return;
+      }
       setAdminEmail(data.email);
       setStep('app');
       await refreshCurrentView();
     } catch (err) {
       setError(err.message);
+    } finally {
+      setOtpBusy(false);
+    }
+  };
+
+  const handleVerifyOtp = async (e, codeOverride) => {
+    if (e?.preventDefault) e.preventDefault();
+    if (otpBusy) return;
+    const code = String(codeOverride ?? otpCode).replace(/\D/g, '');
+    setError('');
+    if (!/^\d{6}$/.test(code)) {
+      setError('Informe o código de 6 dígitos.');
+      return;
+    }
+    setOtpBusy(true);
+    try {
+      const data = await billingApi.adminVerifyCode(email, code);
+      setAdminEmail(data.email);
+      setOtpCode('');
+      setPassword('');
+      setStep('app');
+      await refreshCurrentView();
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setOtpBusy(false);
+    }
+  };
+
+  const handleResendOtp = async () => {
+    setError('');
+    setOtpMessage('');
+    setOtpBusy(true);
+    try {
+      const data = await billingApi.adminLogin(email, password);
+      setEmailMasked(data.emailMasked || email);
+      setOtpMessage(data.message || 'Enviamos um novo código para o seu e-mail.');
+      setOtpCode(data.devCode ? String(data.devCode) : '');
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setOtpBusy(false);
     }
   };
 
@@ -287,6 +343,9 @@ export function AdminPortal() {
     await billingApi.adminLogout();
     setStep('login');
     setPassword('');
+    setOtpCode('');
+    setOtpMessage('');
+    setEmailMasked('');
     setPage('dashboard');
   };
 
@@ -634,26 +693,81 @@ export function AdminPortal() {
     return <div className="admin-loading">Carregando...</div>;
   }
 
-  if (step === 'login') {
+  if (step === 'login' || step === 'otp') {
     return (
       <AreaRestritaLayout>
         <AreaBack />
-        <AreaCard mark>
-          <h2>Administração</h2>
-          {error && <div className="area-alert area-alert-error">{error}</div>}
-          <form className="area-form" onSubmit={handleLogin}>
-            <label htmlFor="email">E-mail</label>
-            <input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
-            <label htmlFor="password">Senha</label>
-            <PasswordInput
-              id="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
-            <button type="submit" className="area-btn">Entrar</button>
-          </form>
-        </AreaCard>
+        {step === 'login' && (
+          <AreaCard mark>
+            <h2>Administração</h2>
+            {error && <div className="area-alert area-alert-error">{error}</div>}
+            <form className="area-form" onSubmit={handleLogin}>
+              <label htmlFor="email">E-mail</label>
+              <input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+              <label htmlFor="password">Senha</label>
+              <PasswordInput
+                id="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+              <button type="submit" className="area-btn" disabled={otpBusy}>
+                {otpBusy ? 'Enviando...' : 'Continuar'}
+              </button>
+            </form>
+          </AreaCard>
+        )}
+        {step === 'otp' && (
+          <AreaCard mark>
+            <h2>Código de verificação</h2>
+            <p className="area-lead">
+              Enviamos um código de 6 dígitos para {emailMasked || email}.
+            </p>
+            {otpMessage && <div className="area-alert area-alert-success">{otpMessage}</div>}
+            {error && <div className="area-alert area-alert-error">{error}</div>}
+            <form className="area-form" onSubmit={handleVerifyOtp}>
+              <label htmlFor="admin-otp">Código</label>
+              <OtpInput
+                id="admin-otp"
+                value={otpCode}
+                onChange={(next) => {
+                  setOtpCode(next);
+                  if (next.length === 6 && !otpBusy) {
+                    handleVerifyOtp(null, next);
+                  }
+                }}
+                autoFocus
+                disabled={otpBusy}
+              />
+              <button type="submit" className="area-btn" disabled={otpBusy || otpCode.length !== 6}>
+                {otpBusy ? 'Verificando...' : 'Entrar'}
+              </button>
+              <button
+                type="button"
+                className="area-btn area-btn-secondary"
+                style={{ marginLeft: 8 }}
+                onClick={handleResendOtp}
+                disabled={otpBusy}
+              >
+                Reenviar código
+              </button>
+              <button
+                type="button"
+                className="area-btn area-btn-secondary"
+                style={{ marginLeft: 8 }}
+                onClick={() => {
+                  setStep('login');
+                  setOtpCode('');
+                  setError('');
+                  setOtpMessage('');
+                }}
+                disabled={otpBusy}
+              >
+                Voltar
+              </button>
+            </form>
+          </AreaCard>
+        )}
       </AreaRestritaLayout>
     );
   }

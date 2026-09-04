@@ -224,6 +224,61 @@
   box-shadow: 0 0 0 3px rgba(25, 25, 25, 0.08);
 }
 
+.otp-input {
+  display: flex;
+  gap: 10px;
+  justify-content: space-between;
+  margin: 0 0 1.25rem;
+}
+
+.otp-input__cell {
+  width: 48px;
+  height: 56px;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 1px solid rgba(25, 25, 25, 0.16);
+  border-radius: 12px;
+  background: #f7f8fa;
+  color: #191919;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 1.35rem;
+  font-weight: 600;
+  letter-spacing: 0;
+  text-align: center;
+  caret-color: #191919;
+  transition: border-color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
+}
+
+.otp-input__cell.is-filled {
+  background: #ffffff;
+  border-color: rgba(25, 25, 25, 0.28);
+}
+
+.otp-input__cell:focus {
+  outline: none;
+  border-color: #191919;
+  background: #ffffff;
+  box-shadow: 0 0 0 3px rgba(25, 25, 25, 0.1);
+}
+
+.otp-input__cell:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+@media (max-width: 420px) {
+  .otp-input {
+    gap: 6px;
+  }
+
+  .otp-input__cell {
+    width: 42px;
+    height: 50px;
+    font-size: 1.2rem;
+    border-radius: 10px;
+  }
+}
+
 .area-password-wrap {
   position: relative;
   margin-bottom: 1rem;

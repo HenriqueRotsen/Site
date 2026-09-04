@@ -98,9 +98,14 @@ export async function sendEmail(apiKey, { from, to, subject, html, attachments }
   return response.json();
 }
 
-export function otpEmailHtml({ code, siteUrl }) {
+export function otpEmailHtml({ code, siteUrl, purpose = 'client' }) {
+  const isAdmin = purpose === 'admin';
   const bodyHtml = `
-    <p style="margin:0 0 16px;font-size:16px;line-height:1.65;color:#ffffff;">Use o código abaixo para acessar suas faturas.</p>
+    <p style="margin:0 0 16px;font-size:16px;line-height:1.65;color:#ffffff;">${
+      isAdmin
+        ? 'Use o código abaixo para concluir o login da administração.'
+        : 'Use o código abaixo para acessar suas faturas.'
+    }</p>
     <p style="margin:0 0 8px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:36px;font-weight:700;letter-spacing:0.14em;color:#ffffff;">${escapeHtml(code)}</p>
     <p style="margin:0 0 16px;font-family:Arial,Helvetica,sans-serif;font-size:13px;line-height:1.5;color:rgba(255,255,255,0.65);">Digite os 6 dígitos exatamente como aparecem acima.</p>
     <p style="margin:0;font-size:14px;line-height:1.65;color:rgba(255,255,255,0.78);">O código expira em 10 minutos. Se solicitar um novo código, apenas o mais recente vale.</p>`;
@@ -111,7 +116,7 @@ export function otpEmailHtml({ code, siteUrl }) {
     title: 'Código de acesso',
     bodyHtml,
     ctaLabel: 'Acessar o site',
-    ctaUrl: `${siteUrl}/#/area-restrita/cliente`,
+    ctaUrl: `${siteUrl}/#/area-restrita/${isAdmin ? 'admin' : 'cliente'}`,
     footerNote: `Enviado automaticamente por <a href="${escapeHtml(siteUrl)}" style="color:#ffffff;text-decoration:none;">henriquerotsen.com.br</a>. Não responda a este e-mail.`,
   });
 }

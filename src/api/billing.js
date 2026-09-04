@@ -1,7 +1,12 @@
-const API_URL =
+const configuredApiUrl =
   process.env.REACT_APP_BILLING_API_URL !== undefined
     ? String(process.env.REACT_APP_BILLING_API_URL).trim()
-    : 'https://billing-api.henriquerotsen.com.br';
+    : undefined;
+
+// Dev: URL vazia usa o proxy do CRA. Produção: nunca deixar vazio.
+const API_URL =
+  configuredApiUrl ||
+  (process.env.NODE_ENV === 'production' ? 'https://billing-api.henriquerotsen.com.br' : '');
 
 async function request(path, options = {}) {
   let response;
@@ -45,6 +50,11 @@ export const billingApi = {
   // Admin auth
   adminLogin: (email, password) =>
     request('/auth/admin/login', { method: 'POST', body: JSON.stringify({ email, password }) }),
+  adminVerifyCode: (email, code) =>
+    request('/auth/admin/verify-code', {
+      method: 'POST',
+      body: JSON.stringify({ email, code }),
+    }),
   adminLogout: () => request('/auth/admin/logout', { method: 'POST' }),
   adminMe: () => request('/auth/admin/me'),
 

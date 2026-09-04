@@ -10,6 +10,7 @@ import {
   nfsePdfFilename,
 } from '../../api/billing';
 import { AreaRestritaLayout, AreaCard, AreaBack } from './AreaRestritaLayout';
+import { OtpInput } from './OtpInput';
 import { ClientShell, AdminPageHeader, StatusBadge, StatCard } from './admin/ClientShell';
 import '../../styles/AreaRestrita.css';
 import '../../styles/AdminShell.css';
@@ -89,16 +90,21 @@ export function ClientPortal() {
     }
   };
 
-  const handleVerify = async (e) => {
-    e.preventDefault();
+  const handleVerify = async (e, codeOverride) => {
+    if (e?.preventDefault) e.preventDefault();
     setError('');
     const cnpjDigits = getCnpjDigits(cnpj) || sessionStorage.getItem(CLIENT_CNPJ_STORAGE_KEY) || '';
+    const codeValue = String(codeOverride ?? code).replace(/\D/g, '');
     if (cnpjDigits.length !== 14) {
       setError('CNPJ não encontrado nesta sessão. Volte e informe o CNPJ novamente.');
       return;
     }
+    if (!/^\d{6}$/.test(codeValue)) {
+      setError('Informe o código de 6 dígitos.');
+      return;
+    }
     try {
-      const data = await billingApi.clientVerifyCode(cnpjDigits, code.trim());
+      const data = await billingApi.clientVerifyCode(cnpjDigits, codeValue);
       sessionStorage.removeItem(CLIENT_CNPJ_STORAGE_KEY);
       setClient(data.client);
       const [inv, nfse] = await Promise.all([billingApi.clientInvoices(), billingApi.clientNfse()]);
@@ -214,17 +220,19 @@ export function ClientPortal() {
             {message && <div className="area-alert area-alert-success">{message}</div>}
             {error && <div className="area-alert area-alert-error">{error}</div>}
             <form className="area-form" onSubmit={handleVerify}>
-              <label htmlFor="code">Código de 6 dígitos</label>
-              <input
-                id="code"
+              <label htmlFor="client-otp">Código de 6 dígitos</label>
+              <OtpInput
+                id="client-otp"
                 value={code}
-                onChange={(e) => setCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                placeholder="000000"
-                inputMode="numeric"
-                autoComplete="one-time-code"
-                required
+                onChange={(next) => {
+                  setCode(next);
+                  if (next.length === 6) {
+                    handleVerify(null, next);
+                  }
+                }}
+                autoFocus
               />
-              <button type="submit" className="area-btn">Entrar</button>
+              <button type="submit" className="area-btn" disabled={code.length !== 6}>Entrar</button>
               <button type="button" className="area-btn area-btn-secondary" style={{ marginLeft: 8 }} onClick={handleResendCode}>
                 Reenviar código
               </button>
