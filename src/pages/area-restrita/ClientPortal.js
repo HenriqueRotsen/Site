@@ -12,6 +12,7 @@ import {
 import { AreaRestritaLayout, AreaCard, AreaBack } from './AreaRestritaLayout';
 import { OtpInput } from './OtpInput';
 import { ClientShell, AdminPageHeader, StatusBadge, StatCard } from './admin/ClientShell';
+import { InvoicePdfPreviewModal } from './admin/InvoicePdfPreviewModal';
 import '../../styles/AreaRestrita.css';
 import '../../styles/AdminShell.css';
 
@@ -37,6 +38,7 @@ export function ClientPortal() {
   const [nfseDocuments, setNfseDocuments] = useState([]);
   const [selectedInvoice, setSelectedInvoice] = useState(null);
   const [detailLoading, setDetailLoading] = useState(false);
+  const [pdfPreview, setPdfPreview] = useState(null);
 
   const loadSession = async () => {
     try {
@@ -163,6 +165,26 @@ export function ClientPortal() {
       const blob = await billingApi.downloadClientNfsePdf(doc.id);
       await downloadBlob(blob, nfsePdfFilename(doc));
     } catch (err) {
+      setError(err.message);
+    }
+  };
+
+  const closePdfPreview = () => {
+    setPdfPreview((current) => {
+      if (current?.pdfUrl) URL.revokeObjectURL(current.pdfUrl);
+      return null;
+    });
+  };
+
+  const handlePreviewNfse = async (doc) => {
+    setError('');
+    setPdfPreview({ title: `NFS-e ${doc.number}`, loading: true });
+    try {
+      const blob = await billingApi.downloadClientNfsePdf(doc.id);
+      const pdfUrl = URL.createObjectURL(blob);
+      setPdfPreview({ title: `NFS-e ${doc.number}`, pdfUrl, loading: false });
+    } catch (err) {
+      setPdfPreview(null);
       setError(err.message);
     }
   };
@@ -322,13 +344,22 @@ export function ClientPortal() {
                         <td>{formatBRL(doc.amountCents)}</td>
                         <td>
                           {doc.hasPdf && (
-                            <button
-                              type="button"
-                              className="admin-btn admin-btn--sm admin-btn--secondary"
-                              onClick={() => handleDownloadNfse(doc)}
-                            >
-                              PDF
-                            </button>
+                            <div className="admin-table__actions">
+                              <button
+                                type="button"
+                                className="admin-btn admin-btn--sm admin-btn--secondary"
+                                onClick={() => handlePreviewNfse(doc)}
+                              >
+                                Ver
+                              </button>
+                              <button
+                                type="button"
+                                className="admin-btn admin-btn--sm admin-btn--secondary"
+                                onClick={() => handleDownloadNfse(doc)}
+                              >
+                                PDF
+                              </button>
+                            </div>
                           )}
                         </td>
                       </tr>
@@ -606,13 +637,22 @@ export function ClientPortal() {
                         <td>
                           <div className="admin-table__actions">
                             {doc.hasPdf && (
-                              <button
-                                type="button"
-                                className="admin-btn admin-btn--sm admin-btn--secondary"
-                                onClick={() => handleDownloadNfse(doc)}
-                              >
-                                Baixar PDF
-                              </button>
+                              <>
+                                <button
+                                  type="button"
+                                  className="admin-btn admin-btn--sm admin-btn--secondary"
+                                  onClick={() => handlePreviewNfse(doc)}
+                                >
+                                  Ver
+                                </button>
+                                <button
+                                  type="button"
+                                  className="admin-btn admin-btn--sm admin-btn--secondary"
+                                  onClick={() => handleDownloadNfse(doc)}
+                                >
+                                  Baixar PDF
+                                </button>
+                              </>
                             )}
                           </div>
                         </td>
@@ -624,6 +664,14 @@ export function ClientPortal() {
             )}
           </div>
         </>
+      )}
+      {pdfPreview && (
+        <InvoicePdfPreviewModal
+          title={pdfPreview.title}
+          pdfUrl={pdfPreview.pdfUrl}
+          loading={pdfPreview.loading}
+          onClose={closePdfPreview}
+        />
       )}
     </ClientShell>
   );

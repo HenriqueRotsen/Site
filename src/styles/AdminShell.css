@@ -1183,6 +1183,33 @@
   grid-column: span 1;
 }
 
+.nfse-party-readonly {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 16px;
+  padding: 14px 16px;
+  border: 1px solid #e5e5e5;
+  border-radius: 12px;
+  background: #fafafa;
+}
+
+.nfse-party-readonly span {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #6b6b6b;
+}
+
+.nfse-party-readonly strong {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #111;
+}
+
 .nfse-card {
   border: 1px solid #e5e5e5;
   border-radius: 16px;

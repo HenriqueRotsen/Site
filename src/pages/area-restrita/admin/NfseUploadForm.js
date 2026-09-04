@@ -1,6 +1,6 @@
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { formatBRL, formatDate, maskCnpjInput } from '../../../api/billing';
-import { extractDanfseFromPdf } from '../../../utils/danfseExtract';
+import { extractDanfseFromPdf, NFSE_PRESTADOR } from '../../../utils/danfseExtract';
 import { SearchableSelect } from './SearchableSelect';
 
 function reaisInputToCents(value) {
@@ -18,11 +18,32 @@ function countExtractedFields(parsed) {
     parsed.number,
     parsed.competenceDate,
     parsed.amount,
-    parsed.takerName,
     parsed.takerCnpj,
     parsed.serviceCode,
     parsed.serviceDescription,
   ].filter(Boolean).length;
+}
+
+function clientCnpjDigits(client) {
+  return String(client?.cnpjDigits || client?.hint || client?.searchText || '').replace(/\D/g, '');
+}
+
+function findClientByCnpj(clients, cnpjValue) {
+  const digits = String(cnpjValue || '').replace(/\D/g, '');
+  if (digits.length !== 14 || digits === NFSE_PRESTADOR.cnpjDigits) return null;
+  return clients.find((c) => clientCnpjDigits(c) === digits) || null;
+}
+
+function takerFromClient(client) {
+  if (!client) return { takerName: '', takerCnpj: '' };
+  return {
+    takerName: client.label || '',
+    takerCnpj: client.hint && !String(client.hint).includes('*')
+      ? maskCnpjInput(client.hint)
+      : client.cnpjFormatted
+        ? maskCnpjInput(client.cnpjFormatted)
+        : '',
+  };
 }
 
 export function NfseUploadForm({
@@ -40,29 +61,43 @@ export function NfseUploadForm({
   const [extracting, setExtracting] = useState(false);
   const [extractStatus, setExtractStatus] = useState(null);
 
+  const selectedClient = useMemo(
+    () => clientOptions.find((c) => c.value === form.clientId) || null,
+    [clientOptions, form.clientId]
+  );
+
+  const selectClient = useCallback(
+    (clientId) => {
+      const client = clientOptions.find((c) => c.value === clientId) || null;
+      const taker = takerFromClient(client);
+      setForm((prev) => ({
+        ...prev,
+        clientId: clientId || '',
+        takerName: taker.takerName,
+        takerCnpj: taker.takerCnpj,
+      }));
+    },
+    [clientOptions, setForm]
+  );
+
   const applyParsed = useCallback(
     (parsed, clients) => {
-      const takerDigits = String(parsed.takerCnpj || '').replace(/\D/g, '');
-      const matchedClient =
-        takerDigits.length === 14
-          ? clients.find((c) => {
-              const fromHint = String(c.hint || '').replace(/\D/g, '');
-              const fromSearch = String(c.searchText || '').replace(/\D/g, '');
-              return fromHint === takerDigits || fromSearch.includes(takerDigits);
-            })
-          : null;
+      const matchedClient = findClientByCnpj(clients, parsed.takerCnpj);
+      const taker = matchedClient
+        ? takerFromClient(matchedClient)
+        : { takerName: '', takerCnpj: '' };
 
       setForm((prev) => ({
         ...prev,
-        clientId: matchedClient?.value || prev.clientId,
+        clientId: matchedClient?.value || '',
         accessKey: parsed.accessKey || prev.accessKey,
         number: parsed.number || prev.number,
         competenceDate: parsed.competenceDate || prev.competenceDate,
         issuedAt: parsed.issuedAt || prev.issuedAt,
         dpsNumber: parsed.dpsNumber || prev.dpsNumber,
         dpsSeries: parsed.dpsSeries || prev.dpsSeries,
-        takerName: parsed.takerName || prev.takerName,
-        takerCnpj: parsed.takerCnpj ? maskCnpjInput(parsed.takerCnpj) : prev.takerCnpj,
+        takerName: taker.takerName,
+        takerCnpj: taker.takerCnpj,
         serviceCode: parsed.serviceCode || prev.serviceCode,
         serviceDescription: parsed.serviceDescription || prev.serviceDescription,
         amount: parsed.amount || prev.amount,
@@ -72,6 +107,7 @@ export function NfseUploadForm({
       return {
         filled: countExtractedFields(parsed),
         matchedClient: Boolean(matchedClient),
+        extractedTakerCnpj: Boolean(parsed.takerCnpj),
       };
     },
     [setForm]
@@ -92,18 +128,23 @@ export function NfseUploadForm({
       try {
         const { parsed } = await extractDanfseFromPdf(nextFile);
         const result = applyParsed(parsed, clientOptions);
-        if (result.filled >= 4) {
+        if (result.matchedClient) {
           setExtractStatus({
             tone: 'success',
-            message: result.matchedClient
-              ? `Dados extraídos automaticamente. Cliente correspondente ao tomador selecionado.`
-              : `Dados extraídos automaticamente (${result.filled} campos). Confira e ajuste se precisar.`,
+            message: 'Dados extraídos. Tomador identificado e vinculado ao cliente cadastrado.',
+          });
+        } else if (result.filled >= 4) {
+          setExtractStatus({
+            tone: 'warning',
+            message: result.extractedTakerCnpj
+              ? 'Dados extraídos, mas o tomador do PDF não bate com nenhum cliente. Selecione o tomador no menu.'
+              : 'Dados extraídos. Selecione o tomador (cliente) no menu suspenso.',
           });
         } else {
           setExtractStatus({
             tone: 'warning',
             message:
-              'PDF carregado, mas poucos campos foram reconhecidos. Preencha manualmente o que faltar.',
+              'PDF carregado, mas poucos campos foram reconhecidos. Preencha o que faltar e selecione o tomador.',
           });
         }
       } catch (err) {
@@ -181,45 +222,66 @@ export function NfseUploadForm({
         </div>
       )}
 
-      {(form.number || form.amount || form.competenceDate) && (
-        <div className="nfse-summary-cards">
-          <article className="nfse-summary-card">
-            <span>Número</span>
-            <strong>{form.number || '—'}</strong>
-          </article>
-          <article className="nfse-summary-card">
-            <span>Competência</span>
-            <strong>{form.competenceDate ? formatDate(form.competenceDate) : '—'}</strong>
-          </article>
-          <article className="nfse-summary-card">
-            <span>Valor</span>
-            <strong>{amountCents ? formatBRL(amountCents) : form.amount || '—'}</strong>
-          </article>
-          <article className="nfse-summary-card nfse-summary-card--wide">
-            <span>Tomador</span>
-            <strong>{form.takerName || '—'}</strong>
-            {form.takerCnpj && <small>{form.takerCnpj}</small>}
-          </article>
-        </div>
-      )}
+      <div className="nfse-summary-cards">
+        <article className="nfse-summary-card nfse-summary-card--wide">
+          <span>Prestador (fixo)</span>
+          <strong>{NFSE_PRESTADOR.legalName}</strong>
+          <small>{NFSE_PRESTADOR.cnpj}</small>
+        </article>
+        <article className="nfse-summary-card nfse-summary-card--wide">
+          <span>Tomador</span>
+          <strong>{selectedClient?.label || form.takerName || 'Selecione no menu abaixo'}</strong>
+          {(selectedClient?.hint || form.takerCnpj) && (
+            <small>{selectedClient?.hint || form.takerCnpj}</small>
+          )}
+        </article>
+        {(form.number || form.amount || form.competenceDate) && (
+          <>
+            <article className="nfse-summary-card">
+              <span>Número</span>
+              <strong>{form.number || '—'}</strong>
+            </article>
+            <article className="nfse-summary-card">
+              <span>Competência</span>
+              <strong>{form.competenceDate ? formatDate(form.competenceDate) : '—'}</strong>
+            </article>
+            <article className="nfse-summary-card">
+              <span>Valor</span>
+              <strong>{amountCents ? formatBRL(amountCents) : form.amount || '—'}</strong>
+            </article>
+          </>
+        )}
+      </div>
 
       <section className="nfse-card">
         <header className="nfse-card__header">
-          <h3>Cliente no portal</h3>
-          <p>Vincule ao cliente cadastrado — a nota também aparecerá no portal dele</p>
+          <h3>Tomador do serviço</h3>
+          <p>Selecione um cliente cadastrado — ele é o tomador e verá a nota no portal</p>
         </header>
         <div className="nfse-card__body">
           <div className="admin-field">
-            <label htmlFor="nfse-client">Cliente</label>
+            <label htmlFor="nfse-client">Tomador (cliente)</label>
             <SearchableSelect
               id="nfse-client"
               value={form.clientId}
-              onChange={(value) => setForm({ ...form, clientId: value })}
+              onChange={selectClient}
               options={clientOptions}
-              placeholder="Buscar cliente..."
+              placeholder="Buscar cliente cadastrado..."
               required
             />
           </div>
+          {selectedClient && (
+            <div className="nfse-party-readonly">
+              <div>
+                <span>Nome</span>
+                <strong>{form.takerName || selectedClient.label}</strong>
+              </div>
+              <div>
+                <span>CNPJ</span>
+                <strong>{form.takerCnpj || selectedClient.hint || '—'}</strong>
+              </div>
+            </div>
+          )}
         </div>
       </section>
 
@@ -293,26 +355,11 @@ export function NfseUploadForm({
 
       <section className="nfse-card">
         <header className="nfse-card__header">
-          <h3>Tomador e serviço</h3>
-          <p>Informações do destinatário e da prestação</p>
+          <h3>Serviço</h3>
+          <p>Código, município e descrição da prestação</p>
         </header>
         <div className="nfse-card__body">
           <div className="admin-form-grid">
-            <div className="admin-field">
-              <label>Nome do tomador</label>
-              <input
-                value={form.takerName}
-                onChange={(e) => setForm({ ...form, takerName: e.target.value })}
-              />
-            </div>
-            <div className="admin-field">
-              <label>CNPJ do tomador</label>
-              <input
-                value={form.takerCnpj}
-                onChange={(e) => setForm({ ...form, takerCnpj: maskCnpjInput(e.target.value) })}
-                placeholder="00.000.000/0000-00"
-              />
-            </div>
             <div className="admin-field">
               <label>Código do serviço</label>
               <input
@@ -344,7 +391,7 @@ export function NfseUploadForm({
         <button type="button" className="admin-btn admin-btn--secondary" onClick={onCancel} disabled={uploading}>
           Cancelar
         </button>
-        <button type="submit" className="admin-btn" disabled={uploading || extracting || !file}>
+        <button type="submit" className="admin-btn" disabled={uploading || extracting || !file || !form.clientId}>
           {uploading ? 'Enviando...' : 'Salvar NFS-e'}
         </button>
       </div>

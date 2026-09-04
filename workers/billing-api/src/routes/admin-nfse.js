@@ -127,7 +127,6 @@ export async function handleAdminNfse(request, env, origin, path) {
     const issuedAt = String(form.get('issuedAt') || '').trim() || null;
     const dpsNumber = String(form.get('dpsNumber') || '').trim() || null;
     const dpsSeries = String(form.get('dpsSeries') || '').trim() || null;
-    const takerName = String(form.get('takerName') || '').trim() || null;
     const takerCnpjRaw = String(form.get('takerCnpj') || '').trim();
     const serviceCode = String(form.get('serviceCode') || '').trim() || null;
     const serviceDescription = String(form.get('serviceDescription') || '').trim() || null;
@@ -151,10 +150,26 @@ export async function handleAdminNfse(request, env, origin, path) {
       return json({ error: 'Chave de acesso inválida.' }, 400, origin);
     }
 
-    const client = await env.DB.prepare('SELECT id, legal_name FROM clients WHERE id = ?')
+    const client = await env.DB.prepare(
+      'SELECT id, legal_name, cnpj_formatted FROM clients WHERE id = ?'
+    )
       .bind(clientId)
       .first();
     if (!client) return json({ error: 'Cliente não encontrado.' }, 404, origin);
+
+    const issuerCnpj = String(env.ISSUER_CNPJ || '66.268.938/0001-03').replace(/\D/g, '');
+    // Tomador = sempre o cliente selecionado (nunca o prestador)
+    const resolvedTakerName = client.legal_name;
+    const resolvedTakerCnpj = client.cnpj_formatted
+      ? normalizeCnpj(client.cnpj_formatted)
+      : normalizeCnpj(takerCnpjRaw);
+    if (resolvedTakerCnpj && resolvedTakerCnpj === issuerCnpj) {
+      return json(
+        { error: 'O tomador não pode ser o prestador. Selecione um cliente cadastrado.' },
+        400,
+        origin
+      );
+    }
 
     if (invoiceId) {
       const invoice = await env.DB.prepare(
@@ -178,9 +193,7 @@ export async function handleAdminNfse(request, env, origin, path) {
     const filename = nfsePdfFilename({ number, competenceDate });
     const pdfKey = `nfse/${clientId}/${accessKey}.pdf`;
     const now = nowIso();
-    const takerCnpjFormatted = takerCnpjRaw
-      ? formatCnpj(normalizeCnpj(takerCnpjRaw))
-      : null;
+    const takerCnpjFormatted = resolvedTakerCnpj ? formatCnpj(resolvedTakerCnpj) : null;
 
     await env.PDFS.put(pdfKey, pdfBytes, {
       httpMetadata: { contentType: 'application/pdf' },
@@ -205,7 +218,7 @@ export async function handleAdminNfse(request, env, origin, path) {
         issuedAt,
         dpsNumber,
         dpsSeries,
-        takerName,
+        resolvedTakerName,
         takerCnpjFormatted,
         serviceCode,
         serviceDescription,

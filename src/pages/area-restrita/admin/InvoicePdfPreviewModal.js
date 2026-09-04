@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 
-export function InvoicePdfPreviewModal({ title, html, loading, onClose }) {
+export function InvoicePdfPreviewModal({ title, html, pdfUrl, loading, onClose }) {
   useEffect(() => {
     const handleKeyDown = (event) => {
       if (event.key === 'Escape') onClose();
@@ -8,6 +8,9 @@ export function InvoicePdfPreviewModal({ title, html, loading, onClose }) {
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [onClose]);
+
+  const frameSrc = pdfUrl || undefined;
+  const frameSrcDoc = !pdfUrl && html ? html : undefined;
 
   return (
     <div className="admin-modal-overlay" role="presentation" onClick={onClose}>
@@ -26,14 +29,15 @@ export function InvoicePdfPreviewModal({ title, html, loading, onClose }) {
         </div>
         <div className="admin-pdf-modal__body">
           {loading ? (
-            <div className="admin-pdf-modal__loading">Gerando prévia...</div>
+            <div className="admin-pdf-modal__loading">Carregando prévia...</div>
           ) : (
             <iframe
-              srcDoc={html}
+              src={frameSrc}
+              srcDoc={frameSrcDoc}
               title={title}
               className="admin-pdf-modal__frame"
-              sandbox="allow-scripts allow-same-origin"
-              allow="clipboard-write"
+              sandbox="allow-scripts allow-same-origin allow-downloads"
+              allow="fullscreen"
             />
           )}
         </div>

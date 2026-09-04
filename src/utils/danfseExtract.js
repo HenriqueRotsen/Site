@@ -1,5 +1,20 @@
 import { getDocument } from 'pdfjs-dist/webpack.mjs';
 
+/** Prestador fixo da NFS-e (emissor). Nunca deve ser tratado como tomador. */
+export const NFSE_PRESTADOR = {
+  legalName: '66.268.938 HENRIQUE ROTSEN SANTOS FERREIRA',
+  cnpj: '66.268.938/0001-03',
+  cnpjDigits: '66268938000103',
+};
+
+function digitsOnly(value) {
+  return String(value || '').replace(/\D/g, '');
+}
+
+function isPrestadorCnpj(value) {
+  return digitsOnly(value) === NFSE_PRESTADOR.cnpjDigits;
+}
+
 function afterLabel(text, labels, { untilLabels = [], multiline = false } = {}) {
   const sources = Array.isArray(labels) ? labels : [labels];
   for (const label of sources) {
@@ -40,20 +55,69 @@ function extractAccessKey(text) {
   return any?.[1] || '';
 }
 
-function extractTakerBlock(text) {
-  const takerSection = text.match(
-    /TOMADOR DO SERVI[CÇ]O[\s\S]*?(?=INTERMEDI[AÁ]RIO|SERVI[CÇ]O PRESTADO|TRIBUTA[CÇ][AÃ]O|$)/i
+function extractPartyFromBlock(block) {
+  const cnpjMatches = [...String(block || '').matchAll(/\b(\d{2}\.\d{3}\.\d{3}\/\d{4}-\d{2})\b/g)].map(
+    (m) => m[1]
   );
-  const block = takerSection?.[0] || text;
-  const cnpj =
+  const labeledCnpj =
     block.match(/CNPJ\s*\/\s*CPF\s*\/\s*NIF\s*[:\n]?\s*([\d./-]+)/i)?.[1] ||
-    block.match(/\b(\d{2}\.\d{3}\.\d{3}\/\d{4}-\d{2})\b/)?.[1] ||
+    block.match(/CNPJ\s*[:\n]?\s*([\d./-]+)/i)?.[1] ||
+    '';
+  const cnpj =
+    (labeledCnpj && !isPrestadorCnpj(labeledCnpj) ? labeledCnpj : '') ||
+    cnpjMatches.find((value) => !isPrestadorCnpj(value)) ||
     '';
   const name =
     afterLabel(block, ['Nome / Nome Empresarial', 'Nome Empresarial', 'Nome'], {
-      untilLabels: ['E-mail', 'Endereço', 'Município', 'CEP', 'Inscrição'],
+      untilLabels: ['E-mail', 'Endereço', 'Endereco', 'Município', 'Municipio', 'CEP', 'Inscrição', 'Inscricao', 'CNPJ'],
     }) || '';
+  if (name && /HENRIQUE ROTSEN/i.test(name) && !cnpj) {
+    return { cnpj: '', name: '' };
+  }
   return { cnpj, name };
+}
+
+function extractSection(text, startLabels, endLabels) {
+  const start = startLabels.map((l) => l.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|');
+  const end = endLabels.map((l) => l.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|');
+  const match = text.match(new RegExp(`(?:${start})[\\s\\S]*?(?=${end}|$)`, 'i'));
+  return match?.[0] || '';
+}
+
+function extractTakerBlock(text) {
+  const takerSection = extractSection(
+    text,
+    ['TOMADOR DO SERVI[CÇ]O', 'TOMADOR'],
+    ['INTERMEDI[AÁ]RIO', 'SERVI[CÇ]O PRESTADO', 'TRIBUTA[CÇ][AÃ]O', 'PRESTADOR DO SERVI[CÇ]O']
+  );
+  const prestadorSection = extractSection(
+    text,
+    ['PRESTADOR DO SERVI[CÇ]O', 'PRESTADOR'],
+    ['TOMADOR DO SERVI[CÇ]O', 'TOMADOR', 'INTERMEDI[AÁ]RIO', 'SERVI[CÇ]O PRESTADO']
+  );
+
+  let fromTaker = extractPartyFromBlock(takerSection);
+  if (isPrestadorCnpj(fromTaker.cnpj) || /HENRIQUE ROTSEN/i.test(fromTaker.name || '')) {
+    fromTaker = { cnpj: '', name: '' };
+  }
+
+  // Se a seção do tomador falhou, tenta CNPJs do documento que não sejam o prestador.
+  if (!fromTaker.cnpj) {
+    const allCnpjs = [...text.matchAll(/\b(\d{2}\.\d{3}\.\d{3}\/\d{4}-\d{2})\b/g)].map((m) => m[1]);
+    const prestadorInDoc = extractPartyFromBlock(prestadorSection);
+    const candidate = allCnpjs.find(
+      (value) => !isPrestadorCnpj(value) && digitsOnly(value) !== digitsOnly(prestadorInDoc.cnpj)
+    );
+    if (candidate) {
+      fromTaker = { ...fromTaker, cnpj: candidate };
+    }
+  }
+
+  if (fromTaker.name && isPrestadorCnpj(fromTaker.cnpj)) {
+    fromTaker.name = '';
+  }
+
+  return fromTaker;
 }
 
 export function parseDanfseText(rawText) {
@@ -104,8 +168,8 @@ export function parseDanfseText(rawText) {
     issuedAt,
     dpsNumber,
     dpsSeries,
-    takerName,
-    takerCnpj,
+    takerName: isPrestadorCnpj(takerCnpj) ? '' : takerName,
+    takerCnpj: isPrestadorCnpj(takerCnpj) ? '' : takerCnpj,
     serviceCode,
     serviceDescription,
     amount,

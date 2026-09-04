@@ -533,7 +533,7 @@ export function AdminPortal() {
       return;
     }
     if (!nfseForm.clientId || !nfseForm.accessKey || !nfseForm.number || !nfseForm.competenceDate) {
-      setError('Cliente, chave de acesso, número e competência são obrigatórios.');
+      setError('Tomador (cliente), chave de acesso, número e competência são obrigatórios.');
       return;
     }
 
@@ -603,13 +603,25 @@ export function AdminPortal() {
   });
 
   const closePdfPreview = useCallback(() => {
-    setPdfPreview(null);
+    setPdfPreview((current) => {
+      if (current?.pdfUrl) URL.revokeObjectURL(current.pdfUrl);
+      return null;
+    });
   }, []);
 
   const showHtmlPreview = useCallback((html, title) => {
     setPdfPreview({
       title,
       html,
+      loading: false,
+    });
+  }, []);
+
+  const showPdfBlobPreview = useCallback((blob, title) => {
+    const pdfUrl = URL.createObjectURL(blob);
+    setPdfPreview({
+      title,
+      pdfUrl,
       loading: false,
     });
   }, []);
@@ -650,6 +662,18 @@ export function AdminPortal() {
     }
   };
 
+  const handlePreviewNfse = async (doc) => {
+    setError('');
+    setPdfPreview({ title: `NFS-e ${doc.number}`, loading: true });
+    try {
+      const blob = await billingApi.downloadAdminNfsePdf(doc.id);
+      showPdfBlobPreview(blob, `NFS-e ${doc.number}`);
+    } catch (err) {
+      setPdfPreview(null);
+      setError(err.message);
+    }
+  };
+
   const updateInvoiceItem = (idx, field, value) => {
     setInvoiceForm((prev) => {
       const items = [...prev.items];
@@ -684,6 +708,8 @@ export function AdminPortal() {
     value: c.id,
     label: c.legalName,
     hint: c.cnpjFormatted || c.cnpjMasked,
+    cnpjFormatted: c.cnpjFormatted || '',
+    cnpjDigits: String(c.cnpjFormatted || '').replace(/\D/g, ''),
     searchText: [c.legalName, c.cnpjFormatted, c.cnpjMasked, c.billingEmail, c.addressCity]
       .filter(Boolean)
       .join(' '),
@@ -1086,6 +1112,13 @@ export function AdminPortal() {
                         <td>{doc.takerName || '—'}</td>
                         <td>
                           <div className="admin-table__actions">
+                            <button
+                              type="button"
+                              className="admin-btn admin-btn--sm admin-btn--secondary"
+                              onClick={() => handlePreviewNfse(doc)}
+                            >
+                              Ver
+                            </button>
                             <button
                               type="button"
                               className="admin-btn admin-btn--sm admin-btn--secondary"
@@ -1603,6 +1636,7 @@ export function AdminPortal() {
         <InvoicePdfPreviewModal
           title={pdfPreview.title}
           html={pdfPreview.html}
+          pdfUrl={pdfPreview.pdfUrl}
           loading={pdfPreview.loading}
           onClose={closePdfPreview}
         />
