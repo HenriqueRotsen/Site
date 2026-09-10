@@ -1,16 +1,16 @@
 {
   "files": {
-    "main.css": "/static/css/main.f4230afb.css",
-    "main.js": "/static/js/main.69bf18bc.js",
+    "main.css": "/static/css/main.06239a29.css",
+    "main.js": "/static/js/main.f4b7b70a.js",
     "static/css/739.6a5cd48f.chunk.css": "/static/css/739.6a5cd48f.chunk.css",
     "static/js/739.19be07cd.chunk.js": "/static/js/739.19be07cd.chunk.js",
-    "static/js/856.dbd6d733.chunk.js": "/static/js/856.dbd6d733.chunk.js",
+    "static/js/856.cbd71b81.chunk.js": "/static/js/856.cbd71b81.chunk.js",
     "static/js/690.63582319.chunk.js": "/static/js/690.63582319.chunk.js",
     "static/js/38.f9dcf4f8.chunk.js": "/static/js/38.f9dcf4f8.chunk.js",
     "static/js/581.b6075595.chunk.js": "/static/js/581.b6075595.chunk.js",
-    "static/js/281.629ef1e0.chunk.js": "/static/js/281.629ef1e0.chunk.js",
+    "static/js/281.02dc21d9.chunk.js": "/static/js/281.02dc21d9.chunk.js",
     "static/css/685.424cdc81.chunk.css": "/static/css/685.424cdc81.chunk.css",
-    "static/js/685.23a59b72.chunk.js": "/static/js/685.23a59b72.chunk.js",
+    "static/js/685.e2eb1bde.chunk.js": "/static/js/685.e2eb1bde.chunk.js",
     "static/media/background-home-page.png": "/static/media/background-home-page.943ab84ed4678e78e939.png",
     "static/media/profissional2.jpg": "/static/media/profissional2.451bd83b13013457281d.jpg",
     "static/media/foto-profissional-trabalhos.jpeg": "/static/media/foto-profissional-trabalhos.a01eba20e435f26a351a.jpeg",
@@ -19,24 +19,28 @@
     "static/media/Henrique_Rotsen_curriculo_portugues.pdf": "/static/media/Henrique_Rotsen_curriculo_portugues.5f0e056a5f9f56cafd1b.pdf",
     "static/media/logo-branca.png": "/static/media/logo-branca.778aab51a34e03d2dad5.png",
     "static/media/Henrique_Rotsen_curriculo_linkedin.pdf": "/static/media/Henrique_Rotsen_curriculo_linkedin.f9a73283b7796b5819e7.pdf",
+    "static/media/radio-memory.png": "/static/media/radio-memory.ea01b92c94f92c2a3fc3.png",
     "static/media/hr-cinza.png": "/static/media/hr-cinza.72ae9f82b782b53dcf5c.png",
     "static/media/hr-branca.png": "/static/media/hr-branca.aae0475ebf33f2ee1f80.png",
     "static/media/wordmark-branca.png": "/static/media/wordmark-branca.bf03b7b93e8a878cdd69.png",
+    "static/media/aika-editora.png": "/static/media/aika-editora.bf7fafe916265677e517.png",
+    "static/media/adac-motors.webp": "/static/media/adac-motors.08592b09197482b6e12d.webp",
+    "static/media/jrl-engenharia.png": "/static/media/jrl-engenharia.0d30e16d5b6849f98399.png",
     "index.html": "/index.html",
-    "main.f4230afb.css.map": "/static/css/main.f4230afb.css.map",
-    "main.69bf18bc.js.map": "/static/js/main.69bf18bc.js.map",
+    "main.06239a29.css.map": "/static/css/main.06239a29.css.map",
+    "main.f4b7b70a.js.map": "/static/js/main.f4b7b70a.js.map",
     "739.6a5cd48f.chunk.css.map": "/static/css/739.6a5cd48f.chunk.css.map",
     "739.19be07cd.chunk.js.map": "/static/js/739.19be07cd.chunk.js.map",
-    "856.dbd6d733.chunk.js.map": "/static/js/856.dbd6d733.chunk.js.map",
+    "856.cbd71b81.chunk.js.map": "/static/js/856.cbd71b81.chunk.js.map",
     "690.63582319.chunk.js.map": "/static/js/690.63582319.chunk.js.map",
     "38.f9dcf4f8.chunk.js.map": "/static/js/38.f9dcf4f8.chunk.js.map",
     "581.b6075595.chunk.js.map": "/static/js/581.b6075595.chunk.js.map",
-    "281.629ef1e0.chunk.js.map": "/static/js/281.629ef1e0.chunk.js.map",
+    "281.02dc21d9.chunk.js.map": "/static/js/281.02dc21d9.chunk.js.map",
     "685.424cdc81.chunk.css.map": "/static/css/685.424cdc81.chunk.css.map",
-    "685.23a59b72.chunk.js.map": "/static/js/685.23a59b72.chunk.js.map"
+    "685.e2eb1bde.chunk.js.map": "/static/js/685.e2eb1bde.chunk.js.map"
   },
   "entrypoints": [
-    "static/css/main.f4230afb.css",
-    "static/js/main.69bf18bc.js"
+    "static/css/main.06239a29.css",
+    "static/js/main.f4b7b70a.js"
   ]
 }
