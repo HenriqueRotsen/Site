@@ -4,6 +4,13 @@ import React from 'react';
 import Logo from '../components/images/logo-branca.png';
 import LogoHr from '../components/images/hr-branca.png';
 import ProfessionalFoto from '../components/images/profissional2.jpg';
+import LogoAika from '../components/images/clients/aika-editora.png';
+import LogoJrl from '../components/images/clients/jrl-engenharia.png';
+import LogoAdac from '../components/images/clients/adac-motors.webp';
+import LogoRadioMemory from '../components/images/clients/radio-memory.png';
+import LogoNox from '../components/images/clients/nox.png';
+import LogoTatajuba from '../components/images/clients/instituto-tatajuba.png';
+import LogoRamosSantana from '../components/images/clients/ramos-santana.png';
 import Button from '../components/Button.js';
 import { useTranslation } from 'react-i18next';
 import { useReveal, useRevealChildren } from '../hooks/useScrollAnimation';
@@ -23,15 +30,28 @@ const SKILL_GROUPS = [
   },
 ];
 
+const TRUSTED_COMPANIES = [
+  { name: 'Aika Editora', src: LogoAika },
+  { name: 'JRL Engenharia', src: LogoJrl },
+  { name: 'ADAC Motors', src: LogoAdac },
+  { name: 'Radio Memory', src: LogoRadioMemory },
+  { name: 'NOX Engenharia Off-site', src: LogoNox },
+  { name: 'Instituto Tatajubá', src: LogoTatajuba },
+  { name: 'Ramos e Santana Advogados', src: LogoRamosSantana, tone: 'soft' },
+];
+
 export const Home = () => {
   const { t } = useTranslation();
   const heroTextRef = useReveal('up', 0);
   const heroImageRef = useReveal('up', 0);
+  const trustRef = useReveal('up', 60);
   const aboutRef = useReveal('up', 80);
   const skillsRef = useRevealChildren('.skill-group', 100, 'up');
   const closeCopyRef = useReveal('up', 80);
   const logoRef = useReveal('scale', 220);
   const ctaRef = useReveal('scale', 160);
+
+  const marqueeLogos = [...TRUSTED_COMPANIES, ...TRUSTED_COMPANIES];
 
   return (
     <div className="home-page">
@@ -44,9 +64,7 @@ export const Home = () => {
       <section className="home-hero">
         <div className="home-shell home-hero-grid">
           <div className="home-hero-copy" ref={heroTextRef}>
-            <h1 className="home-brand">
-              Henrique Rotsen
-            </h1>
+            <h1 className="home-brand">Henrique Rotsen</h1>
             <p className="home-headline">{t('home.headline')}</p>
             <p className="home-lead">{t('home.subtitulo')}</p>
             <div className="home-hero-cta">
@@ -62,6 +80,28 @@ export const Home = () => {
               alt={t('home.marca')}
               className="home-hero-photo"
             />
+          </div>
+        </div>
+      </section>
+
+      <section className="home-trust" ref={trustRef} aria-label={t('home.confiancaTitulo')}>
+        <div className="home-shell">
+          <p className="home-section-label home-trust__label">{t('home.confiancaTitulo')}</p>
+        </div>
+        <div className="home-trust__track-wrap">
+          <div className="home-trust__track">
+            {marqueeLogos.map((company, index) => (
+              <div
+                className={`home-trust__item${company.tone ? ` home-trust__item--${company.tone}` : ''}`}
+                key={`${company.name}-${index}`}
+                aria-hidden={index >= TRUSTED_COMPANIES.length ? true : undefined}
+              >
+                <img
+                  src={company.src}
+                  alt={index < TRUSTED_COMPANIES.length ? company.name : ''}
+                />
+              </div>
+            ))}
           </div>
         </div>
       </section>
@@ -107,11 +147,7 @@ export const Home = () => {
             </div>
           </div>
           <div className="home-close-logo-box" ref={logoRef}>
-            <img
-              src={Logo}
-              alt=""
-              className="home-close-logo"
-            />
+            <img src={Logo} alt="" className="home-close-logo" />
           </div>
         </div>
       </section>

@@ -656,10 +656,10 @@ export function AdminPortal() {
 
   const handlePreviewInvoice = async (id, number) => {
     setError('');
-    setPdfPreview({ title: `Prévia — ${number}`, loading: true });
+    setPdfPreview({ title: `Prévia ${number}`, loading: true });
     try {
       const html = await billingApi.previewInvoicePdf(id);
-      showHtmlPreview(html, `Prévia — ${number}`);
+      showHtmlPreview(html, `Prévia ${number}`);
     } catch (err) {
       setPdfPreview(null);
       setError(err.message);
@@ -1159,7 +1159,7 @@ export function AdminPortal() {
         <>
           <AdminPageHeader
             title="Enviar NFS-e"
-            subtitle="Solte o PDF da DANFSe — os dados são lidos automaticamente. A nota também aparecerá no portal do cliente."
+            subtitle="Solte o PDF da DANFSe. Os dados são lidos automaticamente. A nota também aparecerá no portal do cliente."
           />
           <div className="admin-panel admin-panel--nfse-form" style={{ padding: 20 }}>
             <NfseUploadForm

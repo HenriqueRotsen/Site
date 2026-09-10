@@ -16,17 +16,18 @@
     "outrasTecnologias": "Outras Tecnologias",
     "interessesTitulo": "Em foco",
     "interesses": "No doutorado, investigo orquestração de segurança adaptativa na borda de rede com sistemas multi-agentes e Small Language Models (SLMs).",
-    "interesses2": "Já atuei em arquitetura de segurança para GSI e MPMG e no desenvolvimento de redes neurais aplicadas. Gosto de problemas difíceis — e de aprender rápido o que ainda não sei.",
+    "interesses2": "Já atuei em arquitetura de segurança para GSI e MPMG e no desenvolvimento de redes neurais aplicadas. Gosto de problemas difíceis, e de aprender rápido o que ainda não sei.",
     "frase": "\"Todo dia temos uma nova oportunidade de sermos um pouco melhor.\"",
     "vejaTrabalhos": "Para saber mais, acesse a página a seguir",
-    "btnTrabalhos": "Ver trabalhos"
+    "btnTrabalhos": "Ver trabalhos",
+    "confiancaTitulo": "Empresas que confiam no meu trabalho"
   },
   "header": {
     "trabalhos": "Trabalhos",
     "curriculo": "Currículo",
     "contato": "Contato",
     "areaRestrita": "Portal",
-    "areaRestritaTitle": "Área restrita — administração e clientes",
+    "areaRestritaTitle": "Área restrita: administração e clientes",
     "idioma": "Selecionar idioma"
   },
   "areaRestrita": {
@@ -42,9 +43,9 @@
   },
   "trabalhos": {
     "titulo": "Principais Trabalhos",
-    "doutorado": "Doutorado — UFMG",
+    "doutorado": "Doutorado UFMG",
     "doutorado_desc": "Doutorando em Ciência da Computação na Universidade Federal de Minas Gerais (UFMG), com ênfase em Sistemas Distribuídos. A pesquisa investiga Orquestração de Segurança Adaptativa em Borda de Rede: uma abordagem autônoma baseada em Sistemas Multi-Agentes e Small Language Models (SLMs), combinando cibersegurança, edge computing e inteligência artificial aplicada.",
-    "doutorado_area": "Área: Ciência da Computação — Sistemas Distribuídos",
+    "doutorado_area": "Área: Ciência da Computação, Sistemas Distribuídos",
     "doutorado_tema": "Tema: Orquestração de Segurança Adaptativa em Borda de Rede",
     "gestao": "Gestão e Inovação Tecnológica",
     "gestao_desc": "Trabalha com gestão e inovação tecnológica, liderando a transformação digital e o desenvolvimento de soluções escaláveis, seguras e alinhadas aos objetivos estratégicos de negócio.",
@@ -66,10 +67,7 @@
     "gps_desc": "Foi feito o desenvolvimento de um sistema de GPS para o carro de corrida da UFMG. Esse sistema contou com as seguintes tecnologias: Arduino, C++, GPS U-blox NEO-6M®️, Google Colab, Python, Pandas, Folium, Plotly e TinyGPS.",
     "gps_desc2": "O desenvolvimento foi end-to-end, desde a montagem das peças no Arduino até o tratamento e análise dos dados obtidos. Nesse link é possível ver as análises que foram feitas e inclusive testar com outros dados de GPS que tenham o mesmo formato do da U-blox.",
     "desenv_software": "Desenvolvimento de Software",
-    "desenv_software_desc": "Já foram feitos alguns trabalhos nessa área. Atua no desenvolvimento de um...",
-    "foodfit_desc": "Sistema de geração de dietas usando Inteligência Artificial por meio da API do ChatGPT, feito em JavaScript usando React.",
-    "comanda_desc": "Sistema de comandas individuais para bares e clientes, que visa facilitar as divisões de conta, feito em JavaScript, TypeScript e Vue.",
-    "santiago_desc": "Software interno para gestão e acompanhamento de contratos para a Santiago Cotton LTDA, sistema esse feito em C# usando framework .NET com Windows Forms.",
+    "desenv_software_desc": "Atua no desenvolvimento de produtos e sistemas em produção, cobrindo desde plataformas de gestão cultural e operação logística até soluções de edição digital, como loja e biblioteca online e estúdio de diagramação. O trabalho envolve arquitetura, interface e entrega contínua de software alinhado às necessidades de cada negócio.",
     "ia": "Inteligência Artificial",
     "ia_desc": "Atua como desenvolvedor na Radio Memory, tendo como foco o desenvolvimento de redes neurais, e suporte as inovações de IA, voltadas para soluções de radiologia"
   },

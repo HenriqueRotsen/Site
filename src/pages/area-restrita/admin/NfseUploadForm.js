@@ -256,7 +256,7 @@ export function NfseUploadForm({
       <section className="nfse-card">
         <header className="nfse-card__header">
           <h3>Tomador do serviço</h3>
-          <p>Selecione um cliente cadastrado — ele é o tomador e verá a nota no portal</p>
+          <p>Selecione um cliente cadastrado: ele é o tomador e verá a nota no portal</p>
         </header>
         <div className="nfse-card__body">
           <div className="admin-field">

@@ -121,11 +121,6 @@ export const Trabalhos = () => {
           <div className='info-container-2' ref={softwareRef}>
             <h2 className='work-title'>{t('trabalhos.desenv_software')}</h2>
             <p>{t('trabalhos.desenv_software_desc')}</p>
-            <ul className='vertical'>
-              <li><a href='https://github.com/caiotcunha/foodFit'>FoodFit<br /></a>{t('trabalhos.foodfit_desc')}</li>
-              <li><a href='https://github.com/HenriqueRotsen/coManda'>coManda<br /></a>{t('trabalhos.comanda_desc')}</li>
-              <li><a href='https://santiagocotton.com/'>Santiago Cotton<br /></a>{t('trabalhos.santiago_desc')}</li>
-            </ul>
           </div>
         </div>
       </section>

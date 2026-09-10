@@ -16,16 +16,17 @@
     "outrasTecnologias": "Other Technologies",
     "interessesTitulo": "In focus",
     "interesses": "My PhD explores adaptive security orchestration at the network edge, using multi-agent systems and Small Language Models (SLMs).",
-    "interesses2": "I have worked on security architecture for GSI and MPMG and on applied neural networks. I enjoy hard problems — and learning fast what I do not yet know.",
+    "interesses2": "I have worked on security architecture for GSI and MPMG and on applied neural networks. I enjoy hard problems, and learning fast what I do not yet know.",
     "frase": "\"Every day we have a new opportunity to become a little better.\"",
-    "btnTrabalhos": "View projects"
+    "btnTrabalhos": "View projects",
+    "confiancaTitulo": "Companies that trust my work"
   },
   "header": {
     "trabalhos": "Projects",
     "curriculo": "Resume",
     "contato": "Contact",
     "areaRestrita": "Portal",
-    "areaRestritaTitle": "Restricted area — administration and clients",
+    "areaRestritaTitle": "Restricted area: administration and clients",
     "idioma": "Select language"
   },
   "areaRestrita": {
@@ -41,9 +42,9 @@
   },
   "trabalhos": {
     "titulo": "Main Projects",
-    "doutorado": "PhD — UFMG",
+    "doutorado": "PhD UFMG",
     "doutorado_desc": "PhD candidate in Computer Science at the Federal University of Minas Gerais (UFMG), with emphasis on Distributed Systems. The research investigates Adaptive Security Orchestration at the Network Edge: an autonomous approach based on Multi-Agent Systems and Small Language Models (SLMs), combining cybersecurity, edge computing, and applied artificial intelligence.",
-    "doutorado_area": "Field: Computer Science — Distributed Systems",
+    "doutorado_area": "Field: Computer Science, Distributed Systems",
     "doutorado_tema": "Topic: Adaptive Security Orchestration at the Network Edge",
     "gestao": "Management and Technological Innovation",
     "gestao_desc": "Works with management and technological innovation, leading digital transformation and the development of scalable, secure solutions aligned with strategic business goals.",
@@ -65,10 +66,7 @@
     "gps_desc": "A GPS system was developed for the UFMG racing team’s car. This system used the following technologies: Arduino, C++, U-blox NEO-6M GPS, Google Colab, Python, Pandas, Folium, Plotly, and TinyGPS.",
     "gps_desc2": "The development was end-to-end, from assembling the components on Arduino to processing and analyzing the collected data. You can view the analyses and even test the code with other GPS data in the same U-blox format.",
     "desenv_software": "Software Development",
-    "desenv_software_desc": "Several works have been done in this area. Also works on the development of...",
-    "foodfit_desc": "Diet generation system using Artificial Intelligence via ChatGPT API, built with JavaScript and React.",
-    "comanda_desc": "Individual tab system for bars and customers, aimed at simplifying bill splitting, built with JavaScript, TypeScript, and Vue.",
-    "santiago_desc": "Internal software for contract management and monitoring at Santiago Cotton LTDA, developed in C# using .NET framework with Windows Forms.",
+    "desenv_software_desc": "Builds production products and systems, from cultural management and logistics platforms to digital publishing solutions such as an online store and library and a book layout studio. The work covers architecture, interface, and continuous delivery of software aligned with each business need.",
     "ia": "Artificial Intelligence",
     "ia_desc": "Works as a developer at Radio Memory, focusing on neural network development and supporting AI innovations aimed at radiology solutions."
   },

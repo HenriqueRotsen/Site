@@ -220,6 +220,112 @@
         0 48px 96px rgba(0, 0, 0, 0.32);
 }
 
+.home-trust {
+    padding: 8px 0 20px;
+}
+
+.home-trust__label {
+    margin-bottom: 12px;
+    text-align: center;
+}
+
+.home-trust__track-wrap {
+    position: relative;
+    overflow: hidden;
+    mask-image: linear-gradient(
+        to right,
+        transparent 0%,
+        #000 8%,
+        #000 92%,
+        transparent 100%
+    );
+    -webkit-mask-image: linear-gradient(
+        to right,
+        transparent 0%,
+        #000 8%,
+        #000 92%,
+        transparent 100%
+    );
+}
+
+.home-trust__track {
+    display: flex;
+    align-items: center;
+    width: max-content;
+    gap: clamp(28px, 5vw, 56px);
+    padding: 6px 0;
+    animation: home-trust-marquee 42s linear infinite;
+}
+
+.home-trust__track-wrap:hover .home-trust__track {
+    animation-play-state: paused;
+}
+
+.home-trust__item {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 44px;
+    opacity: 0.78;
+    transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+.home-trust__item img {
+    display: block;
+    height: 100%;
+    width: auto;
+    max-width: 148px;
+    object-fit: contain;
+    filter: brightness(1.05) contrast(1.05);
+}
+
+.home-trust__item--soft img {
+    filter: brightness(2.25) contrast(1.1);
+}
+
+.home-trust__item--invert img {
+    filter: brightness(0) invert(1);
+}
+
+.home-trust__item:hover {
+    opacity: 1;
+    transform: translateY(-1px);
+}
+
+@keyframes home-trust-marquee {
+    from {
+        transform: translateX(0);
+    }
+    to {
+        transform: translateX(-50%);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .home-trust__track {
+        animation: none;
+        flex-wrap: wrap;
+        justify-content: center;
+        width: 100%;
+        max-width: var(--home-shell);
+        margin: 0 auto;
+        padding-left: var(--home-pad-x);
+        padding-right: var(--home-pad-x);
+        gap: 20px 28px;
+        box-sizing: border-box;
+    }
+
+    .home-trust__track-wrap {
+        mask-image: none;
+        -webkit-mask-image: none;
+    }
+
+    .home-trust__item[aria-hidden='true'] {
+        display: none;
+    }
+}
+
 .home-section {
     padding: 28px 0;
 }
