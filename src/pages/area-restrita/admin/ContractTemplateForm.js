@@ -1,4 +1,9 @@
 import React, { useRef } from 'react';
+import {
+  renameKeyInBody,
+  stripKeyFromBody,
+  syncVariablesFromBody,
+} from '../../../utils/templateVarSync';
 
 const VAR_TYPES = [
   { value: 'text', label: 'Texto' },
@@ -37,10 +42,7 @@ export const emptyTemplateForm = {
   name: '',
   description: '',
   bodyTemplate: '',
-  variables: [
-    { key: 'contractDate', label: 'Data do contrato', type: 'date', required: true, defaultValue: '' },
-    { key: 'scope', label: 'Objeto / escopo', type: 'textarea', required: false, defaultValue: '' },
-  ],
+  variables: [],
 };
 
 function slugKey(label) {
@@ -75,37 +77,80 @@ export function ContractTemplateForm({
 }) {
   const bodyRef = useRef(null);
 
+  const applyBody = (nextBody, variables = form.variables) => {
+    setForm((prev) => ({
+      ...prev,
+      bodyTemplate: nextBody,
+      variables: syncVariablesFromBody(nextBody, variables),
+    }));
+  };
+
   const updateVar = (idx, field, value) => {
     setForm((prev) => {
       const variables = [...prev.variables];
-      variables[idx] = { ...variables[idx], [field]: value };
-      if (field === 'label' && !variables[idx].keyLocked) {
-        variables[idx].key = slugKey(value) || variables[idx].key;
+      const current = { ...variables[idx] };
+      const oldKey = current.key;
+
+      if (field === 'label' && !current.keyLocked) {
+        current.label = value;
+        current.key = slugKey(value) || current.key;
+      } else if (field === 'key') {
+        current.key = String(value || '').replace(/[^a-zA-Z0-9_]/g, '');
+      } else {
+        current[field] = value;
       }
-      return { ...prev, variables };
+
+      variables[idx] = current;
+
+      let bodyTemplate = prev.bodyTemplate;
+      if (field === 'key' && oldKey && current.key && oldKey !== current.key) {
+        bodyTemplate = renameKeyInBody(bodyTemplate, oldKey, current.key);
+      }
+
+      return {
+        ...prev,
+        bodyTemplate,
+        variables:
+          field === 'key'
+            ? syncVariablesFromBody(bodyTemplate, variables)
+            : variables,
+      };
     });
   };
 
   const addVar = () => {
-    setForm((prev) => ({
-      ...prev,
-      variables: [
+    setForm((prev) => {
+      const key = `campo_${prev.variables.length + 1}`;
+      const variables = [
         ...prev.variables,
-        { key: `campo_${prev.variables.length + 1}`, label: '', type: 'text', required: false, defaultValue: '' },
-      ],
-    }));
+        { key, label: '', type: 'text', required: false, defaultValue: '', keyLocked: false },
+      ];
+      const bodyTemplate = `${prev.bodyTemplate || ''}${prev.bodyTemplate?.endsWith('\n') || !prev.bodyTemplate ? '' : '\n'}{{${key}}}`;
+      return {
+        ...prev,
+        bodyTemplate,
+        variables: syncVariablesFromBody(bodyTemplate, variables),
+      };
+    });
   };
 
   const removeVar = (idx) => {
-    setForm((prev) => ({
-      ...prev,
-      variables: prev.variables.filter((_, i) => i !== idx),
-    }));
+    setForm((prev) => {
+      const target = prev.variables[idx];
+      const key = target?.key;
+      const bodyTemplate = key ? stripKeyFromBody(prev.bodyTemplate, key) : prev.bodyTemplate;
+      const variables = prev.variables.filter((_, i) => i !== idx);
+      return {
+        ...prev,
+        bodyTemplate,
+        variables: syncVariablesFromBody(bodyTemplate, variables),
+      };
+    });
   };
 
   const insertText = (snippet) => {
     const { next, cursor } = insertAtCursor(bodyRef.current, form.bodyTemplate, snippet);
-    setForm((prev) => ({ ...prev, bodyTemplate: next }));
+    applyBody(next, form.variables);
     requestAnimationFrame(() => {
       const el = bodyRef.current;
       if (!el) return;
@@ -117,6 +162,10 @@ export function ContractTemplateForm({
   const insertPlaceholder = (key) => {
     if (!key) return;
     insertText(`{{${key}}}`);
+  };
+
+  const onBodyChange = (e) => {
+    applyBody(e.target.value, form.variables);
   };
 
   return (
@@ -133,7 +182,7 @@ export function ContractTemplateForm({
                 value={form.name}
                 onChange={(e) => setForm({ ...form, name: e.target.value })}
                 required
-                placeholder="Ex.: MAX Cultural"
+                placeholder="Ex.: Implantação e suporte de sistemas"
               />
             </div>
             <div className="admin-field" style={{ gridColumn: '1 / -1' }}>
@@ -166,86 +215,91 @@ export function ContractTemplateForm({
                 </tr>
               </thead>
               <tbody>
-                {form.variables.map((variable, idx) => (
-                  <tr key={`var-${idx}`}>
-                    <td>
-                      <input
-                        className="tpl-var-input"
-                        value={variable.label}
-                        onChange={(e) => updateVar(idx, 'label', e.target.value)}
-                        placeholder="Razão social"
-                        required
-                      />
-                    </td>
-                    <td>
-                      <div className="tpl-var-key-cell">
-                        <input
-                          className="tpl-var-input tpl-var-input--mono"
-                          value={variable.key}
-                          onChange={(e) =>
-                            updateVar(idx, 'key', e.target.value.replace(/[^a-zA-Z0-9_]/g, ''))
-                          }
-                          onBlur={() =>
-                            setForm((prev) => {
-                              const variables = [...prev.variables];
-                              variables[idx] = { ...variables[idx], keyLocked: true };
-                              return { ...prev, variables };
-                            })
-                          }
-                          required
-                          spellCheck={false}
-                        />
-                        <button
-                          type="button"
-                          className="admin-btn admin-btn--sm admin-btn--secondary"
-                          title="Inserir no texto"
-                          onClick={() => insertPlaceholder(variable.key)}
-                        >
-                          {'{{}}'}
-                        </button>
-                      </div>
-                    </td>
-                    <td>
-                      <select
-                        className="tpl-var-select"
-                        value={variable.type}
-                        onChange={(e) => updateVar(idx, 'type', e.target.value)}
-                      >
-                        {VAR_TYPES.map((t) => (
-                          <option key={t.value} value={t.value}>{t.label}</option>
-                        ))}
-                      </select>
-                    </td>
-                    <td>
-                      <input
-                        className="tpl-var-input"
-                        value={variable.defaultValue || ''}
-                        onChange={(e) => updateVar(idx, 'defaultValue', e.target.value)}
-                        placeholder="—"
-                      />
-                    </td>
-                    <td className="tpl-var-check-cell">
-                      <label className="tpl-var-check">
-                        <input
-                          type="checkbox"
-                          checked={Boolean(variable.required)}
-                          onChange={(e) => updateVar(idx, 'required', e.target.checked)}
-                        />
-                        <span className="tpl-var-check__box" aria-hidden="true" />
-                      </label>
-                    </td>
-                    <td>
-                      <button
-                        type="button"
-                        className="admin-btn admin-btn--sm admin-btn--danger"
-                        onClick={() => removeVar(idx)}
-                        disabled={form.variables.length <= 1}
-                      >
-                        Remover
-                      </button>
+                {form.variables.length === 0 ? (
+                  <tr>
+                    <td colSpan={6} style={{ color: '#6b6b6b' }}>
+                      Nenhuma variável no texto. Use {'{{chave}}'} ou adicione abaixo.
                     </td>
                   </tr>
-                ))}
+                ) : (
+                  form.variables.map((variable, idx) => (
+                    <tr key={`var-${variable.key || idx}`}>
+                      <td>
+                        <input
+                          className="tpl-var-input"
+                          value={variable.label}
+                          onChange={(e) => updateVar(idx, 'label', e.target.value)}
+                          placeholder="Rótulo"
+                          required
+                        />
+                      </td>
+                      <td>
+                        <div className="tpl-var-key-cell">
+                          <input
+                            className="tpl-var-input tpl-var-input--mono"
+                            value={variable.key}
+                            onChange={(e) => updateVar(idx, 'key', e.target.value)}
+                            onBlur={() =>
+                              setForm((prev) => {
+                                const variables = [...prev.variables];
+                                variables[idx] = { ...variables[idx], keyLocked: true };
+                                return { ...prev, variables };
+                              })
+                            }
+                            required
+                            spellCheck={false}
+                          />
+                          <button
+                            type="button"
+                            className="admin-btn admin-btn--sm admin-btn--secondary"
+                            title="Inserir no texto"
+                            onClick={() => insertPlaceholder(variable.key)}
+                          >
+                            {'{{}}'}
+                          </button>
+                        </div>
+                      </td>
+                      <td>
+                        <select
+                          className="tpl-var-select"
+                          value={variable.type}
+                          onChange={(e) => updateVar(idx, 'type', e.target.value)}
+                        >
+                          {VAR_TYPES.map((t) => (
+                            <option key={t.value} value={t.value}>{t.label}</option>
+                          ))}
+                        </select>
+                      </td>
+                      <td>
+                        <input
+                          className="tpl-var-input"
+                          value={variable.defaultValue || ''}
+                          onChange={(e) => updateVar(idx, 'defaultValue', e.target.value)}
+                          placeholder="—"
+                        />
+                      </td>
+                      <td className="tpl-var-check-cell">
+                        <label className="tpl-var-check">
+                          <input
+                            type="checkbox"
+                            checked={Boolean(variable.required)}
+                            onChange={(e) => updateVar(idx, 'required', e.target.checked)}
+                          />
+                          <span className="tpl-var-check__box" aria-hidden="true" />
+                        </label>
+                      </td>
+                      <td>
+                        <button
+                          type="button"
+                          className="admin-btn admin-btn--sm admin-btn--danger"
+                          onClick={() => removeVar(idx)}
+                        >
+                          Remover
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>
@@ -280,7 +334,7 @@ export function ContractTemplateForm({
               ref={bodyRef}
               rows={24}
               value={form.bodyTemplate}
-              onChange={(e) => setForm({ ...form, bodyTemplate: e.target.value })}
+              onChange={onBodyChange}
               required
               placeholder="Escreva o texto ou use os atalhos acima"
             />

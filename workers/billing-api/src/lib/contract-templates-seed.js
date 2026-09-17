@@ -10,30 +10,36 @@ export const MONEY_KEYS = [
   'newDemandFee',
 ];
 
-export const MAX_CULTURAL_VARIABLES = [
+/** Variáveis do modelo multi-produto (sistemas / plataformas). */
+export const MULTI_PRODUCT_VARIABLES = [
   { key: 'proposalValidityDays', label: 'Validade da proposta (dias)', type: 'number', required: true, defaultValue: '15' },
-  { key: 'proposalDate', label: 'Data da proposta comercial', type: 'text', required: true, defaultValue: '17 de agosto de 2026' },
+  { key: 'proposalDate', label: 'Data da proposta comercial', type: 'text', required: false, defaultValue: '' },
+  { key: 'productSuite', label: 'Nome do(s) sistema(s) / pacote', type: 'text', required: true, defaultValue: 'Plataforma contratada' },
+  { key: 'productsDetail', label: 'Detalhamento dos produtos / módulos', type: 'textarea', required: true, defaultValue: 'a) Módulo principal — acesso, usuários e operação central;\nb) Módulo complementar — conforme proposta comercial;\nc) Integrações e suporte descritos na proposta.' },
   { key: 'clientRepresentativeName', label: 'Representante legal (contratante)', type: 'text', required: false },
   { key: 'clientRepresentativeCpf', label: 'CPF do representante', type: 'text', required: false },
   { key: 'clientRepresentativeRole', label: 'Cargo / poderes do representante', type: 'text', required: false },
-  { key: 'implementationFee', label: 'Valor da implantação (R$)', type: 'money', required: true, defaultValue: '11.990,00' },
-  { key: 'subscriptionFee', label: 'Mensalidade (R$)', type: 'money', required: true, defaultValue: '2.990,00' },
-  { key: 'firstMonthTotal', label: 'Total do 1º mês (R$)', type: 'money', required: true, defaultValue: '14.980,00' },
+  { key: 'scope', label: 'Resumo do objeto', type: 'textarea', required: false, defaultValue: 'Implantação, licenciamento de uso e suporte do(s) sistema(s) contratado(s).' },
+  { key: 'implementationFee', label: 'Valor da implantação (R$)', type: 'money', required: true, defaultValue: '0,00' },
+  { key: 'subscriptionFee', label: 'Mensalidade (R$)', type: 'money', required: true, defaultValue: '0,00' },
+  { key: 'firstMonthTotal', label: 'Total do 1º mês (R$)', type: 'money', required: false, defaultValue: '' },
   { key: 'newDemandFee', label: 'Nova demanda / funcionalidade (R$)', type: 'money', required: true, defaultValue: '1.000,00' },
   { key: 'newDemandHours', label: 'Horas por nova demanda', type: 'number', required: true, defaultValue: '4' },
-  { key: 'maxProjects', label: 'Projetos ativos inclusos', type: 'number', required: true, defaultValue: '30' },
+  { key: 'usageLimit', label: 'Limite de uso incluso (ex.: projetos, usuários)', type: 'text', required: false, defaultValue: 'conforme proposta' },
   { key: 'deliveryWeeks', label: 'Prazo de go-live (semanas)', type: 'number', required: true, defaultValue: '2' },
   { key: 'trainingHours', label: 'Horas de treinamento incluso', type: 'number', required: true, defaultValue: '1' },
   { key: 'paymentDay', label: 'Dia de vencimento da mensalidade', type: 'number', required: true, defaultValue: '10' },
   { key: 'durationMonths', label: 'Vigência inicial da mensalidade (meses)', type: 'number', required: true, defaultValue: '12' },
   { key: 'city', label: 'Cidade / foro', type: 'text', required: true, defaultValue: 'Belo Horizonte / MG' },
   { key: 'contractDate', label: 'Data do contrato', type: 'date', required: true },
-  { key: 'scope', label: 'Resumo do objeto (uso interno / listagem)', type: 'textarea', required: false, defaultValue: 'Implantação, licenciamento e suporte MAX Cultural + MAX Origem + MAX Fluxo' },
 ];
 
-/** Corpo do modelo — sem Cláusula 1ª (partes): o sistema injeta CONTRATADA (CCMEI) + CONTRATANTE (cliente). */
-export const MAX_CULTURAL_BODY = `[TITLE]
-CONTRATO DE PRESTAÇÃO DE SERVIÇOS DE IMPLANTAÇÃO, LICENCIAMENTO DE USO E SUPORTE DA PLATAFORMA MAX CULTURAL
+/**
+ * Modelo multi-produto — mesma espinha do antigo MAX Cultural,
+ * parametrizado para qualquer sistema/plataforma vendida.
+ */
+export const MULTI_PRODUCT_BODY = `[TITLE]
+CONTRATO DE PRESTAÇÃO DE SERVIÇOS DE IMPLANTAÇÃO, LICENCIAMENTO DE USO E SUPORTE — {{productSuite}}
 [/TITLE]
 
 Validade da proposta de origem: {{proposalValidityDays}} ({{proposalValidityDaysExtenso}}) dias corridos a contar da apresentação
@@ -42,146 +48,81 @@ PREÂMBULO
 As Partes obrigam-se a cumprir o presente instrumento por si, seus herdeiros e sucessores, na forma das cláusulas seguintes.
 
 CLÁUSULA 2ª — DO OBJETO
-2.1. O presente Contrato tem por objeto a prestação de serviços de implantação, configuração, disponibilização contínua, gestão operacional e suporte da plataforma MAX Cultural, porta de entrada única da operação da CONTRATANTE, bem como dos sistemas a ela integrados:
-a) MAX Cultural — hub de autenticação única (SSO), gestão de usuários, papéis e permissões, e acesso centralizado aos produtos contratados;
-b) MAX Origem (evolução do Salink) — planejamento, fornecedores, auditoria e operação de projetos culturais;
-c) MAX Fluxo (evolução do SigaCultural) — operação e consultas vinculadas ao fluxo operacional da CONTRATANTE.
-2.2. A CONTRATANTE acessará os sistemas por meio do MAX Cultural, com controle centralizado de quem acessa o quê, conforme o escopo comercial descrito na proposta de {{proposalDate}} e neste Contrato.
+2.1. O presente Contrato tem por objeto a prestação de serviços de implantação, configuração, disponibilização contínua, gestão operacional e suporte de {{productSuite}}, bem como dos módulos e sistemas a ele integrados, conforme descritos abaixo:
+{{productsDetail}}
+2.2. A CONTRATANTE acessará os sistemas com controle de usuários e permissões, conforme o escopo comercial descrito na proposta de {{proposalDate}} e neste Contrato.
 2.3. Integram o objeto, ainda:
 a) implantação (setup, configuração, importação inicial de dados acordada e go-live);
-b) disponibilização de infraestrutura de hospedagem e operação em produção, sob responsabilidade da CONTRATADA, nos termos da Cláusula 5ª;
-c) suporte corretivo vitalício relativo a erros e mau funcionamento do software entregue, nos termos da Cláusula 6ª;
-d) treinamento inicial de até {{trainingHours}} ({{trainingHoursExtenso}}) hora(s), nos termos da Cláusula 7ª.
+b) disponibilização de infraestrutura de hospedagem e operação em produção, sob responsabilidade da CONTRATADA;
+c) suporte corretivo relativo a erros e mau funcionamento do software entregue;
+d) treinamento inicial de até {{trainingHours}} ({{trainingHoursExtenso}}) hora(s).
 2.4. Não integram o objeto deste Contrato, salvo se expressamente incluídos em aditivo ou orçamento específico:
 a) desenvolvimento de novos módulos, integrações, automações, relatórios customizados ou alterações estruturais;
-b) Open Finance / conexão bancária e demais integrações externas não previstas;
+b) integrações externas não previstas na proposta;
 c) consultoria jurídica, contábil ou de prestação de contas perante órgãos públicos;
 d) operação humana contínua (BPO) além do suporte técnico previsto;
 e) customizações de marca, white-label ou apps móveis nativos, salvo acordo escrito.
 
 CLÁUSULA 3ª — DO ESCOPO FUNCIONAL E DOS ENTREGÁVEIS
-3.1. A CONTRATADA entregará ambiente em produção contendo as três plataformas indicadas na Cláusula 2ª, acessíveis mediante login único no MAX Cultural, com:
+3.1. A CONTRATADA entregará ambiente em produção contendo os módulos/sistemas indicados na Cláusula 2ª, com:
 a) cadastro e gestão de usuários e permissões;
-b) operação dos módulos contratados do MAX Origem e do MAX Fluxo;
-c) sincronização e operação das plataformas conforme funcionalidades disponíveis na versão implantada;
-d) documentação operacional mínima e orientação de uso no treinamento.
-3.2. Prazo de entrega da versão inicial: até {{deliveryWeeks}} ({{deliveryWeeksExtenso}}) semanas contadas da assinatura deste Contrato e do recebimento da parcela de implantação, o que ocorrer por último, salvo atraso imputável à CONTRATANTE (ex.: ausência de dados, acessos, validações ou decisões pendentes).
-3.3. A “versão inicial” corresponde ao go-live operacional do escopo acordado, podendo evoluções posteriores seguir o regime de novas demandas (Cláusula 8ª) ou revisão de escopo.
-3.4. A CONTRATANTE reconhece que o sistema encontra-se em desenvolvimento contínuo e que melhorias poderão ser incorporadas ao longo da vigência, sem prejuízo das obrigações de disponibilidade e correção de erros previstas neste Contrato.
+b) operação dos módulos contratados;
+c) documentação operacional mínima e orientação de uso no treinamento.
+3.2. Prazo de entrega da versão inicial: até {{deliveryWeeks}} ({{deliveryWeeksExtenso}}) semanas contadas da assinatura deste Contrato e do recebimento da parcela de implantação, o que ocorrer por último, salvo atraso imputável à CONTRATANTE.
+3.3. A CONTRATANTE reconhece que o software pode evoluir ao longo da vigência, sem prejuízo das obrigações de disponibilidade e correção de erros.
 
-CLÁUSULA 4ª — DO VOLUME DE USO E DOS PROJETOS
-4.1. A mensalidade prevista neste Contrato contempla até {{maxProjects}} ({{maxProjectsExtenso}}) projetos em operação ativa.
-4.2. Projetos excedentes ou encerrados poderão ser mantidos em modo de arquivo, observando-se o prazo legal de retenção aplicável à CONTRATANTE, e poderão ser reativados ou disponibilizados mediante aviso prévio de 7 (sete) dias corridos.
-4.3. Outras fontes de recurso (incluindo, sem se limitar a, Lei Aldir Blanc, leis estaduais de cultura, MROSC, vendas, prestações de serviços, doações e correlatos) poderão integrar o ecossistema MAX Cultural, desde que não ocasionem aumento significativo de custo de processamento e/ou armazenamento. Caso ocorra aumento relevante, as Partes negociarão reajuste à parte, por escrito.
+CLÁUSULA 4ª — DO VOLUME DE USO
+4.1. A mensalidade prevista contempla o volume de uso indicado como {{usageLimit}}, conforme proposta comercial.
+4.2. Ultrapassado o volume incluso, as Partes negociarão reajuste ou pacote adicional por escrito.
 
 CLÁUSULA 5ª — DA INFRAESTRUTURA E DA HOSPEDAGEM
-5.1. A responsabilidade pela infraestrutura de hospedagem e operação dos sistemas em produção, incluindo contas, licenças, domínio e acessos às plataformas utilizadas (hospedagem da aplicação, banco de dados, autenticação e envio de e-mails), será da CONTRATADA, que realizará a administração, configuração, monitoramento e manutenção do ambiente.
-5.2. A CONTRATADA disponibilizará infraestrutura adequada ao porte contratado (até {{maxProjects}} projetos ativos), incluindo banco de dados, ambiente em nuvem e domínio próprio vinculado à operação.
-5.3. Havendo necessidade de ampliação de armazenamento, processamento, tráfego, integrações (incluindo Open Finance / conexão bancária) ou contratação de planos superiores de infraestrutura, os valores poderão ser reajustados conforme o volume efetivamente utilizado e as atualizações de preços dos fornecedores de nuvem e serviços correlatos, mediante comunicação prévia à CONTRATANTE.
-5.4. A CONTRATANTE é responsável pela veracidade dos dados inseridos, pela gestão de seus usuários finais, pela guarda de credenciais sob seu controle e pelo cumprimento de obrigações legais perante órgãos públicos, patrocinadores e terceiros.
+5.1. A responsabilidade pela infraestrutura de hospedagem e operação em produção será da CONTRATADA, que realizará administração, configuração, monitoramento e manutenção do ambiente.
+5.2. Havendo necessidade de ampliação relevante de capacidade ou de planos superiores de infraestrutura, os valores poderão ser reajustados mediante comunicação prévia à CONTRATANTE.
+5.3. A CONTRATANTE é responsável pela veracidade dos dados inseridos, pela gestão de seus usuários e pelo cumprimento de obrigações legais perante terceiros.
 
-CLÁUSULA 6ª — DO SUPORTE, DA MANUTENÇÃO E DO TREINAMENTO OPERACIONAL
-6.1. Correção de erros e mau funcionamento do software entregue, bem como a manutenção corretiva básica e a manutenção da disponibilidade razoável do ambiente, estão incluídas na mensalidade, sem custo adicional, de forma vitalícia enquanto vigente a relação de mensalidade ou, após eventual encerramento desta, pelo período em que as Partes mantiverem acordo escrito de suporte corretivo — observado o disposto na Cláusula 12ª quanto à resilição.
-6.2. Para os fins deste Contrato, considera-se erro ou mau funcionamento o comportamento do sistema em desacordo com o funcionamento esperado do escopo entregue, não se confundindo com:
-a) pedido de nova funcionalidade ou melhoria;
-b) mudança de regra de negócio da CONTRATANTE;
-c) uso indevido, configuração incorreta por usuário, ou falha de terceiros (SALIC, provedores de e-mail, internet da CONTRATANTE etc.);
-d) indisponibilidade de serviços externos fora do controle da CONTRATADA.
-6.3. Canais de suporte e prazos de atendimento inicial serão informados por escrito no go-live. Em regra, solicitações serão acolhidas em dias úteis, em horário comercial de Brasília, salvo acordo diverso.
-6.4. Treinamento: a CONTRATADA oferecerá 1 (uma) sessão de até {{trainingHours}} ({{trainingHoursExtenso}}) hora(s) para demonstração de uso e esclarecimento de dúvidas. Sessões adicionais poderão ser contratadas à parte.
+CLÁUSULA 6ª — DO SUPORTE, DA MANUTENÇÃO E DO TREINAMENTO
+6.1. Correção de erros e manutenção corretiva básica estão incluídas na mensalidade, sem custo adicional, enquanto vigente a relação de mensalidade.
+6.2. Não se confundem com erro: pedidos de nova funcionalidade, mudança de regra de negócio da CONTRATANTE, uso indevido ou falha de terceiros.
+6.3. Treinamento: até {{trainingHours}} ({{trainingHoursExtenso}}) hora(s) inclusa(s). Sessões adicionais poderão ser contratadas à parte.
 
 CLÁUSULA 7ª — DOS VALORES
 7.1. Pelos serviços objeto deste Contrato, a CONTRATANTE pagará à CONTRATADA:
+a) Implantação: {{implementationFeeFormatted}} ({{implementationFeeExtenso}}), em parcela única;
+b) Mensalidade: {{subscriptionFeeFormatted}} ({{subscriptionFeeExtenso}}) por mês;
+c) Quando aplicável, total do 1º mês: {{firstMonthTotalFormatted}} ({{firstMonthTotalExtenso}}).
 
-[TABLE]
-Item | Valor
-Implantação dos 3 (três) sistemas (mão de obra, setup, configuração, importação acordada e go-live) — parcela única | {{implementationFeeFormatted}}
-Mensalidade da plataforma (MAX Cultural + MAX Origem + MAX Fluxo) | {{subscriptionFeeFormatted}} / mês
-Nova demanda / funcionalidade (ativação) | {{newDemandFeeFormatted}} por demanda, até {{newDemandHours}}h
-Correção de erros / manutenção corretiva básica | Incluso na mensalidade
-[/TABLE]
+CLÁUSULA 8ª — DAS NOVAS DEMANDAS
+8.1. Ajustes, melhorias e novas funcionalidades fora do escopo de correção serão cobrados à razão de {{newDemandFeeFormatted}} ({{newDemandFeeExtenso}}) por demanda, limitada a até {{newDemandHours}} ({{newDemandHoursExtenso}}) horas, ou orçados à parte mediante aceite escrito.
 
-7.2. A mensalidade de {{subscriptionFeeFormatted}} ({{subscriptionFeeExtenso}}) corresponde ao conjunto das 3 (três) plataformas, observadas as condições de volume da Cláusula 4ª.
-7.3. No primeiro mês, o investimento total corresponde a {{firstMonthTotalFormatted}} ({{firstMonthTotalExtenso}}), somando a implantação e a primeira mensalidade.
-7.4. Nos meses subsequentes, enquanto vigente a mensalidade, o valor recorrente será de {{subscriptionFeeFormatted}} ({{subscriptionFeeExtenso}}) por competência.
+CLÁUSULA 9ª — DO PAGAMENTO
+9.1. Os pagamentos serão realizados via PIX, para dados indicados pela CONTRATADA em fatura ou comunicação escrita.
+9.2. A mensalidade vence no dia {{paymentDay}} de cada mês de competência.
+9.3. O atraso sujeitará a CONTRATANTE a juros de 1% ao mês e multa de 2% sobre o valor em atraso.
 
-CLÁUSULA 8ª — DAS NOVAS DEMANDAS E DO REGIME DE EVOLUÇÃO
-8.1. Ajustes, melhorias e novas demandas ou funcionalidades solicitados pela CONTRATANTE, fora do escopo de correção de erros e manutenção corretiva básica, serão cobrados à razão de {{newDemandFeeFormatted}} ({{newDemandFeeExtenso}}) por demanda, limitada a até {{newDemandHours}} ({{newDemandHoursExtenso}}) horas de trabalho por ativação.
-8.2. Demandas que excedam esse limite, bem como desenvolvimento de novos módulos, integrações, automações, relatórios customizados ou alterações estruturais dos sistemas, serão orçadas à parte, mediante proposta escrita aceita pela CONTRATANTE.
-8.3. Nenhuma evolução fora do escopo obriga a CONTRATADA sem aceite formal do respectivo orçamento.
+CLÁUSULA 10ª — DA VIGÊNCIA
+10.1. A mensalidade permanece válida por {{durationMonths}} ({{durationMonthsExtenso}}) meses a contar do início da cobrança recorrente, podendo renovar-se automaticamente, salvo denúncia com 30 (trinta) dias de antecedência.
 
-CLÁUSULA 9ª — DA FORMA E DAS CONDIÇÕES DE PAGAMENTO
-9.1. Os pagamentos serão realizados exclusivamente via PIX, para a chave / dados bancários indicados pela CONTRATADA em fatura ou comunicação escrita.
-9.2. A implantação deverá ser paga à vista, por ocasião da assinatura deste Contrato (ou conforme etapa expressa em cronograma anexo, se houver).
-9.3. A mensalidade será paga de forma recorrente, por competência mensal, até o dia {{paymentDay}} de cada mês (ou, na ausência de indicação, até o dia do aniversário da data de início de vigência).
-9.4. Ativações de mão de obra / novas demandas serão pagas à vista, por demanda ou etapa correspondente, antes ou imediatamente após a execução, conforme combinado por escrito.
-9.5. O atraso superior a 10 (dez) dias corridos no pagamento de qualquer obrigação poderá ensejar:
-a) suspensão do acesso aos sistemas, mediante aviso prévio de 3 (três) dias úteis;
-b) incidência de multa de 2% (dois por cento) sobre o valor em atraso, acrescida de juros de 1% (um por cento) ao mês e correção monetária pelo IPCA, quando aplicável;
-c) rescisão por justa causa, nos termos da Cláusula 12ª, se o inadimplemento persistir por mais de 30 (trinta) dias corridos.
-9.6. Tributos incidentes sobre a prestação de serviços serão tratados conforme a legislação aplicável ao enquadramento fiscal da CONTRATADA, podendo ser destacados em nota fiscal / recibo quando obrigatório.
-
-CLÁUSULA 10ª — DA VIGÊNCIA, DA REVISÃO E DO REAJUSTE
-10.1. Este Contrato entra em vigor na data de sua assinatura pelas Partes (“Data de Início”).
-10.2. A mensalidade permanece válida por {{durationMonths}} ({{durationMonthsExtenso}}) meses a contar do início da vigência da cobrança recorrente. No mês seguinte ao período inicial, as Partes reavaliarão o volume de uso, a escala da operação e o escopo efetivamente utilizado, podendo haver redução ou majoração da mensalidade conforme a realidade da CONTRATANTE, por escrito.
-10.3. Após os {{durationMonths}} ({{durationMonthsExtenso}}) meses iniciais, o Contrato prorroga-se automaticamente por períodos sucessivos de {{durationMonths}} meses, salvo denúncia por qualquer das Partes com aviso prévio de 30 (trinta) dias corridos.
-10.4. Reajustes decorrentes de aumento de infraestrutura, integrações ou planos superiores observarão a Cláusula 5.3.
-
-CLÁUSULA 11ª — DA PROPRIEDADE INTELECTUAL E DA LICENÇA DE USO
-11.1. O software MAX Cultural, MAX Origem e MAX Fluxo, inclusive códigos-fonte, arquitetura, interfaces, marcas, bancos de dados estruturais e documentação técnica da CONTRATADA, são e permanecerão de titularidade exclusiva da CONTRATADA (ou de licenciantes de terceiros por ela utilizados).
-11.2. A CONTRATANTE recebe, durante a vigência da mensalidade em dia, licença de uso não exclusiva, intransferível e temporária dos sistemas, limitada às suas operações internas e ao volume contratado.
-11.3. É vedado à CONTRATANTE, salvo autorização prévia e escrita da CONTRATADA:
-a) sublicenciar, vender, ceder ou disponibilizar o sistema a terceiros estranhos à sua operação;
-b) realizar engenharia reversa, descompilar ou extrair o código-fonte;
-c) remover avisos de propriedade intelectual;
-d) utilizar o sistema para fins ilícitos.
-11.4. Os dados de negócio inseridos pela CONTRATANTE (projetos, fornecedores, usuários, documentos etc.) são de titularidade da CONTRATANTE. A CONTRATADA tratará tais dados como confidenciais e os utilizará apenas para execução deste Contrato e cumprimento de obrigações legais.
-11.5. Em caso de término do Contrato, a CONTRATADA disponibilizará, mediante solicitação escrita no prazo de até 30 (trinta) dias do encerramento, exportação razoável dos dados da CONTRATANTE em formato eletrônico usual (ex.: CSV, JSON ou arquivos armazenados), podendo cobrar esforço extraordinário se a exportação exigir desenvolvimento específico.
+CLÁUSULA 11ª — DA PROPRIEDADE INTELECTUAL E DOS DADOS
+11.1. O software, códigos, arquitetura e documentação técnica da CONTRATADA permanecem de sua titularidade.
+11.2. A CONTRATANTE recebe licença de uso não exclusiva, intransferível e temporária enquanto a mensalidade estiver em dia.
+11.3. Os dados de negócio inseridos pela CONTRATANTE são de sua titularidade. A CONTRATADA os tratará como confidenciais.
 
 CLÁUSULA 12ª — DA RESCISÃO
-12.1. O Contrato poderá ser rescindido:
-a) por acordo escrito das Partes;
-b) por denúncia imotivada, com aviso prévio de 30 (trinta) dias corridos, após o período inicial de {{durationMonths}} meses da mensalidade — ou a qualquer tempo por acordo;
-c) por justa causa, em caso de inadimplemento grave não sanado em 15 (quinze) dias corridos após notificação (ou prazo específico da Cláusula 9.5 para inadimplemento pecuniário);
-d) imediatamente, em caso de falência, recuperação judicial/extrajudicial ou dissolução da outra Parte, na forma da lei.
-12.2. A rescisão não gera direito à devolução da parcela de implantação já executada ou em execução, salvo se a CONTRATADA não tiver iniciado a implantação por culpa exclusiva sua, hipótese em que se restituirá o valor proporcional não utilizado.
-12.3. Mensalidades já vencidas permanecem devidas. Mensalidade do mês da rescisão será devida integralmente se o aviso ocorrer após o dia de vencimento da competência, salvo acordo diverso.
-12.4. Com o término, a CONTRATADA poderá desativar acessos após cumprir a obrigação de exportação da Cláusula 11.5, quando solicitada tempestivamente.
+12.1. Qualquer das Partes poderá rescindir mediante aviso prévio de 30 (trinta) dias, ou imediatamente em caso de inadimplemento grave.
+12.2. Valores já devidos permanecem exigíveis. A implantação já executada ou em execução não gera direito à devolução, salvo se a CONTRATADA não tiver iniciado a implantação por culpa exclusiva sua.
 
-CLÁUSULA 13ª — DAS RESPONSABILIDADES E DAS LIMITAÇÕES
-13.1. A CONTRATADA obriga-se a executar os serviços com diligência técnica, boa-fé e padrões profissionais adequados à natureza da solução.
-13.2. A CONTRATADA não se responsabiliza por:
-a) decisões de gestão, prestação de contas ou compliance da CONTRATANTE perante MinC, SALIC, tribunais de contas, patrocinadores ou terceiros;
-b) indisponibilidade, mudança de API, bloqueio ou falha de sistemas públicos ou de terceiros (incluindo SALIC);
-c) perda de dados causada por culpa exclusiva da CONTRATANTE ou de seus usuários;
-d) lucros cessantes, danos indiretos ou mera expectativa de resultado econômico, na máxima extensão permitida pela legislação aplicável às relações civis empresariais.
-13.3. Ressalvados dolo ou culpa grave, a responsabilidade civil total da CONTRATADA por danos diretos comprovados decorrentes deste Contrato fica limitada, em cada período de 12 (doze) meses, ao montante efetivamente pago pela CONTRATANTE à CONTRATADA nos 3 (três) meses anteriores ao evento.
-13.4. A CONTRATANTE declara possuir poderes e legitimidade para contratar e para tratar dados pessoais de seus colaboradores e terceiros inseridos na plataforma, comprometendo-se a observar a Lei nº 13.709/2018 (LGPD) no que lhe couber como controladora.
-13.5. Na medida em que tratar dados pessoais sob instruções da CONTRATANTE para execução deste Contrato, a CONTRATADA atuará como operadora, adotando medidas de segurança compatíveis com o porte do serviço.
+CLÁUSULA 13ª — DA RESPONSABILIDADE
+13.1. A CONTRATADA executará os serviços com diligência técnica e boa-fé.
+13.2. Ressalvados dolo ou culpa grave, a responsabilidade civil total da CONTRATADA por danos diretos fica limitada, em cada período de 12 meses, ao montante pago pela CONTRATANTE nos 3 meses anteriores ao evento.
 
-CLÁUSULA 14ª — DA CONFIDENCIALIDADE
-14.1. As Partes obrigam-se a manter sigilo sobre informações técnicas, comerciais, financeiras e operacionais a que tiverem acesso em razão deste Contrato, pelo prazo de vigência e por 3 (três) anos após o término, exceto se:
-a) forem de domínio público sem culpa da Parte receptora;
-b) já forem de conhecimento legítimo prévio;
-c) houver obrigação legal ou ordem de autoridade competente;
-d) houver autorização escrita da Parte titular.
+CLÁUSULA 14ª — DAS COMUNICAÇÕES
+14.1. Comunicações contratuais serão válidas quando enviadas aos e-mails indicados na Cláusula 1ª (qualificação das Partes).
 
-CLÁUSULA 15ª — DAS COMUNICAÇÕES
-15.1. Todas as comunicações contratuais serão válidas quando enviadas aos e-mails indicados na Cláusula 1ª, ou a outros que venham a ser informados por escrito, presumindo-se recebidas no primeiro dia útil seguinte ao envio, se não houver confirmação anterior.
+CLÁUSULA 15ª — DO FORO
+15.1. Fica eleito o foro da Comarca de {{city}}, com renúncia a qualquer outro.
 
-CLÁUSULA 16ª — DAS DISPOSIÇÕES GERAIS
-16.1. Este Contrato, juntamente com a proposta comercial de {{proposalDate}} (naquilo que não conflitar com este instrumento), constitui o acordo integral entre as Partes sobre o objeto. Em caso de conflito, prevalece este Contrato.
-16.2. A tolerância quanto ao descumprimento de qualquer cláusula não implica renúncia de direito, novação ou alteração tácita.
-16.3. A eventual nulidade de alguma disposição não prejudica as demais, que permanecerão em pleno vigor.
-16.4. É vedada a cessão deste Contrato pela CONTRATANTE sem anuência prévia e escrita da CONTRATADA. A CONTRATADA poderá utilizar subcontratados de infraestrutura e apoio técnico, permanecendo responsável perante a CONTRATANTE.
-16.5. Anexos eventualmente firmados (cronograma, lista de importações, SLA detalhado) integram este Contrato para todos os fins.
-16.6. As Partes reconhecem a validade de assinaturas eletrônicas e digitais com padrão ICP-Brasil ou plataforma de assinatura com trilha de auditoria, atribuindo-lhes a mesma eficácia da assinatura manuscrita.
-
-CLÁUSULA 17ª — DO FORO
-17.1. Fica eleito o foro da Comarca de {{city}}, com renúncia a qualquer outro, por mais privilegiado que seja, para dirimir dúvidas ou controvérsias oriundas deste Contrato.
-
-CLÁUSULA 18ª — DO ACEITE
-18.1. E por estarem assim justas e contratadas, as Partes firmam o presente instrumento em 2 (duas) vias de igual teor, ou em via eletrônica única com validade jurídica, na presença das testemunhas abaixo (se aplicável).
+CLÁUSULA 16ª — DO ACEITE
+16.1. E por estarem assim justas e contratadas, as Partes firmam o presente instrumento em 2 (duas) vias de igual teor, ou em via eletrônica única com validade jurídica.
 
 LOCAL E DATA
 {{city}}, {{contractDay}} de {{contractMonthName}} de {{contractYear}}.
@@ -207,49 +148,55 @@ Nome: ________________________________
 CPF: _________________________________
 [/SIGNATURES]
 
-ANEXO I — RESUMO COMERCIAL (CONFERÊNCIA RÁPIDA)
+ANEXO I — RESUMO COMERCIAL
 
 [TABLE]
 Descrição | Condição
-Produtos | MAX Cultural + MAX Origem + MAX Fluxo
+Produto / pacote | {{productSuite}}
 Implantação | {{implementationFeeFormatted}} (única)
-Mensalidade | {{subscriptionFeeFormatted}} / mês (até {{maxProjects}} projetos ativos)
-1º mês (total) | {{firstMonthTotalFormatted}}
+Mensalidade | {{subscriptionFeeFormatted}} / mês
+Volume incluso | {{usageLimit}}
+1º mês (se aplicável) | {{firstMonthTotalFormatted}}
 Nova demanda | {{newDemandFeeFormatted}} / até {{newDemandHours}}h
-Correção de erros | Incluso
-Go-live inicial | até {{deliveryWeeks}} semanas após assinatura + pagamento da implantação
+Go-live | até {{deliveryWeeks}} semanas
 Treinamento | {{trainingHours}}h incluso
-Infraestrutura | sob responsabilidade da CONTRATADA
-Pagamento | PIX
-Revisão de mensalidade | após {{durationMonths}} meses
+Pagamento | PIX · dia {{paymentDay}}
+Vigência | {{durationMonths}} meses
 Foro | {{city}}
 [/TABLE]
 
-ANEXO II — CHECKLIST DE DADOS PARA ASSINATURA
-Preencher antes do envio final:
+ANEXO II — CHECKLIST PARA ASSINATURA
 
 [CHECKLIST]
-Qualificação completa da CONTRATADA (CPF ou CNPJ, endereço)
-Qualificação completa da CONTRATANTE (razão social, CNPJ, endereço, representante)
-Dia de vencimento da mensalidade
-Chave PIX / dados para faturamento
-Confirmar e-mail oficial de comunicações da CONTRATANTE
-Anexar proposta de {{proposalDate}} (PDF) como referência
-Revisar juridicamente (recomendado) antes da assinatura
+Qualificação da CONTRATANTE conferida (cadastro do cliente)
+Representante legal e poderes conferidos
+Nome do(s) sistema(s) e módulos conferidos
+Valores e dia de vencimento conferidos
+E-mail de comunicações confirmado
+Proposta comercial anexada (se houver)
+Revisão jurídica (recomendado)
 [/CHECKLIST]
-
-Documento elaborado com base na proposta comercial MAX Cultural apresentada em {{proposalDate}}. Recomenda-se revisão por advogado(a) de confiança das Partes antes da assinatura, sobretudo quanto a enquadramento fiscal, LGPD e cláusulas de limitação de responsabilidade.
 `;
 
-export function maxCulturalSeed(env = {}) {
+/** @deprecated alias — conteúdo multi-produto. */
+export const MAX_CULTURAL_VARIABLES = MULTI_PRODUCT_VARIABLES;
+/** @deprecated alias — conteúdo multi-produto. */
+export const MAX_CULTURAL_BODY = MULTI_PRODUCT_BODY;
+
+export function maxCulturalSeed(_env = {}) {
+  return multiProductSeed();
+}
+
+export function multiProductSeed(_env = {}) {
   return {
-    name: 'MAX Cultural — Implantação, licença e suporte',
+    name: 'Implantação, licença e suporte de sistemas',
     description:
-      'Modelo MAX Cultural (cláusulas comerciais). As partes (CONTRATADA = CCMEI; CONTRATANTE = cliente) são preenchidas automaticamente pelo sistema.',
-    bodyTemplate: MAX_CULTURAL_BODY,
-    variables: MAX_CULTURAL_VARIABLES.map((v) => ({ ...v })),
+      'Modelo multi-produto (qualquer sistema/plataforma). Use productSuite e productsDetail. Partes preenchidas pelo sistema.',
+    bodyTemplate: MULTI_PRODUCT_BODY,
+    variables: MULTI_PRODUCT_VARIABLES.map((v) => ({ ...v })),
   };
 }
+
 
 /** Variáveis do modelo genérico (estrutura inspirada no MAX Cultural). */
 export const GENERIC_SERVICES_VARIABLES = [
@@ -383,14 +330,14 @@ export function genericServicesSeed(_env = {}) {
   return {
     name: 'Prestação de serviços (genérico)',
     description:
-      'Modelo genérico inspirado na estrutura do MAX Cultural (objeto, valores, vigência, anexos). Partes preenchidas pelo sistema.',
+      'Modelo curto multi-produto (objeto, valores, vigência, anexos). Partes preenchidas pelo sistema.',
     bodyTemplate: GENERIC_SERVICES_BODY,
     variables: GENERIC_SERVICES_VARIABLES.map((v) => ({ ...v })),
   };
 }
 
 export const BUILTIN_TEMPLATE_IDS = {
+  /** Id legado; conteúdo agora é multi-produto. */
   maxCultural: 'tpl-max-cultural',
-  /** Novo id para o genérico baseado no MAX (evita colidir com soft-delete do tpl-generic antigo). */
   generic: 'tpl-servicos-generico',
 };

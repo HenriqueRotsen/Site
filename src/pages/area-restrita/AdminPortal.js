@@ -13,6 +13,7 @@ import { InvoicePdfPreviewModal } from './admin/InvoicePdfPreviewModal';
 import { NfseUploadForm } from './admin/NfseUploadForm';
 import { ContractForm, emptyContractForm } from './admin/ContractForm';
 import { ContractTemplateForm, emptyTemplateForm } from './admin/ContractTemplateForm';
+import { syncVariablesFromBody } from '../../utils/templateVarSync';
 import { Pagination } from './admin/Pagination';
 import '../../styles/AreaRestrita.css';
 import '../../styles/AdminShell.css';
@@ -906,12 +907,17 @@ export function AdminPortal() {
   };
 
   const openEditTemplate = (template) => {
+    const bodyTemplate = template.bodyTemplate || '';
+    const variables = syncVariablesFromBody(
+      bodyTemplate,
+      (template.variables || []).map((v) => ({ ...v, keyLocked: true }))
+    );
     setEditingTemplateId(template.id);
     setTemplateForm({
       name: template.name || '',
       description: template.description || '',
-      bodyTemplate: template.bodyTemplate || '',
-      variables: (template.variables || []).map((v) => ({ ...v, keyLocked: true })),
+      bodyTemplate,
+      variables,
     });
     setPage('edit-contract-template');
   };

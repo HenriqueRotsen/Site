@@ -2,7 +2,7 @@ import { json, readJson } from '../lib/http.js';
 import { uuid, nowIso } from '../lib/crypto.js';
 import { requireAdmin } from '../lib/session.js';
 import { audit } from '../lib/audit.js';
-import { maxCulturalSeed, genericServicesSeed, BUILTIN_TEMPLATE_IDS } from '../lib/contract-templates-seed.js';
+import { multiProductSeed, genericServicesSeed, BUILTIN_TEMPLATE_IDS } from '../lib/contract-templates-seed.js';
 import { isSystemPartyVariable } from '../lib/contract-template.js';
 
 function parseVariables(raw) {
@@ -29,33 +29,71 @@ function templateDto(row) {
 }
 
 /**
- * Garante builtins: só cria se o id ainda não existir (não sobrescreve edições nem reativa exclusões).
+ * Garante builtins: cria se não existir.
+ * Atualiza conteúdo só na migração multi-produto (ex.: modelo antigo "MAX Cultural"),
+ * sem sobrescrever edições posteriores do admin.
  */
-async function upsertBuiltin(db, id, payload, now) {
-  const existing = await db.prepare('SELECT id FROM contract_templates WHERE id = ?').bind(id).first();
-  if (existing) return;
+async function upsertBuiltin(db, id, payload, now, { shouldMigrate } = {}) {
+  const existing = await db
+    .prepare('SELECT id, is_active, name, description, body_template FROM contract_templates WHERE id = ?')
+    .bind(id)
+    .first();
+
+  if (!existing) {
+    await db
+      .prepare(
+        `INSERT INTO contract_templates (id, name, description, body_template, variables_json, is_active, created_at, updated_at)
+         VALUES (?, ?, ?, ?, ?, 1, ?, ?)`
+      )
+      .bind(
+        id,
+        payload.name,
+        payload.description,
+        payload.bodyTemplate,
+        JSON.stringify(payload.variables),
+        now,
+        now
+      )
+      .run();
+    return;
+  }
+
+  if (!existing.is_active) return;
+
+  const migrate =
+    typeof shouldMigrate === 'function'
+      ? shouldMigrate(existing)
+      : false;
+  if (!migrate) return;
 
   await db
     .prepare(
-      `INSERT INTO contract_templates (id, name, description, body_template, variables_json, is_active, created_at, updated_at)
-       VALUES (?, ?, ?, ?, ?, 1, ?, ?)`
+      `UPDATE contract_templates
+       SET name = ?, description = ?, body_template = ?, variables_json = ?, updated_at = ?
+       WHERE id = ? AND is_active = 1`
     )
     .bind(
-      id,
       payload.name,
       payload.description,
       payload.bodyTemplate,
       JSON.stringify(payload.variables),
       now,
-      now
+      id
     )
     .run();
 }
 
 async function ensureBuiltinTemplates(db, env) {
   const now = nowIso();
-  await upsertBuiltin(db, BUILTIN_TEMPLATE_IDS.maxCultural, maxCulturalSeed(env), now);
-  await upsertBuiltin(db, BUILTIN_TEMPLATE_IDS.generic, genericServicesSeed(env), now);
+  await upsertBuiltin(db, BUILTIN_TEMPLATE_IDS.maxCultural, multiProductSeed(env), now, {
+    shouldMigrate: (row) =>
+      /MAX Cultural/i.test(String(row.name || '')) ||
+      /MAX Cultural/i.test(String(row.body_template || '')) ||
+      !String(row.body_template || '').includes('{{productSuite}}'),
+  });
+  await upsertBuiltin(db, BUILTIN_TEMPLATE_IDS.generic, genericServicesSeed(env), now, {
+    shouldMigrate: (row) => /MAX Cultural/i.test(String(row.description || '')),
+  });
 }
 
 function normalizePayload(body = {}) {
