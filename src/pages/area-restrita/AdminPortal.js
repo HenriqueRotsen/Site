@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { billingApi, formatBRL, formatDate, maskCnpjInput, downloadBlob, invoicePdfFilename, nfsePdfFilename } from '../../api/billing';
+import { billingApi, formatBRL, formatDate, maskCnpjInput, downloadBlob, invoicePdfFilename, nfsePdfFilename, contractPdfFilename } from '../../api/billing';
 import { maskPhoneInput, maskCepInput, fetchCep, formatAddressLine } from '../../utils/brazilianInput';
 import { AreaRestritaLayout, AreaCard, AreaBack } from './AreaRestritaLayout';
 import { PasswordInput } from './PasswordInput';
@@ -8,8 +8,11 @@ import { OtpInput } from './OtpInput';
 import { AdminShell, AdminPageHeader, StatusBadge, StatCard } from './admin/AdminShell';
 import { SearchableSelect } from './admin/SearchableSelect';
 import { DeleteClientModal } from './admin/DeleteClientModal';
+import { ConfirmDeleteModal } from './admin/ConfirmDeleteModal';
 import { InvoicePdfPreviewModal } from './admin/InvoicePdfPreviewModal';
 import { NfseUploadForm } from './admin/NfseUploadForm';
+import { ContractForm, emptyContractForm } from './admin/ContractForm';
+import { ContractTemplateForm, emptyTemplateForm } from './admin/ContractTemplateForm';
 import { Pagination } from './admin/Pagination';
 import '../../styles/AreaRestrita.css';
 import '../../styles/AdminShell.css';
@@ -129,6 +132,20 @@ export function AdminPortal() {
   const [nfseForm, setNfseForm] = useState(emptyNfse);
   const [nfseFile, setNfseFile] = useState(null);
   const [nfseUploading, setNfseUploading] = useState(false);
+  const [contracts, setContracts] = useState([]);
+  const [contractsPage, setContractsPage] = useState(1);
+  const [contractsPagination, setContractsPagination] = useState({ page: 1, totalPages: 1, total: 0 });
+  const [contractForm, setContractForm] = useState(emptyContractForm);
+  const [contractTemplates, setContractTemplates] = useState([]);
+  const [rectifyingContract, setRectifyingContract] = useState(null);
+  const [templateForm, setTemplateForm] = useState(emptyTemplateForm);
+  const [editingTemplateId, setEditingTemplateId] = useState(null);
+  const [templateSubmitting, setTemplateSubmitting] = useState(false);
+  const [templateToDelete, setTemplateToDelete] = useState(null);
+  const [templateDeleteLoading, setTemplateDeleteLoading] = useState(false);
+  const [contractSubmitting, setContractSubmitting] = useState(false);
+  const [contractPreviewing, setContractPreviewing] = useState(false);
+  const [resendingContractId, setResendingContractId] = useState(null);
 
   const loadDashboard = useCallback(async (recentPage = 1, overduePage = 1) => {
     const dash = await billingApi.getDashboard({
@@ -157,6 +174,17 @@ export function AdminPortal() {
     setNfsePagination(data.pagination);
   }, []);
 
+  const loadContracts = useCallback(async (pageNumber = 1) => {
+    const data = await billingApi.listContracts({ page: pageNumber, limit: PAGE_SIZE });
+    setContracts(data.contracts);
+    setContractsPagination(data.pagination);
+  }, []);
+
+  const loadContractTemplates = useCallback(async (activeOnly = false) => {
+    const data = await billingApi.listContractTemplates(activeOnly ? { active: '1' } : {});
+    setContractTemplates(data.templates || []);
+  }, []);
+
   const loadClientOptions = useCallback(async () => {
     const data = await billingApi.listClientOptions();
     setClientSelectOptions(data.clients);
@@ -172,6 +200,15 @@ export function AdminPortal() {
     } else if (page === 'nfse' || page === 'new-nfse') {
       if (page === 'nfse') await loadNfse(nfsePage);
       await loadClientOptions();
+    } else if (page === 'contracts') {
+      await loadContracts(contractsPage);
+    } else if (page === 'contract-templates') {
+      await loadContractTemplates(false);
+    } else if (page === 'new-contract') {
+      await loadClientOptions();
+      await loadContractTemplates(true);
+    } else if (page === 'new-contract-template' || page === 'edit-contract-template') {
+      // form pages
     } else if (page === 'new-invoice') {
       await loadClientOptions();
     } else {
@@ -182,12 +219,15 @@ export function AdminPortal() {
     clientsPage,
     invoicesPage,
     nfsePage,
+    contractsPage,
     dashboardRecentPage,
     dashboardOverduePage,
     loadDashboard,
     loadClients,
     loadInvoices,
     loadNfse,
+    loadContracts,
+    loadContractTemplates,
     loadClientOptions,
   ]);
 
@@ -212,7 +252,13 @@ export function AdminPortal() {
     if (page === 'clients') loadClients(clientsPage);
     if (page === 'invoices') loadInvoices(invoicesPage);
     if (page === 'nfse') loadNfse(nfsePage);
+    if (page === 'contracts') loadContracts(contractsPage);
+    if (page === 'contract-templates') loadContractTemplates(false);
     if (page === 'new-invoice' || page === 'new-nfse') loadClientOptions();
+    if (page === 'new-contract') {
+      loadClientOptions();
+      loadContractTemplates(true).catch(() => {});
+    }
   }, [
     step,
     page,
@@ -220,12 +266,15 @@ export function AdminPortal() {
     clientsPage,
     invoicesPage,
     nfsePage,
+    contractsPage,
     dashboardRecentPage,
     dashboardOverduePage,
     loadDashboard,
     loadClients,
     loadInvoices,
     loadNfse,
+    loadContracts,
+    loadContractTemplates,
     loadClientOptions,
   ]);
 
@@ -261,9 +310,23 @@ export function AdminPortal() {
     if (key === 'clients') setClientsPage(1);
     if (key === 'invoices') setInvoicesPage(1);
     if (key === 'nfse') setNfsePage(1);
+    if (key === 'contracts') setContractsPage(1);
     if (key === 'new-client') {
       setClientForm({ ...emptyClient });
       setCnpjLoading(false);
+    }
+    if (key === 'new-contract') {
+      setRectifyingContract(null);
+      setContractForm({ ...emptyContractForm });
+      loadClientOptions().catch(() => {});
+      loadContractTemplates(true).catch(() => {});
+    }
+    if (key === 'new-contract-template') {
+      setEditingTemplateId(null);
+      setTemplateForm({ ...emptyTemplateForm, variables: emptyTemplateForm.variables.map((v) => ({ ...v })) });
+    }
+    if (key === 'contract-templates') {
+      loadContractTemplates(false).catch(() => {});
     }
     if (key === 'new-nfse' || key === 'new-invoice') {
       loadClientOptions().catch(() => {});
@@ -622,7 +685,11 @@ export function AdminPortal() {
   }, []);
 
   const showPdfBlobPreview = useCallback((blob, title) => {
-    const pdfUrl = URL.createObjectURL(blob);
+    const typed =
+      blob?.type === 'application/pdf'
+        ? blob
+        : new Blob([blob], { type: 'application/pdf' });
+    const pdfUrl = URL.createObjectURL(typed);
     setPdfPreview({
       title,
       pdfUrl,
@@ -678,6 +745,240 @@ export function AdminPortal() {
     }
   };
 
+  const buildContractPayload = () => ({
+    templateId: contractForm.templateId,
+    clientId: contractForm.clientId,
+    sendEmail: contractForm.sendEmail.trim(),
+    variables: contractForm.variables || {},
+    contractDate: contractForm.variables?.contractDate || '',
+    startDate: contractForm.variables?.startDate || contractForm.variables?.contractDate || '',
+    durationMonths: contractForm.variables?.durationMonths || '12',
+    paymentDay: contractForm.variables?.paymentDay || '10',
+    subscriptionPeriod: contractForm.variables?.subscriptionPeriod || 'mensal',
+    implementationFee: contractForm.variables?.implementationFee || '',
+    subscriptionFee: contractForm.variables?.subscriptionFee || '',
+    firstMonthTotal: contractForm.variables?.firstMonthTotal || '',
+    newDemandFee: contractForm.variables?.newDemandFee || '',
+    scope: contractForm.variables?.scope || '',
+    clientLegalName: contractForm.variables?.clientLegalName || '',
+    clientCnpj: contractForm.variables?.clientCnpj || '',
+    clientAddress: contractForm.variables?.clientAddress || '',
+    city: contractForm.variables?.city || '',
+    bodyText: contractForm.bodyText,
+    send: true,
+    number: rectifyingContract?.number || undefined,
+    isRectified: Boolean(rectifyingContract),
+  });
+
+  const handlePreviewContract = async () => {
+    setError('');
+    if (!contractForm.templateId || !contractForm.clientId) {
+      setError('Selecione o modelo e o cliente para ver a prévia.');
+      return;
+    }
+    setContractPreviewing(true);
+    setPdfPreview({
+      title: rectifyingContract
+        ? `Prévia retificação ${rectifyingContract.number}`
+        : 'Prévia do contrato',
+      loading: true,
+    });
+    try {
+      const html = await billingApi.previewContract(buildContractPayload());
+      showHtmlPreview(
+        html,
+        rectifyingContract
+          ? `Prévia retificação ${rectifyingContract.number}`
+          : 'Prévia do contrato'
+      );
+    } catch (err) {
+      setPdfPreview(null);
+      setError(err.message);
+    } finally {
+      setContractPreviewing(false);
+    }
+  };
+
+  const handleCreateContract = async (e) => {
+    e.preventDefault();
+    setError('');
+    setInfo('');
+    if (!contractForm.templateId) {
+      setError('Selecione um modelo de contrato.');
+      return;
+    }
+    if (!contractForm.clientId) {
+      setError('Selecione um cliente.');
+      return;
+    }
+    if (!contractForm.sendEmail.trim()) {
+      setError('Informe o e-mail de envio.');
+      return;
+    }
+    setContractSubmitting(true);
+    try {
+      const payload = buildContractPayload();
+      const result = rectifyingContract
+        ? await billingApi.rectifyContract(rectifyingContract.id, payload)
+        : await billingApi.createContract(payload);
+      setContractForm({ ...emptyContractForm });
+      setRectifyingContract(null);
+      setInfo(
+        rectifyingContract
+          ? `Contrato ${result.contract?.number || ''} retificado e enviado.`
+          : `Contrato ${result.contract?.number || ''} gerado e enviado.`
+      );
+      setPage('contracts');
+      setContractsPage(1);
+      await loadContracts(1);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setContractSubmitting(false);
+    }
+  };
+
+  const openRectifyContract = async (contract) => {
+    setError('');
+    setInfo('');
+    try {
+      const data = await billingApi.getContract(contract.id);
+      const full = data.contract || contract;
+      const vars = { ...(full.variables || {}) };
+      if (!vars.clientLegalName && full.clientLegalName) vars.clientLegalName = full.clientLegalName;
+      if (!vars.clientCnpj && full.clientCnpjFormatted) vars.clientCnpj = full.clientCnpjFormatted;
+      if (!vars.clientAddress && full.clientAddress) vars.clientAddress = full.clientAddress;
+      if (!vars.contractDate && full.contractDate) vars.contractDate = full.contractDate;
+      if (!vars.durationMonths && full.durationMonths) vars.durationMonths = String(full.durationMonths);
+      if (!vars.paymentDay && full.paymentDay) vars.paymentDay = String(full.paymentDay);
+      if (!vars.implementationFee && full.implementationFeeCents != null) {
+        vars.implementationFee = (full.implementationFeeCents / 100).toFixed(2).replace('.', ',');
+      }
+      if (!vars.subscriptionFee && full.subscriptionFeeCents != null) {
+        vars.subscriptionFee = (full.subscriptionFeeCents / 100).toFixed(2).replace('.', ',');
+      }
+      if (!vars.scope && full.scope) vars.scope = full.scope;
+
+      setRectifyingContract(full);
+      setContractForm({
+        templateId: full.templateId || '',
+        clientId: full.clientId || '',
+        sendEmail: full.sendEmail || '',
+        variables: vars,
+        bodyText: full.bodyText || '',
+      });
+      await loadClientOptions();
+      await loadContractTemplates(true);
+      setPage('new-contract');
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
+  const handleSaveContractTemplate = async (e) => {
+    e.preventDefault();
+    setError('');
+    setInfo('');
+    setTemplateSubmitting(true);
+    try {
+      const payload = {
+        name: templateForm.name,
+        description: templateForm.description,
+        bodyTemplate: templateForm.bodyTemplate,
+        variables: templateForm.variables,
+      };
+      if (editingTemplateId) {
+        await billingApi.updateContractTemplate(editingTemplateId, payload);
+        setInfo('Modelo atualizado.');
+      } else {
+        await billingApi.createContractTemplate(payload);
+        setInfo('Modelo criado.');
+      }
+      setEditingTemplateId(null);
+      setTemplateForm({ ...emptyTemplateForm, variables: emptyTemplateForm.variables.map((v) => ({ ...v })) });
+      setPage('contract-templates');
+      await loadContractTemplates(false);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setTemplateSubmitting(false);
+    }
+  };
+
+  const openEditTemplate = (template) => {
+    setEditingTemplateId(template.id);
+    setTemplateForm({
+      name: template.name || '',
+      description: template.description || '',
+      bodyTemplate: template.bodyTemplate || '',
+      variables: (template.variables || []).map((v) => ({ ...v, keyLocked: true })),
+    });
+    setPage('edit-contract-template');
+  };
+
+  const openDeleteTemplate = (template) => {
+    setTemplateToDelete(template);
+  };
+
+  const handleConfirmDeleteTemplate = async () => {
+    if (!templateToDelete) return;
+    setError('');
+    setTemplateDeleteLoading(true);
+    try {
+      await billingApi.deleteContractTemplate(templateToDelete.id);
+      setInfo('Modelo excluído.');
+      setTemplateToDelete(null);
+      await loadContractTemplates(false);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setTemplateDeleteLoading(false);
+    }
+  };
+
+  const handleDownloadContract = async (contract) => {
+    try {
+      const blob = await billingApi.downloadAdminContractPdf(contract.id);
+      await downloadBlob(blob, contractPdfFilename(contract.number));
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
+  const handlePreviewContractPdf = async (contract) => {
+    setError('');
+    setPdfPreview({ title: `Contrato ${contract.number}`, loading: true });
+    try {
+      const blob = await billingApi.downloadAdminContractPdf(contract.id, true);
+      showPdfBlobPreview(blob, `Contrato ${contract.number}`);
+    } catch (err) {
+      setPdfPreview(null);
+      setError(err.message);
+    }
+  };
+
+  const handleResendContract = async (contract) => {
+    const nextEmail = window.prompt('E-mail de reenvio:', contract.sendEmail || '');
+    if (nextEmail == null) return;
+    const email = nextEmail.trim();
+    if (!email) {
+      setError('Informe um e-mail válido para reenviar.');
+      return;
+    }
+    setError('');
+    setInfo('');
+    setResendingContractId(contract.id);
+    try {
+      await billingApi.resendContract(contract.id, email);
+      setInfo(`Contrato ${contract.number} reenviado para ${email}.`);
+      await loadContracts(contractsPage);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setResendingContractId(null);
+    }
+  };
+
   const updateInvoiceItem = (idx, field, value) => {
     setInvoiceForm((prev) => {
       const items = [...prev.items];
@@ -718,6 +1019,11 @@ export function AdminPortal() {
       .filter(Boolean)
       .join(' '),
   }));
+
+  const clientsById = clientSelectOptions.reduce((acc, client) => {
+    acc[client.id] = client;
+    return acc;
+  }, {});
 
   if (step === 'loading') {
     return <div className="admin-loading">Carregando...</div>;
@@ -805,7 +1111,17 @@ export function AdminPortal() {
   return (
     <AdminShell
       userEmail={adminEmail}
-      activePage={page === 'client-detail' ? 'clients' : page === 'new-nfse' ? 'nfse' : page}
+      activePage={
+        page === 'client-detail'
+          ? 'clients'
+          : page === 'new-nfse'
+            ? 'nfse'
+            : page === 'new-contract'
+              ? 'contracts'
+              : page === 'new-contract-template' || page === 'edit-contract-template'
+                ? 'contract-templates'
+                : page
+      }
       onNavigate={navigatePage}
       onLogout={handleLogout}
     >
@@ -1150,6 +1466,219 @@ export function AdminPortal() {
               totalPages={nfsePagination.totalPages}
               total={nfsePagination.total}
               onPageChange={setNfsePage}
+            />
+          </div>
+        </>
+      )}
+
+      {page === 'contracts' && (
+        <>
+          <AdminPageHeader
+            title="Contratos"
+            subtitle={`${contractsPagination.total} contrato${contractsPagination.total === 1 ? '' : 's'}`}
+            action={
+              <button type="button" className="admin-btn" onClick={() => navigatePage('new-contract')}>
+                Novo contrato
+              </button>
+            }
+          />
+          <div className="admin-panel">
+            <div className="admin-table-wrap">
+              <table className="admin-table">
+                <thead>
+                  <tr>
+                    <th>Número</th>
+                    <th>Cliente</th>
+                    <th>Data</th>
+                    <th>Assinatura</th>
+                    <th>E-mail</th>
+                    <th>Status</th>
+                    <th>Ações</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {contracts.length === 0 ? (
+                    <tr>
+                      <td colSpan={7}>Nenhum contrato gerado.</td>
+                    </tr>
+                  ) : (
+                    contracts.map((contract) => (
+                      <tr key={contract.id}>
+                        <td>
+                          {contract.number}
+                          {contract.isRectified ? (
+                            <span style={{ display: 'block', fontSize: 12, color: '#6b6b6b' }}>
+                              retificado{contract.revision ? ` · rev. ${contract.revision}` : ''}
+                            </span>
+                          ) : null}
+                        </td>
+                        <td>{contract.clientName}</td>
+                        <td>{formatDate(contract.contractDate)}</td>
+                        <td>{formatBRL(contract.subscriptionFeeCents)}</td>
+                        <td>{contract.sendEmail}</td>
+                        <td><StatusBadge status={contract.status} /></td>
+                        <td>
+                          <div className="admin-table__actions">
+                            {contract.hasPdf && (
+                              <>
+                                <button
+                                  type="button"
+                                  className="admin-btn admin-btn--sm admin-btn--secondary"
+                                  onClick={() => handlePreviewContractPdf(contract)}
+                                >
+                                  Ver
+                                </button>
+                                <button
+                                  type="button"
+                                  className="admin-btn admin-btn--sm admin-btn--secondary"
+                                  onClick={() => handleDownloadContract(contract)}
+                                >
+                                  PDF
+                                </button>
+                              </>
+                            )}
+                            {contract.hasPdf && (
+                              <button
+                                type="button"
+                                className="admin-btn admin-btn--sm"
+                                onClick={() => handleResendContract(contract)}
+                                disabled={resendingContractId === contract.id}
+                              >
+                                {resendingContractId === contract.id ? 'Reenviando...' : 'Reenviar'}
+                              </button>
+                            )}
+                            <button
+                              type="button"
+                              className="admin-btn admin-btn--sm admin-btn--secondary"
+                              onClick={() => openRectifyContract(contract)}
+                            >
+                              Retificar
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+            <Pagination
+              page={contractsPagination.page}
+              totalPages={contractsPagination.totalPages}
+              total={contractsPagination.total}
+              onPageChange={setContractsPage}
+            />
+          </div>
+        </>
+      )}
+
+      {page === 'new-contract' && (
+        <>
+          <AdminPageHeader
+            title={rectifyingContract ? `Retificar ${rectifyingContract.number}` : 'Novo contrato'}
+            subtitle={
+              rectifyingContract
+                ? 'O número permanece o mesmo. O documento será marcado como retificado.'
+                : 'Número automático (1/2026, 2/2026…). Selecione um modelo, preencha e envie.'
+            }
+          />
+          <div className="admin-panel admin-panel--nfse-form" style={{ padding: 20 }}>
+            <ContractForm
+              form={contractForm}
+              setForm={setContractForm}
+              clientOptions={invoiceClientOptions}
+              clientsById={clientsById}
+              templates={contractTemplates}
+              submitting={contractSubmitting}
+              previewing={contractPreviewing}
+              mode={rectifyingContract ? 'rectify' : 'create'}
+              contractNumber={rectifyingContract?.number || null}
+              onCancel={() => {
+                setRectifyingContract(null);
+                navigatePage('contracts');
+              }}
+              onPreview={handlePreviewContract}
+              onSubmit={handleCreateContract}
+            />
+          </div>
+        </>
+      )}
+
+      {page === 'contract-templates' && (
+        <>
+          <AdminPageHeader
+            title="Modelos de contrato"
+            subtitle={`${contractTemplates.length} modelo${contractTemplates.length === 1 ? '' : 's'}`}
+            action={
+              <button type="button" className="admin-btn" onClick={() => navigatePage('new-contract-template')}>
+                Novo modelo
+              </button>
+            }
+          />
+          <div className="admin-panel">
+            <div className="admin-table-wrap">
+              <table className="admin-table">
+                <thead>
+                  <tr>
+                    <th>Nome</th>
+                    <th>Descrição</th>
+                    <th>Variáveis</th>
+                    <th>Ações</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {contractTemplates.length === 0 ? (
+                    <tr>
+                      <td colSpan={4}>Nenhum modelo cadastrado.</td>
+                    </tr>
+                  ) : (
+                    contractTemplates.map((template) => (
+                      <tr key={template.id}>
+                        <td>{template.name}</td>
+                        <td>{template.description || '—'}</td>
+                        <td>{(template.variables || []).length}</td>
+                        <td>
+                          <div className="admin-table__actions">
+                            <button
+                              type="button"
+                              className="admin-btn admin-btn--sm admin-btn--secondary"
+                              onClick={() => openEditTemplate(template)}
+                            >
+                              Editar
+                            </button>
+                            <button
+                              type="button"
+                              className="admin-btn admin-btn--sm admin-btn--danger"
+                              onClick={() => openDeleteTemplate(template)}
+                            >
+                              Excluir
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </>
+      )}
+
+      {(page === 'new-contract-template' || page === 'edit-contract-template') && (
+        <>
+          <AdminPageHeader
+            title={page === 'edit-contract-template' ? 'Editar modelo' : 'Novo modelo'}
+            subtitle="Texto com variáveis {{chave}} para reutilizar ao enviar contratos"
+          />
+          <div className="admin-panel admin-panel--nfse-form" style={{ padding: 20 }}>
+            <ContractTemplateForm
+              form={templateForm}
+              setForm={setTemplateForm}
+              submitting={templateSubmitting}
+              isEdit={page === 'edit-contract-template'}
+              onCancel={() => navigatePage('contract-templates')}
+              onSubmit={handleSaveContractTemplate}
             />
           </div>
         </>
@@ -1652,6 +2181,21 @@ export function AdminPortal() {
           onClose={() => setDeleteModalOpen(false)}
           onConfirm={handleDeleteClient}
           loading={deleteLoading}
+        />
+      )}
+
+      {templateToDelete && (
+        <ConfirmDeleteModal
+          title="Excluir modelo"
+          message={
+            <>
+              Excluir o modelo <strong>{templateToDelete.name}</strong>? Esta ação não pode ser desfeita.
+            </>
+          }
+          confirmLabel="Excluir modelo"
+          loading={templateDeleteLoading}
+          onClose={() => !templateDeleteLoading && setTemplateToDelete(null)}
+          onConfirm={handleConfirmDeleteTemplate}
         />
       )}
     </AdminShell>

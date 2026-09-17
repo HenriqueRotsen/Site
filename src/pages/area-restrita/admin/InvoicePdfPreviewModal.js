@@ -9,9 +9,6 @@ export function InvoicePdfPreviewModal({ title, html, pdfUrl, loading, onClose }
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [onClose]);
 
-  const frameSrc = pdfUrl || undefined;
-  const frameSrcDoc = !pdfUrl && html ? html : undefined;
-
   return (
     <div className="admin-modal-overlay" role="presentation" onClick={onClose}>
       <div
@@ -23,22 +20,38 @@ export function InvoicePdfPreviewModal({ title, html, pdfUrl, loading, onClose }
       >
         <div className="admin-pdf-modal__header">
           <h2 id="pdf-preview-title">{title}</h2>
-          <button type="button" className="admin-btn admin-btn--secondary admin-btn--sm" onClick={onClose}>
-            Fechar
-          </button>
+          <div className="admin-pdf-modal__header-actions">
+            {pdfUrl && (
+              <a
+                className="admin-btn admin-btn--secondary admin-btn--sm"
+                href={pdfUrl}
+                target="_blank"
+                rel="noreferrer"
+              >
+                Abrir em nova aba
+              </a>
+            )}
+            <button type="button" className="admin-btn admin-btn--secondary admin-btn--sm" onClick={onClose}>
+              Fechar
+            </button>
+          </div>
         </div>
-        <div className="admin-pdf-modal__body">
+        <div className={`admin-pdf-modal__body${html && !pdfUrl ? ' admin-pdf-modal__body--html' : ''}`}>
           {loading ? (
             <div className="admin-pdf-modal__loading">Carregando prévia...</div>
-          ) : (
+          ) : pdfUrl ? (
+            <object data={pdfUrl} type="application/pdf" className="admin-pdf-modal__frame" title={title}>
+              <iframe src={pdfUrl} title={title} className="admin-pdf-modal__frame" />
+            </object>
+          ) : html ? (
             <iframe
-              src={frameSrc}
-              srcDoc={frameSrcDoc}
+              srcDoc={html}
               title={title}
-              className="admin-pdf-modal__frame"
-              sandbox="allow-scripts allow-same-origin allow-downloads"
-              allow="fullscreen"
+              className="admin-pdf-modal__frame admin-pdf-modal__frame--html"
+              sandbox="allow-same-origin"
             />
+          ) : (
+            <div className="admin-pdf-modal__loading">Nada para exibir.</div>
           )}
         </div>
       </div>

@@ -1,0 +1,467 @@
+@page {
+  size: A4;
+  margin: 0;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  min-height: 297mm;
+  display: flex;
+  flex-direction: column;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 11px;
+  line-height: 1.55;
+  color: #191919;
+  background: #191919;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+.contract {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  background: #ffffff;
+}
+
+.contract-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 28px 40px 24px;
+  background: #191919;
+  color: #ffffff;
+}
+
+.contract-header__brand {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+
+.contract-header__wordmark {
+  display: block;
+  width: 220px;
+  max-width: 100%;
+  height: auto;
+}
+
+.contract-header__doc {
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.contract-header__doc-label {
+  margin: 0;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.contract-header__doc-number {
+  margin: 6px 0 0;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+.contract-header__badge {
+  display: inline-block;
+  margin: 8px 0 0;
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.14);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #ffffff;
+}
+
+.contract-header__doc-meta {
+  margin: 4px 0 0;
+  font-size: 9px;
+  color: rgba(255, 255, 255, 0.65);
+}
+
+.contract-body {
+  flex: 1;
+  padding: 28px 40px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.contract-cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.contract-card {
+  padding: 18px 20px;
+  border: 1px solid #e5e5e5;
+  border-radius: 12px;
+  background: #fafafa;
+}
+
+.contract-card__label {
+  margin: 0 0 10px;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #6b6b6b;
+}
+
+.contract-card__title {
+  margin: 0 0 8px;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.35;
+  word-break: break-word;
+}
+
+.contract-card__line {
+  margin: 0 0 5px;
+  font-size: 10px;
+  color: #4a4a4a;
+  word-break: break-word;
+}
+
+.contract-card__line:last-child {
+  margin-bottom: 0;
+}
+
+.contract-parties-clause .contract-party {
+  margin: 14px 0 18px;
+  padding: 12px 14px;
+  border-left: 3px solid #d4d4d4;
+  background: #fafafa;
+}
+
+.contract-party__title {
+  margin: 0 0 10px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.contract-party__line {
+  margin: 0 0 4px;
+  font-size: 11px;
+  line-height: 1.45;
+  color: #333;
+}
+
+.contract-summary {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  padding: 16px 18px;
+  border: 1px solid #e5e5e5;
+  border-radius: 12px;
+  background: #ffffff;
+}
+
+.contract-summary__item-label {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #6b6b6b;
+}
+
+.contract-summary__item-value {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: #191919;
+  word-break: break-word;
+}
+
+.contract-doc-title {
+  margin: 0 0 16px;
+  padding: 18px 20px;
+  border: 1px solid #e5e5e5;
+  border-radius: 12px;
+  background: #fafafa;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.4;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.contract-eyebrow {
+  margin: 0;
+  text-align: center;
+  font-size: 10px;
+  color: #6b6b6b;
+  font-style: italic;
+}
+
+.contract-content {
+  border: 1px solid #e5e5e5;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #ffffff;
+}
+
+.contract-clause {
+  padding: 16px 20px;
+  border-bottom: 1px solid #efefef;
+}
+
+.contract-clause:last-child {
+  border-bottom: none;
+}
+
+.contract-heading {
+  margin: 0 0 12px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #191919;
+  page-break-after: avoid;
+}
+
+.contract-paragraph {
+  margin: 0 0 14px;
+  font-size: 10.5px;
+  line-height: 1.7;
+  text-align: justify;
+  color: #2a2a2a;
+}
+
+.contract-paragraph:last-child {
+  margin-bottom: 0;
+}
+
+.contract-table-wrap {
+  margin: 8px 0 16px;
+  border: 1px solid #e5e5e5;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #ffffff;
+}
+
+.contract-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.contract-table thead th {
+  padding: 10px 14px;
+  background: #f0f0f0;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #6b6b6b;
+  text-align: left;
+  border-bottom: 1px solid #e5e5e5;
+}
+
+.contract-table tbody td {
+  padding: 11px 14px;
+  font-size: 10.5px;
+  vertical-align: top;
+  border-bottom: 1px solid #efefef;
+  word-break: break-word;
+  color: #2a2a2a;
+}
+
+.contract-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.contract-table tbody td:last-child {
+  font-weight: 600;
+  color: #191919;
+}
+
+.contract-checklist-wrap {
+  margin: 8px 0 16px;
+  padding: 14px 16px;
+  border: 1px solid #e5e5e5;
+  border-radius: 12px;
+  background: #fafafa;
+}
+
+.contract-checklist {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.contract-checklist__item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.contract-checklist__box {
+  flex: 0 0 14px;
+  width: 14px;
+  height: 14px;
+  margin-top: 1px;
+  border: 1.5px solid #191919;
+  border-radius: 3px;
+  background: #ffffff;
+}
+
+.contract-checklist__text {
+  flex: 1;
+  font-size: 10.5px;
+  line-height: 1.45;
+  color: #2a2a2a;
+}
+
+.contract-locale {
+  padding: 18px 20px;
+  border: 1px solid #e5e5e5;
+  border-radius: 12px;
+  background: #fafafa;
+  text-align: center;
+}
+
+.contract-locale__date {
+  margin: 8px 0 0;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.contract-signatures {
+  margin-top: 8px;
+  padding: 24px 20px 28px;
+  border: 1px solid #e5e5e5;
+  border-radius: 12px;
+  background: #ffffff;
+  page-break-inside: avoid;
+}
+
+.contract-signatures__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 28px;
+  margin-top: 18px;
+}
+
+.contract-sign-party {
+  min-height: 220px;
+  display: flex;
+  flex-direction: column;
+}
+
+.contract-signatures__party-title {
+  margin: 0 0 28px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #191919;
+}
+
+.contract-sign-space {
+  margin-top: auto;
+  padding-top: 72px;
+}
+
+.contract-sign-line {
+  height: 0;
+  border: 0;
+  border-bottom: 1px solid #191919;
+  width: 100%;
+  background: transparent;
+}
+
+.contract-sign-caption {
+  margin: 8px 0 0;
+  font-size: 9px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #6b6b6b;
+}
+
+.contract-sign-details {
+  margin-top: 16px;
+}
+
+.contract-sign-meta {
+  margin: 0 0 4px;
+  font-size: 10px;
+  color: #4a4a4a;
+  word-break: break-word;
+}
+
+.contract-witnesses {
+  margin-top: 36px;
+  padding-top: 20px;
+  border-top: 1px solid #efefef;
+}
+
+.contract-signatures__subtitle {
+  margin: 0 0 18px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #6b6b6b;
+}
+
+.contract-witnesses__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 28px;
+}
+
+.contract-witness {
+  min-height: 110px;
+  padding-top: 36px;
+}
+
+.contract-footer {
+  margin-top: auto;
+  padding: 16px 40px 22px;
+  border-top: 1px solid #e5e5e5;
+  font-size: 9px;
+  color: #6b6b6b;
+  text-align: center;
+}
+
+.contract-footer__link {
+  color: #191919;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+@media print {
+  body {
+    background: #ffffff;
+  }
+}

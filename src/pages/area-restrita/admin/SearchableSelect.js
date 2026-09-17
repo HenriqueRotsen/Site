@@ -8,6 +8,7 @@ export function SearchableSelect({
   searchPlaceholder = 'Buscar...',
   required = false,
   id,
+  disabled = false,
 }) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
@@ -39,7 +40,8 @@ export function SearchableSelect({
         type="button"
         id={id}
         className="searchable-select__trigger"
-        onClick={() => setOpen((current) => !current)}
+        onClick={() => !disabled && setOpen((current) => !current)}
+        disabled={disabled}
         aria-haspopup="listbox"
         aria-expanded={open}
       >

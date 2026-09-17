@@ -192,6 +192,33 @@ export function reminderEmailHtml({
   });
 }
 
+export function contractEmailHtml({
+  clientName,
+  contractNumber,
+  siteUrl,
+  pdfFilename,
+}) {
+  const bodyHtml = `
+    <p style="margin:0 0 16px;font-size:16px;line-height:1.65;color:#ffffff;">Olá, <strong>${escapeHtml(clientName)}</strong>!</p>
+    <p style="margin:0 0 16px;font-size:16px;line-height:1.65;color:rgba(255,255,255,0.78);">
+      Segue em anexo o contrato <strong>${escapeHtml(contractNumber)}</strong> para sua análise e assinatura.
+    </p>
+    <p style="margin:0 0 16px;font-size:16px;line-height:1.65;color:rgba(255,255,255,0.78);">
+      Arquivo: ${escapeHtml(pdfFilename || 'contrato.pdf')}.
+    </p>
+    <p style="margin:24px 0 0;font-size:14px;line-height:1.65;color:rgba(255,255,255,0.55);">
+      Dúvidas? Escreva para <a href="mailto:contato@henriquerotsen.com.br" style="color:#ffffff;text-decoration:underline;font-weight:700;">contato@henriquerotsen.com.br</a>.
+    </p>`;
+
+  return brandedEmailShell({
+    siteUrl,
+    label: 'Contratos',
+    title: 'Seu contrato chegou',
+    bodyHtml,
+    footerNote: `Enviado automaticamente por <a href="${escapeHtml(siteUrl || 'https://henriquerotsen.com.br')}" style="color:#ffffff;text-decoration:none;">henriquerotsen.com.br</a>. Não responda a este e-mail.`,
+  });
+}
+
 export function formatBRL(cents) {
   return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(cents / 100);
 }

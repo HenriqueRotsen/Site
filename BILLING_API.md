@@ -111,6 +111,16 @@ Acesse: `http://localhost:3000/#/area-restrita`
 | GET/POST | `/admin/nfse` | Listar / enviar NFS-e (PDF + metadados) |
 | GET | `/admin/nfse/:id/pdf` | Baixar PDF da NFS-e |
 | DELETE | `/admin/nfse/:id` | Excluir NFS-e |
+| GET | `/admin/contracts` | Listar contratos |
+| GET | `/admin/contracts/template` | Modelo padrão + variáveis |
+| POST | `/admin/contracts/preview` | Prévia HTML (sem persistir) |
+| POST | `/admin/contracts` | Gerar PDF, arquivar no R2 e enviar e-mail (número automático `N/AAAA`) |
+| GET | `/admin/contracts/:id` | Detalhe do contrato |
+| POST | `/admin/contracts/:id/rectify` | Retificar (mesmo número, status retificado) |
+| GET | `/admin/contracts/:id/pdf` | Baixar PDF do contrato (`?inline=1` para visualização) |
+| POST | `/admin/contracts/:id/resend` | Reenviar PDF (mesmo ou novo e-mail) |
+| GET/POST | `/admin/contract-templates` | Listar / criar modelos de contrato |
+| GET/PUT/DELETE | `/admin/contract-templates/:id` | Detalhe / atualizar / excluir modelo |
 | GET | `/client/invoices` | Portal do cliente |
 | GET | `/client/nfse` | NFS-e do cliente |
 
@@ -120,6 +130,18 @@ Acesse: `http://localhost:3000/#/area-restrita`
 2. Crie fatura em rascunho (itens + link PIX do banco)
 3. Clique **Emitir** → gera PDF compacto, salva no R2, envia e-mail com anexo
 4. Cliente acessa portal com CNPJ + código
+
+## Fluxo de contrato
+
+1. Em **Modelos**, cadastre ou edite um modelo só com as cláusulas e variáveis `{{chave}}` (a Cláusula 1ª das partes é do sistema). Use os atalhos **Título / Tabela / Checklist / Assinaturas**.
+2. Em **Contratos** → **Novo contrato**, escolha o **modelo**, o **contratante** (cliente cadastrado) e o e-mail de envio
+3. A **CONTRATADA** é sempre o CCMEI; a **CONTRATANTE** vem do cliente selecionado
+4. O texto já vem preenchido com os defaults do modelo — edite se precisar → **Ver prévia** ou **Gerar PDF e enviar**
+5. As variáveis do modelo **não** aparecem no formulário do contrato nem como resumo no PDF; só no cadastro do modelo
+
+Modelos seed: **MAX Cultural** e **Prestação de serviços (genérico)** (estrutura baseada no MAX).
+4. O Worker gera o PDF (`CT-AAAA-NNNN.pdf`), salva em R2 (`contracts/{clientId}/{number}.pdf`) e envia por Resend
+5. Na listagem, use **Ver** / **PDF** / **Reenviar**
 
 ## Colocar no ar (checklist)
 

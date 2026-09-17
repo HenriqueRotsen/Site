@@ -123,6 +123,45 @@ export const billingApi = {
   deleteNfse: (id) => request(`/admin/nfse/${id}`, { method: 'DELETE' }),
   downloadAdminNfsePdf: (id) => request(`/admin/nfse/${id}/pdf`),
 
+  // Contracts
+  listContracts: (params = {}) => {
+    const qs = new URLSearchParams(params).toString();
+    return request(`/admin/contracts${qs ? `?${qs}` : ''}`);
+  },
+  getContractTemplate: () => request('/admin/contracts/template'),
+  previewContract: (payload) =>
+    request('/admin/contracts/preview', { method: 'POST', body: JSON.stringify(payload) }),
+  previewContractPdf: (payload) =>
+    request('/admin/contracts/preview?format=pdf', {
+      method: 'POST',
+      body: JSON.stringify({ ...payload, format: 'pdf' }),
+    }),
+  createContract: (payload) =>
+    request('/admin/contracts', { method: 'POST', body: JSON.stringify(payload) }),
+  getContract: (id) => request(`/admin/contracts/${id}`),
+  rectifyContract: (id, payload) =>
+    request(`/admin/contracts/${id}/rectify`, { method: 'POST', body: JSON.stringify(payload) }),
+  downloadAdminContractPdf: (id, inline = false) =>
+    request(`/admin/contracts/${id}/pdf${inline ? '?inline=1' : ''}`),
+  resendContract: (id, sendEmail) =>
+    request(`/admin/contracts/${id}/resend`, {
+      method: 'POST',
+      body: JSON.stringify(sendEmail ? { sendEmail } : {}),
+    }),
+
+  // Contract templates (modelos)
+  listContractTemplates: (params = {}) => {
+    const qs = new URLSearchParams(params).toString();
+    return request(`/admin/contract-templates${qs ? `?${qs}` : ''}`);
+  },
+  getContractTemplateById: (id) => request(`/admin/contract-templates/${id}`),
+  createContractTemplate: (payload) =>
+    request('/admin/contract-templates', { method: 'POST', body: JSON.stringify(payload) }),
+  updateContractTemplate: (id, payload) =>
+    request(`/admin/contract-templates/${id}`, { method: 'PUT', body: JSON.stringify(payload) }),
+  deleteContractTemplate: (id) =>
+    request(`/admin/contract-templates/${id}`, { method: 'DELETE' }),
+
   // Client portal
   clientInvoices: () => request('/client/invoices'),
   clientInvoice: (id) => request(`/client/invoices/${id}`),
@@ -146,6 +185,14 @@ export function nfsePdfFilename({ number, competenceDate } = {}) {
     .replace(/-/g, '');
   if (date) return `NFS-e-${num}-${date}.pdf`;
   return `NFS-e-${num}.pdf`;
+}
+
+export function contractPdfFilename(number) {
+  const value = String(number || 'contrato')
+    .trim()
+    .replace(/\//g, '-')
+    .replace(/[^\w.\-]+/g, '_');
+  return `${value || 'contrato'}.pdf`;
 }
 
 export function maskCnpjDisplay(value) {

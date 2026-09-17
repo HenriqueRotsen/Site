@@ -7,6 +7,8 @@ import { handleAdminInvoices } from './routes/admin-invoices.js';
 import { handleAdminDashboard } from './routes/admin-dashboard.js';
 import { handleAdminCnpjLookup } from './routes/admin-cnpj-lookup.js';
 import { handleAdminNfse } from './routes/admin-nfse.js';
+import { handleAdminContracts } from './routes/admin-contracts.js';
+import { handleAdminContractTemplates } from './routes/admin-contract-templates.js';
 import { handleClientPortal } from './routes/client-portal.js';
 import { handleCron } from './cron.js';
 
@@ -30,6 +32,8 @@ async function route(request, env) {
     handleAdminClients,
     handleAdminInvoices,
     handleAdminNfse,
+    handleAdminContractTemplates,
+    handleAdminContracts,
     handleAdminDashboard,
     handleAdminCnpjLookup,
   ];

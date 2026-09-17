@@ -61,7 +61,7 @@ export function issuerFromEnv(env) {
     email: env.ISSUER_EMAIL || 'contato@henriquerotsen.com.br',
     address:
       env.ISSUER_ADDRESS ||
-      'Rua Alvarenga Peixoto, 1408 - Santo Agostinho, Belo Horizonte - MG, 30180-003',
+      'Rua Alessandra Salum Cadar, 731, Apt 102 - Buritis, Belo Horizonte - MG, 30575-190',
     phone: env.ISSUER_PHONE || '',
     bank: env.ISSUER_BANK || '',
     agency: env.ISSUER_AGENCY || '',
