@@ -61,6 +61,7 @@ function clientPartyVariables(full, option, sendEmail) {
   const address = full ? formatAddressLine(full) : '';
   return {
     clientLegalName: full?.legalName || option?.label || '',
+    clientTradeName: full?.contactName || '',
     clientCnpj: full?.cnpjFormatted
       ? maskCnpjInput(full.cnpjFormatted)
       : option?.hint
@@ -74,7 +75,6 @@ function clientPartyVariables(full, option, sendEmail) {
         ? `${full.addressCity} / ${full.addressState}`
         : full?.addressCity || '',
     clientPhone: full?.contactPhone || '',
-    clientRepresentativeName: full?.contactName || '',
   };
 }
 
@@ -148,8 +148,6 @@ export function ContractForm({
       const variables = {
         ...prev.variables,
         ...party,
-        clientRepresentativeName:
-          prev.variables?.clientRepresentativeName || party.clientRepresentativeName || '',
       };
       return {
         ...prev,

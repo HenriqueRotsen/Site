@@ -42,7 +42,7 @@ function applyClientAsContratante(input, client) {
   input.variables = {
     ...(input.variables || {}),
     clientLegalName: client.legal_name,
-    clientTradeName: input.variables?.clientTradeName || '',
+    clientTradeName: input.variables?.clientTradeName || client.contact_name || '',
     clientCnpj: client.cnpj_formatted || '',
     clientAddress,
     clientZip: client.address_zip || '',
@@ -52,8 +52,7 @@ function applyClientAsContratante(input, client) {
         : client.address_city || '',
     clientEmail: input.sendEmail || client.billing_email || '',
     clientPhone: client.contact_phone || '',
-    clientRepresentativeName:
-      input.variables?.clientRepresentativeName || client.contact_name || '',
+    clientRepresentativeName: input.variables?.clientRepresentativeName || '',
   };
   return input;
 }
