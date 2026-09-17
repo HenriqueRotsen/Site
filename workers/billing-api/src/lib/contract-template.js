@@ -711,10 +711,6 @@ export async function buildContractDocumentHtml({
 
   const contractDate =
     vars.contractDateFormatted || formatDateDisplay(vars.contractDate) || '';
-  const clientName = vars.clientLegalName || 'Contratante';
-  const clientCnpj = vars.clientCnpj || '';
-  const clientAddress = vars.clientAddress || '';
-  const clientEmail = vars.clientEmail || '';
   const showRectified = Boolean(isRectified) || Number(revision) > 0;
 
   return `<!DOCTYPE html>
@@ -748,23 +744,6 @@ export async function buildContractDocumentHtml({
     </header>
 
     <main class="contract-body">
-      <div class="contract-cards">
-        <section class="contract-card">
-          <h2 class="contract-card__label">Contratada</h2>
-          <p class="contract-card__title">${escapeHtml(issuer.issuerLegalName)}</p>
-          <p class="contract-card__line">CNPJ ${escapeHtml(issuer.issuerCnpj)}</p>
-          <p class="contract-card__line">${escapeHtml(issuer.issuerAddress)}</p>
-          <p class="contract-card__line">${escapeHtml(issuer.issuerEmail)}</p>
-        </section>
-        <section class="contract-card">
-          <h2 class="contract-card__label">Contratante</h2>
-          <p class="contract-card__title">${escapeHtml(clientName)}</p>
-          ${clientCnpj ? `<p class="contract-card__line">CNPJ ${escapeHtml(clientCnpj)}</p>` : ''}
-          ${clientAddress ? `<p class="contract-card__line">${escapeHtml(clientAddress)}</p>` : ''}
-          ${clientEmail ? `<p class="contract-card__line">${escapeHtml(clientEmail)}</p>` : ''}
-        </section>
-      </div>
-
       ${buildPartiesClauseHtml(vars, env)}
 
       ${content}
