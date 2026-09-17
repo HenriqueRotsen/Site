@@ -1,10 +1,10 @@
 {
   "files": {
     "main.css": "/static/css/main.06239a29.css",
-    "main.js": "/static/js/main.3bbc1b4b.js",
+    "main.js": "/static/js/main.8d833473.js",
     "static/css/739.6a5cd48f.chunk.css": "/static/css/739.6a5cd48f.chunk.css",
     "static/js/739.19be07cd.chunk.js": "/static/js/739.19be07cd.chunk.js",
-    "static/js/202.9b1582ff.chunk.js": "/static/js/202.9b1582ff.chunk.js",
+    "static/js/202.6ee27a14.chunk.js": "/static/js/202.6ee27a14.chunk.js",
     "static/js/690.63582319.chunk.js": "/static/js/690.63582319.chunk.js",
     "static/js/38.f9dcf4f8.chunk.js": "/static/js/38.f9dcf4f8.chunk.js",
     "static/js/581.b6075595.chunk.js": "/static/js/581.b6075595.chunk.js",
@@ -28,10 +28,10 @@
     "static/media/jrl-engenharia.png": "/static/media/jrl-engenharia.0d30e16d5b6849f98399.png",
     "index.html": "/index.html",
     "main.06239a29.css.map": "/static/css/main.06239a29.css.map",
-    "main.3bbc1b4b.js.map": "/static/js/main.3bbc1b4b.js.map",
+    "main.8d833473.js.map": "/static/js/main.8d833473.js.map",
     "739.6a5cd48f.chunk.css.map": "/static/css/739.6a5cd48f.chunk.css.map",
     "739.19be07cd.chunk.js.map": "/static/js/739.19be07cd.chunk.js.map",
-    "202.9b1582ff.chunk.js.map": "/static/js/202.9b1582ff.chunk.js.map",
+    "202.6ee27a14.chunk.js.map": "/static/js/202.6ee27a14.chunk.js.map",
     "690.63582319.chunk.js.map": "/static/js/690.63582319.chunk.js.map",
     "38.f9dcf4f8.chunk.js.map": "/static/js/38.f9dcf4f8.chunk.js.map",
     "581.b6075595.chunk.js.map": "/static/js/581.b6075595.chunk.js.map",
@@ -41,6 +41,6 @@
   },
   "entrypoints": [
     "static/css/main.06239a29.css",
-    "static/js/main.3bbc1b4b.js"
+    "static/js/main.8d833473.js"
   ]
 }
