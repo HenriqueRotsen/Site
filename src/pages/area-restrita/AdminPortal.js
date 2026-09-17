@@ -805,6 +805,7 @@ export function AdminPortal() {
     templateId: contractForm.templateId,
     clientId: contractForm.clientId,
     sendEmail: contractForm.sendEmail.trim(),
+    ccEmails: contractForm.ccEmails.trim(),
     variables: contractForm.variables || {},
     contractDate: contractForm.variables?.contractDate || '',
     startDate: contractForm.variables?.startDate || contractForm.variables?.contractDate || '',
@@ -920,6 +921,7 @@ export function AdminPortal() {
         templateId: full.templateId || '',
         clientId: full.clientId || '',
         sendEmail: full.sendEmail || '',
+        ccEmails: full.ccEmails || '',
         variables: vars,
         bodyText: full.bodyText || '',
       });
@@ -1019,18 +1021,23 @@ export function AdminPortal() {
   };
 
   const handleResendContract = async (contract) => {
-    const nextEmail = window.prompt('E-mail de reenvio:', contract.sendEmail || '');
+    const nextEmail = window.prompt('Destinatário (Para):', contract.sendEmail || '');
     if (nextEmail == null) return;
     const email = nextEmail.trim();
     if (!email) {
       setError('Informe um e-mail válido para reenviar.');
       return;
     }
+    const nextCc = window.prompt('Com cópia (Cc), opcional:', contract.ccEmails || '');
+    if (nextCc == null) return;
     setError('');
     setInfo('');
     setResendingContractId(contract.id);
     try {
-      await billingApi.resendContract(contract.id, email);
+      await billingApi.resendContract(contract.id, {
+        sendEmail: email,
+        ccEmails: nextCc.trim(),
+      });
       setInfo(`Contrato ${contract.number} reenviado para ${email}.`);
       await loadContracts(contractsPage);
     } catch (err) {

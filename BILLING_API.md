@@ -115,7 +115,7 @@ Acesse: `http://localhost:3000/#/area-restrita`
 | GET | `/admin/contracts` | Listar contratos |
 | GET | `/admin/contracts/template` | Modelo padrão + variáveis |
 | POST | `/admin/contracts/preview` | Prévia HTML (sem persistir) |
-| POST | `/admin/contracts` | Gerar PDF, arquivar no R2 e enviar e-mail (número automático `N/AAAA`) |
+| POST | `/admin/contracts` | Gerar PDF, arquivar no R2 e enviar e-mail (número automático `N/AAAA`; From: `contato@…`; Cc opcional) |
 | GET | `/admin/contracts/:id` | Detalhe do contrato |
 | POST | `/admin/contracts/:id/rectify` | Retificar (mesmo número, status retificado) |
 | GET | `/admin/contracts/:id/pdf` | Baixar PDF do contrato (`?inline=1` para visualização) |

@@ -41,6 +41,7 @@ export const emptyContractForm = {
   templateId: '',
   clientId: '',
   sendEmail: '',
+  ccEmails: '',
   variables: {},
   bodyText: '',
 };
@@ -256,7 +257,7 @@ export function ContractForm({
               />
             </div>
             <div className="admin-field">
-              <label htmlFor="contract-email">E-mail de envio</label>
+              <label htmlFor="contract-email">Destinatário (Para)</label>
               <input
                 id="contract-email"
                 type="email"
@@ -265,6 +266,18 @@ export function ContractForm({
                 placeholder="destinatario@empresa.com"
                 required
               />
+              <small className="admin-field-hint">Enviado de contato@henriquerotsen.com.br</small>
+            </div>
+            <div className="admin-field">
+              <label htmlFor="contract-cc">Com cópia (Cc)</label>
+              <input
+                id="contract-cc"
+                type="text"
+                value={form.ccEmails}
+                onChange={(e) => setForm((prev) => ({ ...prev, ccEmails: e.target.value }))}
+                placeholder="opcional@empresa.com, outro@empresa.com"
+              />
+              <small className="admin-field-hint">Separe vários e-mails por vírgula</small>
             </div>
           </div>
         </div>

@@ -50,6 +50,7 @@ ISSUER_CPF = "071.914.556-24"
 ISSUER_PIX_KEY = "66.268.938/0001-03"
 ISSUER_SITE = "henriquerotsen.com.br"
 ISSUER_CITY_UF = "Belo Horizonte / MG"
+CONTRACT_FROM_EMAIL = "Henrique Rotsen <contato@henriquerotsen.com.br>"
 
 [triggers]
 crons = ["0 12 * * *"]

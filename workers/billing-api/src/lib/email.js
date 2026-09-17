@@ -79,8 +79,10 @@ export function brandedEmailShell({
 </html>`;
 }
 
-export async function sendEmail(apiKey, { from, to, subject, html, attachments }) {
+export async function sendEmail(apiKey, { from, to, cc, replyTo, subject, html, attachments }) {
   const payload = { from, to, subject, html };
+  if (cc?.length) payload.cc = cc;
+  if (replyTo) payload.reply_to = replyTo;
   if (attachments?.length) payload.attachments = attachments;
 
   const response = await fetch('https://api.resend.com/emails', {
@@ -197,25 +199,42 @@ export function contractEmailHtml({
   contractNumber,
   siteUrl,
   pdfFilename,
+  isRectified = false,
 }) {
+  const contact = 'contato@henriquerotsen.com.br';
+  const title = isRectified ? 'Contrato retificado' : 'Proposta contratual';
+  const lead = isRectified
+    ? 'Segue em anexo a versão retificada do contrato para sua análise e assinatura.'
+    : 'Segue em anexo a proposta / contrato de prestação de serviços para sua análise e assinatura.';
+
   const bodyHtml = `
     <p style="margin:0 0 16px;font-size:16px;line-height:1.65;color:#ffffff;">Olá, <strong>${escapeHtml(clientName)}</strong>!</p>
     <p style="margin:0 0 16px;font-size:16px;line-height:1.65;color:rgba(255,255,255,0.78);">
-      Segue em anexo o contrato <strong>${escapeHtml(contractNumber)}</strong> para sua análise e assinatura.
+      ${lead}
     </p>
-    <p style="margin:0 0 16px;font-size:16px;line-height:1.65;color:rgba(255,255,255,0.78);">
-      Arquivo: ${escapeHtml(pdfFilename || 'contrato.pdf')}.
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin:8px 0 20px;border-collapse:collapse;">
+      <tr>
+        <td style="padding:14px 16px;background-color:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.14);">
+          <p style="margin:0 0 6px;font-family:Arial,Helvetica,sans-serif;font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:rgba(255,255,255,0.5);">Documento</p>
+          <p style="margin:0 0 4px;font-family:Arial,Helvetica,sans-serif;font-size:15px;font-weight:700;color:#ffffff;">Contrato ${escapeHtml(contractNumber)}</p>
+          <p style="margin:0;font-family:Arial,Helvetica,sans-serif;font-size:13px;color:rgba(255,255,255,0.7);">Anexo: ${escapeHtml(pdfFilename || 'contrato.pdf')}</p>
+        </td>
+      </tr>
+    </table>
+    <p style="margin:0 0 16px;font-size:15px;line-height:1.65;color:rgba(255,255,255,0.78);">
+      O PDF completo está anexado a este e-mail. Após a leitura, responda confirmando o recebimento ou com eventuais ajustes.
     </p>
     <p style="margin:24px 0 0;font-size:14px;line-height:1.65;color:rgba(255,255,255,0.55);">
-      Dúvidas? Escreva para <a href="mailto:contato@henriquerotsen.com.br" style="color:#ffffff;text-decoration:underline;font-weight:700;">contato@henriquerotsen.com.br</a>.
+      Dúvidas? Responda este e-mail ou escreva para
+      <a href="mailto:${contact}" style="color:#ffffff;text-decoration:underline;font-weight:700;">${contact}</a>.
     </p>`;
 
   return brandedEmailShell({
     siteUrl,
     label: 'Contratos',
-    title: 'Seu contrato chegou',
+    title,
     bodyHtml,
-    footerNote: `Enviado automaticamente por <a href="${escapeHtml(siteUrl || 'https://henriquerotsen.com.br')}" style="color:#ffffff;text-decoration:none;">henriquerotsen.com.br</a>. Não responda a este e-mail.`,
+    footerNote: `Enviado por <a href="${escapeHtml(siteUrl || 'https://henriquerotsen.com.br')}" style="color:#ffffff;text-decoration:none;">henriquerotsen.com.br</a> · ${contact}`,
   });
 }
 

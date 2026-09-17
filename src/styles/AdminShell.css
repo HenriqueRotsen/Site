@@ -465,6 +465,14 @@
   color: #6b6b6b;
 }
 
+.admin-field-hint {
+  display: block;
+  margin-top: 6px;
+  font-size: 0.8rem;
+  color: #8a8a8a;
+  line-height: 1.4;
+}
+
 .admin-field input,
 .admin-field select,
 .admin-field textarea {

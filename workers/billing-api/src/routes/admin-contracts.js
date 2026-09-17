@@ -19,8 +19,80 @@ import {
 } from '../lib/contract-template.js';
 import { resolveIssuer, issuerAsEnv } from '../lib/issuer.js';
 
+const CONTRACT_CONTACT_EMAIL = 'contato@henriquerotsen.com.br';
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 async function contractIssuerEnv(env) {
   return issuerAsEnv(await resolveIssuer(env, env.DB), env);
+}
+
+function bytesToBase64(bytes) {
+  const arr = new Uint8Array(bytes);
+  let binary = '';
+  const chunk = 0x8000;
+  for (let i = 0; i < arr.length; i += chunk) {
+    binary += String.fromCharCode(...arr.subarray(i, i + chunk));
+  }
+  return btoa(binary);
+}
+
+function parseEmailList(raw) {
+  if (Array.isArray(raw)) {
+    return [...new Set(raw.map((e) => String(e || '').trim().toLowerCase()).filter((e) => EMAIL_RE.test(e)))];
+  }
+  return [
+    ...new Set(
+      String(raw || '')
+        .split(/[,;\n]+/)
+        .map((e) => e.trim().toLowerCase())
+        .filter((e) => EMAIL_RE.test(e))
+    ),
+  ];
+}
+
+function contractFromAddress(env) {
+  return (
+    env.CONTRACT_FROM_EMAIL ||
+    `Henrique Rotsen <${CONTRACT_CONTACT_EMAIL}>`
+  );
+}
+
+function serializeCcEmails(list) {
+  return list?.length ? list.join(', ') : null;
+}
+
+async function dispatchContractEmail(env, {
+  to,
+  cc = [],
+  clientName,
+  contractNumber,
+  filename,
+  pdfBytes,
+  isRectified = false,
+}) {
+  if (!env.RESEND_API_KEY) {
+    throw new Error('Serviço de e-mail não configurado.');
+  }
+  const html = contractEmailHtml({
+    clientName,
+    contractNumber,
+    siteUrl: env.SITE_URL,
+    pdfFilename: filename,
+    isRectified,
+  });
+  const ccList = parseEmailList(cc).filter((email) => email !== to);
+  await sendEmail(env.RESEND_API_KEY, {
+    from: contractFromAddress(env),
+    to,
+    cc: ccList.length ? ccList : undefined,
+    replyTo: CONTRACT_CONTACT_EMAIL,
+    subject: isRectified
+      ? `Contrato ${contractNumber} (retificado) — Henrique Rotsen`
+      : `Proposta / Contrato ${contractNumber} — Henrique Rotsen`,
+    html,
+    attachments: [{ filename, content: bytesToBase64(pdfBytes) }],
+  });
+  return ccList;
 }
 
 function applyClientAsContratante(input, client) {
@@ -130,6 +202,7 @@ function parseContractInput(body = {}) {
     templateId: String(body.templateId || '').trim(),
     clientId: String(body.clientId || '').trim(),
     sendEmail: String(body.sendEmail || merged.sendEmail || '').trim().toLowerCase(),
+    ccEmails: parseEmailList(body.ccEmails ?? body.cc ?? merged.ccEmails),
     contractDate: String(merged.contractDate || '').trim(),
     startDate: String(merged.startDate || merged.contractDate || '').trim(),
     durationMonths: parseInt(merged.durationMonths, 10) || 12,
@@ -180,6 +253,7 @@ function contractDto(row) {
     revision: row.revision || 0,
     isRectified: row.status === 'retificado' || (row.revision || 0) > 0,
     sendEmail: row.send_email,
+    ccEmails: row.cc_emails || '',
     contractDate: row.contract_date,
     startDate: row.start_date,
     durationMonths: row.duration_months,
@@ -317,8 +391,8 @@ export async function handleAdminContracts(request, env, origin, path) {
     const input = parseContractInput(body);
 
     if (!input.clientId) return json({ error: 'Cliente é obrigatório.' }, 400, origin);
-    if (!input.sendEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(input.sendEmail)) {
-      return json({ error: 'E-mail de envio inválido.' }, 400, origin);
+    if (!input.sendEmail || !EMAIL_RE.test(input.sendEmail)) {
+      return json({ error: 'E-mail do destinatário inválido.' }, 400, origin);
     }
     if (!input.contractDate) {
       return json({ error: 'Informe a data do contrato.' }, 400, origin);
@@ -370,7 +444,7 @@ export async function handleAdminContracts(request, env, origin, path) {
 
     await env.DB.prepare(
       `INSERT INTO contracts (
-         id, client_id, template_id, number, status, revision, send_email, contract_date, start_date, duration_months,
+         id, client_id, template_id, number, status, revision, send_email, cc_emails, contract_date, start_date, duration_months,
          payment_day, subscription_period, implementation_fee_cents, subscription_fee_cents,
          scope, client_legal_name, client_cnpj_formatted, client_address, variables_json,
          body_html, body_text, pdf_key, pdf_checksum, sent_at, created_at, updated_at
@@ -383,6 +457,7 @@ export async function handleAdminContracts(request, env, origin, path) {
         number,
         'enviado',
         input.sendEmail,
+        serializeCcEmails(input.ccEmails),
         input.contractDate,
         input.startDate,
         input.durationMonths,
@@ -406,22 +481,19 @@ export async function handleAdminContracts(request, env, origin, path) {
       .run();
 
     if (input.send) {
-      if (!env.RESEND_API_KEY) {
-        return json({ error: 'Serviço de e-mail não configurado.' }, 500, origin);
+      try {
+        await dispatchContractEmail(env, {
+          to: input.sendEmail,
+          cc: input.ccEmails,
+          clientName: input.clientLegalName || client.legal_name,
+          contractNumber: number,
+          filename,
+          pdfBytes,
+          isRectified: false,
+        });
+      } catch (err) {
+        return json({ error: err.message || 'Falha ao enviar e-mail.' }, 500, origin);
       }
-      const html = contractEmailHtml({
-        clientName: input.clientLegalName || client.legal_name,
-        contractNumber: number,
-        siteUrl: env.SITE_URL,
-        pdfFilename: filename,
-      });
-      await sendEmail(env.RESEND_API_KEY, {
-        from: env.FROM_EMAIL,
-        to: input.sendEmail,
-        subject: `Contrato ${number} — Henrique Rotsen`,
-        html,
-        attachments: [{ filename, content: bytesToBase64(pdfBytes) }],
-      });
     }
 
     await audit(env.DB, {
@@ -431,7 +503,7 @@ export async function handleAdminContracts(request, env, origin, path) {
       resourceType: 'contract',
       resourceId: id,
       ip,
-      metadata: { number, sendEmail: input.sendEmail },
+      metadata: { number, sendEmail: input.sendEmail, ccEmails: input.ccEmails },
     });
 
     const row = await loadContract(env.DB, id);
@@ -458,8 +530,8 @@ export async function handleAdminContracts(request, env, origin, path) {
       templateId: body.templateId || existing.template_id,
     });
 
-    if (!input.sendEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(input.sendEmail)) {
-      return json({ error: 'E-mail de envio inválido.' }, 400, origin);
+    if (!input.sendEmail || !EMAIL_RE.test(input.sendEmail)) {
+      return json({ error: 'E-mail do destinatário inválido.' }, 400, origin);
     }
     if (!input.contractDate) {
       return json({ error: 'Informe a data do contrato.' }, 400, origin);
@@ -514,7 +586,7 @@ export async function handleAdminContracts(request, env, origin, path) {
 
     await env.DB.prepare(
       `UPDATE contracts SET
-         template_id = ?, status = 'retificado', revision = ?, send_email = ?, contract_date = ?, start_date = ?,
+         template_id = ?, status = 'retificado', revision = ?, send_email = ?, cc_emails = ?, contract_date = ?, start_date = ?,
          duration_months = ?, payment_day = ?, subscription_period = ?,
          implementation_fee_cents = ?, subscription_fee_cents = ?, scope = ?,
          client_legal_name = ?, client_cnpj_formatted = ?, client_address = ?,
@@ -526,6 +598,7 @@ export async function handleAdminContracts(request, env, origin, path) {
         input.templateId || existing.template_id || null,
         revision,
         input.sendEmail,
+        serializeCcEmails(input.ccEmails),
         input.contractDate,
         input.startDate,
         input.durationMonths,
@@ -550,22 +623,19 @@ export async function handleAdminContracts(request, env, origin, path) {
       .run();
 
     if (input.send !== false) {
-      if (!env.RESEND_API_KEY) {
-        return json({ error: 'Serviço de e-mail não configurado.' }, 500, origin);
+      try {
+        await dispatchContractEmail(env, {
+          to: input.sendEmail,
+          cc: input.ccEmails,
+          clientName: input.clientLegalName || existing.client_name,
+          contractNumber: number,
+          filename,
+          pdfBytes,
+          isRectified: true,
+        });
+      } catch (err) {
+        return json({ error: err.message || 'Falha ao enviar e-mail.' }, 500, origin);
       }
-      const html = contractEmailHtml({
-        clientName: input.clientLegalName || existing.client_name,
-        contractNumber: `${number} (retificado)`,
-        siteUrl: env.SITE_URL,
-        pdfFilename: filename,
-      });
-      await sendEmail(env.RESEND_API_KEY, {
-        from: env.FROM_EMAIL,
-        to: input.sendEmail,
-        subject: `Contrato ${number} (retificado) — Henrique Rotsen`,
-        html,
-        attachments: [{ filename, content: bytesToBase64(pdfBytes) }],
-      });
     }
 
     await audit(env.DB, {
@@ -575,7 +645,7 @@ export async function handleAdminContracts(request, env, origin, path) {
       resourceType: 'contract',
       resourceId: id,
       ip,
-      metadata: { number, revision, sendEmail: input.sendEmail },
+      metadata: { number, revision, sendEmail: input.sendEmail, ccEmails: input.ccEmails },
     });
 
     const row = await loadContract(env.DB, id);
@@ -605,36 +675,38 @@ export async function handleAdminContracts(request, env, origin, path) {
     const to = String(body?.sendEmail || row.send_email || '')
       .trim()
       .toLowerCase();
-    if (!to || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(to)) {
-      return json({ error: 'E-mail de envio inválido.' }, 400, origin);
+    if (!to || !EMAIL_RE.test(to)) {
+      return json({ error: 'E-mail do destinatário inválido.' }, 400, origin);
     }
-    if (!env.RESEND_API_KEY) {
-      return json({ error: 'Serviço de e-mail não configurado.' }, 500, origin);
-    }
+    const ccEmails =
+      body?.ccEmails != null || body?.cc != null
+        ? parseEmailList(body.ccEmails ?? body.cc)
+        : parseEmailList(row.cc_emails);
 
     const obj = await env.PDFS.get(row.pdf_key);
     if (!obj) return json({ error: 'PDF não encontrado.' }, 404, origin);
     const pdfBytes = new Uint8Array(await obj.arrayBuffer());
     const filename = contractPdfFilename(row.number);
-    const html = contractEmailHtml({
-      clientName: row.client_legal_name || row.client_name,
-      contractNumber: row.number,
-      siteUrl: env.SITE_URL,
-      pdfFilename: filename,
-    });
-    await sendEmail(env.RESEND_API_KEY, {
-      from: env.FROM_EMAIL,
-      to,
-      subject: `Contrato ${row.number} — Henrique Rotsen`,
-      html,
-      attachments: [{ filename, content: bytesToBase64(pdfBytes) }],
-    });
+
+    try {
+      await dispatchContractEmail(env, {
+        to,
+        cc: ccEmails,
+        clientName: row.client_legal_name || row.client_name,
+        contractNumber: row.number,
+        filename,
+        pdfBytes,
+        isRectified: row.status === 'retificado' || (row.revision || 0) > 0,
+      });
+    } catch (err) {
+      return json({ error: err.message || 'Falha ao enviar e-mail.' }, 500, origin);
+    }
 
     const now = nowIso();
     await env.DB.prepare(
-      `UPDATE contracts SET send_email = ?, sent_at = ?, status = 'enviado', updated_at = ? WHERE id = ?`
+      `UPDATE contracts SET send_email = ?, cc_emails = ?, sent_at = ?, status = 'enviado', updated_at = ? WHERE id = ?`
     )
-      .bind(to, now, now, id)
+      .bind(to, serializeCcEmails(ccEmails), now, now, id)
       .run();
 
     await audit(env.DB, {
@@ -644,7 +716,7 @@ export async function handleAdminContracts(request, env, origin, path) {
       resourceType: 'contract',
       resourceId: id,
       ip,
-      metadata: { sendEmail: to },
+      metadata: { sendEmail: to, ccEmails },
     });
 
     const updated = await loadContract(env.DB, id);

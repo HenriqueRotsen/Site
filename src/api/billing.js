@@ -148,10 +148,12 @@ export const billingApi = {
     request(`/admin/contracts/${id}/rectify`, { method: 'POST', body: JSON.stringify(payload) }),
   downloadAdminContractPdf: (id, inline = false) =>
     request(`/admin/contracts/${id}/pdf${inline ? '?inline=1' : ''}`),
-  resendContract: (id, sendEmail) =>
+  resendContract: (id, payload = {}) =>
     request(`/admin/contracts/${id}/resend`, {
       method: 'POST',
-      body: JSON.stringify(sendEmail ? { sendEmail } : {}),
+      body: JSON.stringify(
+        typeof payload === 'string' ? { sendEmail: payload } : payload
+      ),
     }),
 
   // Contract templates (modelos)
