@@ -100,6 +100,11 @@ export function ContractForm({
     [templates, form.templateId]
   );
 
+  const editableVariables = useMemo(
+    () => (selectedTemplate?.variables || []).filter((v) => v?.key && !isSystemPartyKey(v.key)),
+    [selectedTemplate]
+  );
+
   const templateOptions = templates.map((t) => ({
     value: t.id,
     label: t.name,
@@ -159,6 +164,65 @@ export function ContractForm({
     });
   };
 
+  const updateVariable = (key, value) => {
+    setForm((prev) => {
+      const variables = { ...prev.variables, [key]: value };
+      return {
+        ...prev,
+        variables,
+        bodyText:
+          !bodyTouched && selectedTemplate
+            ? fillContractTemplate(selectedTemplate.bodyTemplate, variables)
+            : prev.bodyText,
+      };
+    });
+  };
+
+  const renderField = (variable) => {
+    const value = form.variables?.[variable.key] ?? '';
+    if (variable.type === 'textarea') {
+      return (
+        <textarea
+          rows={3}
+          value={value}
+          onChange={(e) => updateVariable(variable.key, e.target.value)}
+          required={variable.required}
+        />
+      );
+    }
+    if (variable.type === 'select' && Array.isArray(variable.options)) {
+      return (
+        <select
+          className="tpl-var-select"
+          value={value}
+          onChange={(e) => updateVariable(variable.key, e.target.value)}
+          required={variable.required}
+        >
+          <option value="">Selecione...</option>
+          {variable.options.map((opt) => (
+            <option key={opt} value={opt}>{opt}</option>
+          ))}
+        </select>
+      );
+    }
+    const inputType = variable.type === 'date' ? 'date' : variable.type === 'number' ? 'number' : 'text';
+    return (
+      <input
+        type={inputType}
+        value={value}
+        onChange={(e) => {
+          const next =
+            variable.key === 'clientCnpj' || variable.key === 'issuerDocument'
+              ? maskCnpjInput(e.target.value)
+              : e.target.value;
+          updateVariable(variable.key, next);
+        }}
+        required={variable.required}
+        placeholder={variable.type === 'money' ? '0,00' : ''}
+      />
+    );
+  };
+
   return (
     <form className="admin-form" onSubmit={onSubmit}>
       <section className="nfse-card">
@@ -207,6 +271,30 @@ export function ContractForm({
           </div>
         </div>
       </section>
+
+      {selectedTemplate && editableVariables.length > 0 && (
+        <section className="nfse-card">
+          <header className="nfse-card__header">
+            <h3>Variáveis do modelo</h3>
+          </header>
+          <div className="nfse-card__body">
+            <div className="admin-form-grid admin-form-grid--3">
+              {editableVariables.map((variable) => (
+                <div
+                  key={variable.key}
+                  className="admin-field"
+                  style={variable.type === 'textarea' ? { gridColumn: '1 / -1' } : undefined}
+                >
+                  <label htmlFor={`contract-var-${variable.key}`}>
+                    {variable.label || variable.key}
+                  </label>
+                  {renderField(variable)}
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       <section className="nfse-card">
         <header className="nfse-card__header">
