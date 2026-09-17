@@ -5,6 +5,16 @@ import { createSession, destroySession, getSession, sessionCookie, clearSessionC
 import { audit, checkRateLimit } from '../lib/audit.js';
 import { sendEmail, otpEmailHtml } from '../lib/email.js';
 
+function maskEmail(email) {
+  const value = String(email || '').trim();
+  const at = value.indexOf('@');
+  if (at < 1) return value || '';
+  const local = value.slice(0, at);
+  const domain = value.slice(at + 1);
+  const visible = local.slice(0, Math.min(2, local.length));
+  return `${visible}${'*'.repeat(Math.max(local.length - visible.length, 1))}@${domain}`;
+}
+
 export async function handleClientAuth(request, env, origin, path) {
   const ip = request.headers.get('CF-Connecting-IP') || '';
 
@@ -64,7 +74,16 @@ export async function handleClientAuth(request, env, origin, path) {
       metadata: { cnpj_last4: cnpj.slice(-4) },
     });
 
-    return json({ ok: true, message: 'Se o CNPJ estiver cadastrado, enviaremos um código por e-mail.' }, 200, origin);
+    const emailMasked = maskEmail(client.billing_email);
+    return json(
+      {
+        ok: true,
+        emailMasked,
+        message: `Enviamos um código para ${emailMasked}.`,
+      },
+      200,
+      origin
+    );
   }
 
   if (path === '/auth/client/verify-code' && request.method === 'POST') {

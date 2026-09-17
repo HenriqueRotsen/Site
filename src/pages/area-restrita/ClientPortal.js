@@ -34,6 +34,7 @@ export function ClientPortal() {
   const [code, setCode] = useState('');
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
+  const [emailMasked, setEmailMasked] = useState('');
   const [client, setClient] = useState(null);
   const [invoices, setInvoices] = useState([]);
   const [nfseDocuments, setNfseDocuments] = useState([]);
@@ -92,6 +93,7 @@ export function ClientPortal() {
     try {
       const res = await billingApi.clientRequestCode(cnpjDigits);
       sessionStorage.setItem(CLIENT_CNPJ_STORAGE_KEY, cnpjDigits);
+      setEmailMasked(res.emailMasked || '');
       setMessage(res.message);
       setStep('code');
     } catch (err) {
@@ -144,6 +146,7 @@ export function ClientPortal() {
       const res = await billingApi.clientRequestCode(cnpjDigits);
       sessionStorage.setItem(CLIENT_CNPJ_STORAGE_KEY, cnpjDigits);
       setCode('');
+      setEmailMasked(res.emailMasked || '');
       setMessage(res.message);
     } catch (err) {
       setError(err.message);
@@ -159,6 +162,7 @@ export function ClientPortal() {
     setContracts([]);
     setSelectedInvoice(null);
     setCode('');
+    setEmailMasked('');
     setPage('home');
   };
 
@@ -275,6 +279,15 @@ export function ClientPortal() {
           <AreaCard mark>
             <h2>Código de acesso</h2>
             <p className="area-lead">CNPJ: {storedCnpjMasked}</p>
+            {emailMasked ? (
+              <p className="area-lead">
+                Enviamos o código para <strong>{emailMasked}</strong>.
+              </p>
+            ) : (
+              <p className="area-lead">
+                Se o CNPJ estiver cadastrado, enviamos o código ao e-mail de faturamento.
+              </p>
+            )}
             {message && <div className="area-alert area-alert-success">{message}</div>}
             {error && <div className="area-alert area-alert-error">{error}</div>}
             <form className="area-form" onSubmit={handleVerify}>
