@@ -95,7 +95,6 @@ export function expandContractValues(values = {}) {
   const deliveryWeeks = parseInt(values.deliveryWeeks, 10) || 0;
   const trainingHours = parseInt(values.trainingHours, 10) || 0;
   const newDemandHours = parseInt(values.newDemandHours, 10) || 0;
-  const paymentDay = parseInt(values.paymentDay, 10) || 0;
 
   return {
     ...values,
