@@ -3,6 +3,7 @@ import { cleanupExpiredSessions } from './lib/session.js';
 import { handleAdminAuth } from './routes/auth-admin.js';
 import { handleClientAuth } from './routes/auth-client.js';
 import { handleAdminClients } from './routes/admin-clients.js';
+import { handleAdminIssuer } from './routes/admin-issuer.js';
 import { handleAdminInvoices } from './routes/admin-invoices.js';
 import { handleAdminDashboard } from './routes/admin-dashboard.js';
 import { handleAdminCnpjLookup } from './routes/admin-cnpj-lookup.js';
@@ -30,6 +31,7 @@ async function route(request, env) {
     handleClientAuth,
     handleClientPortal,
     handleAdminClients,
+    handleAdminIssuer,
     handleAdminInvoices,
     handleAdminNfse,
     handleAdminContractTemplates,

@@ -98,6 +98,11 @@ export const billingApi = {
       body: JSON.stringify({ cnpj }),
     }),
 
+  // Contratada (emissor CCMEI)
+  getIssuer: () => request('/admin/issuer'),
+  updateIssuer: (payload) =>
+    request('/admin/issuer', { method: 'PUT', body: JSON.stringify(payload) }),
+
   // Invoices
   listInvoices: (params = {}) => {
     const qs = new URLSearchParams(params).toString();

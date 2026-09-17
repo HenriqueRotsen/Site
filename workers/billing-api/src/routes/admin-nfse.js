@@ -5,6 +5,7 @@ import { audit } from '../lib/audit.js';
 import { parsePagination, paginationMeta } from '../lib/pagination.js';
 import { formatCnpj, normalizeCnpj } from '../lib/cnpj.js';
 import { nfsePdfFilename } from '../lib/nfse-files.js';
+import { resolveIssuer } from '../lib/issuer.js';
 
 function parseMoneyToCents(value) {
   if (value == null || value === '') return 0;
@@ -157,13 +158,14 @@ export async function handleAdminNfse(request, env, origin, path) {
       .first();
     if (!client) return json({ error: 'Cliente não encontrado.' }, 404, origin);
 
-    const issuerCnpj = String(env.ISSUER_CNPJ || '66.268.938/0001-03').replace(/\D/g, '');
+    const issuer = await resolveIssuer(env, env.DB);
+    const issuerCnpj = String(issuer.cnpj || '').replace(/\D/g, '');
     // Tomador = sempre o cliente selecionado (nunca o prestador)
     const resolvedTakerName = client.legal_name;
     const resolvedTakerCnpj = client.cnpj_formatted
       ? normalizeCnpj(client.cnpj_formatted)
       : normalizeCnpj(takerCnpjRaw);
-    if (resolvedTakerCnpj && resolvedTakerCnpj === issuerCnpj) {
+    if (resolvedTakerCnpj && issuerCnpj && resolvedTakerCnpj === issuerCnpj) {
       return json(
         { error: 'O tomador não pode ser o prestador. Selecione um cliente cadastrado.' },
         400,

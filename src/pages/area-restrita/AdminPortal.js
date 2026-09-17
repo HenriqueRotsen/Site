@@ -36,6 +36,24 @@ const emptyClient = {
   notes: '',
 };
 
+const emptyIssuer = {
+  name: '',
+  legalName: '',
+  civilName: '',
+  cnpj: '',
+  cpf: '',
+  stateRegistration: '',
+  address: '',
+  email: '',
+  site: '',
+  cityUf: '',
+  phone: '',
+  bank: '',
+  agency: '',
+  account: '',
+  pixKey: '',
+};
+
 const emptyItem = { description: '', quantity: 1, unitPriceCents: 0 };
 
 const emptyNfse = {
@@ -123,6 +141,9 @@ export function AdminPortal() {
   const [invoicesPagination, setInvoicesPagination] = useState({ page: 1, totalPages: 1, total: 0 });
   const [nfsePagination, setNfsePagination] = useState({ page: 1, totalPages: 1, total: 0 });
   const [clientForm, setClientForm] = useState(emptyClient);
+  const [issuerForm, setIssuerForm] = useState(emptyIssuer);
+  const [issuerLoading, setIssuerLoading] = useState(false);
+  const [issuerSubmitting, setIssuerSubmitting] = useState(false);
   const [invoiceForm, setInvoiceForm] = useState({
     clientId: '',
     dueDate: '',
@@ -191,11 +212,23 @@ export function AdminPortal() {
     setClientSelectOptions(data.clients);
   }, []);
 
+  const loadIssuer = useCallback(async () => {
+    setIssuerLoading(true);
+    try {
+      const data = await billingApi.getIssuer();
+      setIssuerForm({ ...emptyIssuer, ...(data.issuer || {}) });
+    } finally {
+      setIssuerLoading(false);
+    }
+  }, []);
+
   const refreshCurrentView = useCallback(async () => {
     if (page === 'dashboard') {
       await loadDashboard(dashboardRecentPage, dashboardOverduePage);
     } else if (page === 'clients') {
       await loadClients(clientsPage);
+    } else if (page === 'issuer') {
+      await loadIssuer();
     } else if (page === 'invoices') {
       await loadInvoices(invoicesPage);
     } else if (page === 'nfse' || page === 'new-nfse') {
@@ -225,6 +258,7 @@ export function AdminPortal() {
     dashboardOverduePage,
     loadDashboard,
     loadClients,
+    loadIssuer,
     loadInvoices,
     loadNfse,
     loadContracts,
@@ -251,6 +285,7 @@ export function AdminPortal() {
     if (step !== 'app' || clientSlug) return;
     if (page === 'dashboard') loadDashboard(dashboardRecentPage, dashboardOverduePage);
     if (page === 'clients') loadClients(clientsPage);
+    if (page === 'issuer') loadIssuer();
     if (page === 'invoices') loadInvoices(invoicesPage);
     if (page === 'nfse') loadNfse(nfsePage);
     if (page === 'contracts') loadContracts(contractsPage);
@@ -272,6 +307,7 @@ export function AdminPortal() {
     dashboardOverduePage,
     loadDashboard,
     loadClients,
+    loadIssuer,
     loadInvoices,
     loadNfse,
     loadContracts,
@@ -315,6 +351,9 @@ export function AdminPortal() {
     if (key === 'new-client') {
       setClientForm({ ...emptyClient });
       setCnpjLoading(false);
+    }
+    if (key === 'issuer') {
+      loadIssuer().catch(() => {});
     }
     if (key === 'new-contract') {
       setRectifyingContract(null);
@@ -484,6 +523,22 @@ export function AdminPortal() {
       openClient(client.slug);
     } catch (err) {
       setError(err.message);
+    }
+  };
+
+  const handleSaveIssuer = async (e) => {
+    e.preventDefault();
+    setError('');
+    setInfo('');
+    setIssuerSubmitting(true);
+    try {
+      const data = await billingApi.updateIssuer(issuerForm);
+      setIssuerForm({ ...emptyIssuer, ...(data.issuer || {}) });
+      setInfo('Cadastro da contratada atualizado.');
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setIssuerSubmitting(false);
     }
   };
 
@@ -1118,7 +1173,7 @@ export function AdminPortal() {
     <AdminShell
       userEmail={adminEmail}
       activePage={
-        page === 'client-detail'
+        page === 'client-detail' || page === 'new-client' || page === 'issuer'
           ? 'clients'
           : page === 'new-nfse'
             ? 'nfse'
@@ -1263,9 +1318,14 @@ export function AdminPortal() {
             title="Clientes"
             subtitle={`${clientsPagination.total} cadastrados`}
             action={
-              <button type="button" className="admin-btn" onClick={() => navigatePage('new-client')}>
-                Novo cliente
-              </button>
+              <div className="admin-header-actions">
+                <button type="button" className="admin-btn admin-btn--secondary" onClick={() => navigatePage('issuer')}>
+                  Contratada
+                </button>
+                <button type="button" className="admin-btn" onClick={() => navigatePage('new-client')}>
+                  Novo cliente
+                </button>
+              </div>
             }
           />
           <div className="admin-panel">
@@ -1707,6 +1767,164 @@ export function AdminPortal() {
               onCancel={() => navigatePage('nfse')}
               onSubmit={handleUploadNfse}
             />
+          </div>
+        </>
+      )}
+
+      {page === 'issuer' && (
+        <>
+          <AdminPageHeader
+            title="Contratada"
+            subtitle="Dados do CCMEI usados em contratos e faturas"
+            action={
+              <button type="button" className="admin-btn admin-btn--secondary" onClick={() => navigatePage('clients')}>
+                Voltar
+              </button>
+            }
+          />
+          <div className="admin-panel">
+            {issuerLoading ? (
+              <p className="admin-muted">Carregando…</p>
+            ) : (
+              <form className="admin-form" onSubmit={handleSaveIssuer}>
+                <div className="admin-form-section">
+                  <h3>Qualificação</h3>
+                  <div className="admin-form-grid">
+                    <div className="admin-field">
+                      <label>Nome fantasia</label>
+                      <input
+                        value={issuerForm.name}
+                        onChange={(e) => setIssuerForm({ ...issuerForm, name: e.target.value })}
+                      />
+                    </div>
+                    <div className="admin-field">
+                      <label>Nome empresarial</label>
+                      <input
+                        value={issuerForm.legalName}
+                        onChange={(e) => setIssuerForm({ ...issuerForm, legalName: e.target.value })}
+                        required
+                      />
+                    </div>
+                    <div className="admin-field">
+                      <label>Nome civil</label>
+                      <input
+                        value={issuerForm.civilName}
+                        onChange={(e) => setIssuerForm({ ...issuerForm, civilName: e.target.value })}
+                      />
+                    </div>
+                    <div className="admin-field">
+                      <label>CNPJ</label>
+                      <input
+                        value={issuerForm.cnpj}
+                        onChange={(e) => setIssuerForm({ ...issuerForm, cnpj: maskCnpjInput(e.target.value) })}
+                        placeholder="00.000.000/0000-00"
+                      />
+                    </div>
+                    <div className="admin-field">
+                      <label>CPF do empresário</label>
+                      <input
+                        value={issuerForm.cpf}
+                        onChange={(e) => setIssuerForm({ ...issuerForm, cpf: e.target.value })}
+                      />
+                    </div>
+                    <div className="admin-field">
+                      <label>Inscrição estadual / municipal</label>
+                      <input
+                        value={issuerForm.stateRegistration}
+                        onChange={(e) => setIssuerForm({ ...issuerForm, stateRegistration: e.target.value })}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="admin-form-section">
+                  <h3>Contato e endereço</h3>
+                  <div className="admin-form-grid">
+                    <div className="admin-field" style={{ gridColumn: '1 / -1' }}>
+                      <label>Endereço completo</label>
+                      <input
+                        value={issuerForm.address}
+                        onChange={(e) => setIssuerForm({ ...issuerForm, address: e.target.value })}
+                      />
+                    </div>
+                    <div className="admin-field">
+                      <label>Cidade / UF</label>
+                      <input
+                        value={issuerForm.cityUf}
+                        onChange={(e) => setIssuerForm({ ...issuerForm, cityUf: e.target.value })}
+                        placeholder="Belo Horizonte / MG"
+                      />
+                    </div>
+                    <div className="admin-field">
+                      <label>E-mail</label>
+                      <input
+                        type="email"
+                        value={issuerForm.email}
+                        onChange={(e) => setIssuerForm({ ...issuerForm, email: e.target.value })}
+                      />
+                    </div>
+                    <div className="admin-field">
+                      <label>Telefone</label>
+                      <input
+                        value={issuerForm.phone}
+                        onChange={(e) => setIssuerForm({ ...issuerForm, phone: maskPhoneInput(e.target.value) })}
+                      />
+                    </div>
+                    <div className="admin-field">
+                      <label>Site</label>
+                      <input
+                        value={issuerForm.site}
+                        onChange={(e) => setIssuerForm({ ...issuerForm, site: e.target.value })}
+                        placeholder="henriquerotsen.com.br"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="admin-form-section">
+                  <h3>Dados bancários (faturas)</h3>
+                  <div className="admin-form-grid">
+                    <div className="admin-field">
+                      <label>Banco</label>
+                      <input
+                        value={issuerForm.bank}
+                        onChange={(e) => setIssuerForm({ ...issuerForm, bank: e.target.value })}
+                      />
+                    </div>
+                    <div className="admin-field">
+                      <label>Agência</label>
+                      <input
+                        value={issuerForm.agency}
+                        onChange={(e) => setIssuerForm({ ...issuerForm, agency: e.target.value })}
+                      />
+                    </div>
+                    <div className="admin-field">
+                      <label>Conta</label>
+                      <input
+                        value={issuerForm.account}
+                        onChange={(e) => setIssuerForm({ ...issuerForm, account: e.target.value })}
+                      />
+                    </div>
+                    <div className="admin-field">
+                      <label>Chave Pix</label>
+                      <input
+                        value={issuerForm.pixKey}
+                        onChange={(e) => setIssuerForm({ ...issuerForm, pixKey: e.target.value })}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="admin-form-actions">
+                  <button type="submit" className="admin-btn" disabled={issuerSubmitting}>
+                    {issuerSubmitting ? 'Salvando…' : 'Salvar contratada'}
+                  </button>
+                  <button type="button" className="admin-btn admin-btn--secondary" onClick={() => navigatePage('clients')}>
+                    Cancelar
+                  </button>
+                </div>
+              </form>
+            )}
           </div>
         </>
       )}

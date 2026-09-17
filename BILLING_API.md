@@ -106,6 +106,7 @@ Acesse: `http://localhost:3000/#/area-restrita`
 | POST | `/auth/client/verify-code` | Verificar OTP (sessão 8h) |
 | GET | `/admin/dashboard` | Insights |
 | GET/POST | `/admin/clients` | CRUD clientes |
+| GET/PUT | `/admin/issuer` | Cadastro da contratada (emissor CCMEI) |
 | GET/POST | `/admin/invoices` | Faturas |
 | POST | `/admin/invoices/:id/emit` | Gerar PDF + enviar e-mail |
 | GET/POST | `/admin/nfse` | Listar / enviar NFS-e (PDF + metadados) |
@@ -135,7 +136,7 @@ Acesse: `http://localhost:3000/#/area-restrita`
 
 1. Em **Modelos**, cadastre ou edite um modelo só com as cláusulas e variáveis `{{chave}}` (a Cláusula 1ª das partes é do sistema). Use os atalhos **Título / Tabela / Checklist / Assinaturas**.
 2. Em **Contratos** → **Novo contrato**, escolha o **modelo**, o **contratante** (cliente cadastrado) e o e-mail de envio
-3. A **CONTRATADA** é sempre o CCMEI; a **CONTRATANTE** vem do cliente selecionado
+3. A **CONTRATADA** vem do cadastro em **Clientes → Contratada** (com fallback nas vars do Worker); a **CONTRATANTE** vem do cliente selecionado
 4. O texto já vem preenchido com os defaults do modelo — edite se precisar → **Ver prévia** ou **Gerar PDF e enviar**
 5. As variáveis do modelo **não** aparecem no formulário do contrato nem como resumo no PDF; só no cadastro do modelo
 

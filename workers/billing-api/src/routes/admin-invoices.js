@@ -2,11 +2,12 @@ import { json, readJson, corsHeaders } from '../lib/http.js';
 import { uuid, nowIso } from '../lib/crypto.js';
 import { requireAdmin } from '../lib/session.js';
 import { audit } from '../lib/audit.js';
-import { generateInvoicePdf, issuerFromEnv, sha256Bytes } from '../lib/pdf.js';
+import { generateInvoicePdf, sha256Bytes } from '../lib/pdf.js';
 import { buildInvoiceHtml } from '../lib/invoice-template.js';
 import { sendEmail, invoiceEmailHtml, formatBRL, formatDateBR } from '../lib/email.js';
 import { parsePagination, paginationMeta } from '../lib/pagination.js';
 import { invoicePdfFilename } from '../lib/invoice-files.js';
+import { resolveIssuer, issuerForInvoice } from '../lib/issuer.js';
 
 function bytesToBase64(bytes) {
   const arr = new Uint8Array(bytes);
@@ -105,9 +106,10 @@ function normalizeInvoiceItems(bodyItems) {
   }));
 }
 
-function invoiceTemplateData(env, row, items) {
+async function invoiceTemplateData(env, row, items) {
+  const profile = await resolveIssuer(env, env.DB);
   return {
-    issuer: issuerFromEnv(env),
+    issuer: issuerForInvoice(profile),
     clientName: row.client_name,
     clientCnpj: row.cnpj_formatted || null,
     clientPhone: row.contact_phone,
@@ -123,11 +125,11 @@ function invoiceTemplateData(env, row, items) {
 }
 
 async function generateInvoicePdfBytes(env, row, items) {
-  return generateInvoicePdf(env, invoiceTemplateData(env, row, items));
+  return generateInvoicePdf(env, await invoiceTemplateData(env, row, items));
 }
 
 async function generateInvoiceHtmlBytes(env, row, items) {
-  return buildInvoiceHtml(invoiceTemplateData(env, row, items));
+  return buildInvoiceHtml(await invoiceTemplateData(env, row, items));
 }
 
 function htmlResponse(html, origin) {

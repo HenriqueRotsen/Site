@@ -17,6 +17,11 @@ import {
   fillTemplate,
   isSystemPartyVariable,
 } from '../lib/contract-template.js';
+import { resolveIssuer, issuerAsEnv } from '../lib/issuer.js';
+
+async function contractIssuerEnv(env) {
+  return issuerAsEnv(await resolveIssuer(env, env.DB), env);
+}
 
 function applyClientAsContratante(input, client) {
   if (!client) return input;
@@ -236,11 +241,12 @@ export async function handleAdminContracts(request, env, origin, path) {
   const ip = request.headers.get('CF-Connecting-IP') || '';
 
   if (path === '/admin/contracts/template' && request.method === 'GET') {
+    const issuerEnv = await contractIssuerEnv(env);
     return json(
       {
         variables: CONTRACT_VARIABLES.filter((v) => !isSystemPartyVariable(v.key)),
-        bodyTemplate: defaultContractBodyTemplate(env),
-        note: 'A Cláusula 1ª (partes) é gerada pelo sistema: CONTRATADA = CCMEI; CONTRATANTE = cliente selecionado.',
+        bodyTemplate: defaultContractBodyTemplate(issuerEnv),
+        note: 'A Cláusula 1ª (partes) é gerada pelo sistema: CONTRATADA = cadastro em Clientes; CONTRATANTE = cliente selecionado.',
       },
       200,
       origin
@@ -263,13 +269,14 @@ export async function handleAdminContracts(request, env, origin, path) {
         .first();
       templateBody = tpl?.body_template || null;
     }
-    const resolved = resolveBody(input, env, templateBody);
+    const issuerEnv = await contractIssuerEnv(env);
+    const resolved = resolveBody(input, issuerEnv, templateBody);
     const previewNumber =
       String(body?.number || '').trim() || (await peekNextContractNumber(env.DB));
     const html = await buildContractDocumentHtml({
       bodyHtml: resolved.bodyHtml,
       number: previewNumber,
-      env,
+      env: issuerEnv,
       vars: resolved.vars,
       isRectified: Boolean(body?.isRectified),
     });
@@ -340,12 +347,13 @@ export async function handleAdminContracts(request, env, origin, path) {
     }
     if (!input.startDate) input.startDate = input.contractDate;
 
-    const resolved = resolveBody(input, env, templateBody);
+    const issuerEnv = await contractIssuerEnv(env);
+    const resolved = resolveBody(input, issuerEnv, templateBody);
     const number = await nextContractNumber(env.DB);
     const documentHtml = await buildContractDocumentHtml({
       bodyHtml: resolved.bodyHtml,
       number,
-      env,
+      env: issuerEnv,
       vars: resolved.vars,
       isRectified: false,
     });
@@ -482,13 +490,14 @@ export async function handleAdminContracts(request, env, origin, path) {
       input.scope = String(input.variables?.scope || existing.scope || 'Contrato de prestação de serviços').trim();
     }
 
-    const resolved = resolveBody(input, env, templateBody);
+    const issuerEnv = await contractIssuerEnv(env);
+    const resolved = resolveBody(input, issuerEnv, templateBody);
     const number = existing.number;
     const revision = (existing.revision || 0) + 1;
     const documentHtml = await buildContractDocumentHtml({
       bodyHtml: resolved.bodyHtml,
       number,
-      env,
+      env: issuerEnv,
       vars: resolved.vars,
       isRectified: true,
       revision,
