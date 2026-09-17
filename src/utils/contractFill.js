@@ -130,9 +130,10 @@ export function expandContractValues(values = {}) {
 export function fillContractTemplate(template, values) {
   const expanded = expandContractValues(values);
   return String(template || '').replace(/\{\{\s*([a-zA-Z0-9_]+)\s*\}\}/g, (match, key) => {
-    // Não apaga placeholders do sistema (issuer etc.) se ainda não vieram no formulário.
     if (!(key in expanded)) return match;
     const value = expanded[key];
-    return value == null ? '' : String(value);
+    // Mantém o placeholder se o valor ainda estiver vazio (ex.: issuer ainda carregando).
+    if (value == null || value === '') return match;
+    return String(value);
   });
 }

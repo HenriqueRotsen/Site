@@ -4,7 +4,7 @@ import { requireAdmin } from '../lib/session.js';
 import { audit } from '../lib/audit.js';
 import { sha256Bytes } from '../lib/pdf.js';
 import { renderPdfFromHtml } from '../lib/pdf-render.js';
-import { sendEmail, contractEmailHtml, formatBRL } from '../lib/email.js';
+import { sendEmail, contractEmailHtml, formatBRL, ownerCopyEmails, mergeCcEmails } from '../lib/email.js';
 import { parsePagination, paginationMeta } from '../lib/pagination.js';
 import { contractPdfFilename } from '../lib/contract-files.js';
 import {
@@ -80,10 +80,11 @@ async function dispatchContractEmail(env, {
     pdfFilename: filename,
     isRectified,
   });
-  const ccList = parseEmailList(cc).filter((email) => email !== to);
+  const toNorm = String(to || '').trim().toLowerCase();
+  const ccList = mergeCcEmails(toNorm, cc, ownerCopyEmails(env));
   await sendEmail(env.RESEND_API_KEY, {
     from: contractFromAddress(env),
-    to,
+    to: toNorm,
     cc: ccList.length ? ccList : undefined,
     replyTo: CONTRACT_CONTACT_EMAIL,
     subject: isRectified
@@ -448,7 +449,7 @@ export async function handleAdminContracts(request, env, origin, path) {
          payment_day, subscription_period, implementation_fee_cents, subscription_fee_cents,
          scope, client_legal_name, client_cnpj_formatted, client_address, variables_json,
          body_html, body_text, pdf_key, pdf_checksum, sent_at, created_at, updated_at
-       ) VALUES (?, ?, ?, ?, ?, 0, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+       ) VALUES (?, ?, ?, ?, ?, 0, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
     )
       .bind(
         id,

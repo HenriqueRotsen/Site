@@ -9,6 +9,12 @@ export async function generateInvoicePdf(env, data) {
 }
 
 export async function sha256Bytes(data) {
-  const hash = await crypto.subtle.digest('SHA-256', data);
+  const bytes =
+    data instanceof ArrayBuffer
+      ? data
+      : data?.buffer
+        ? data.buffer.slice(data.byteOffset, data.byteOffset + data.byteLength)
+        : new Uint8Array(data).buffer;
+  const hash = await crypto.subtle.digest('SHA-256', bytes);
   return Array.from(new Uint8Array(hash), (b) => b.toString(16).padStart(2, '0')).join('');
 }

@@ -56,7 +56,8 @@ export default {
     } catch (err) {
       console.error('billing-api error:', err);
       const origin = request.headers.get('Origin') || '';
-      return json({ error: 'Internal server error' }, 500, origin);
+      const message = err?.message ? String(err.message).slice(0, 500) : 'Internal server error';
+      return json({ error: message }, 500, origin);
     }
   },
 

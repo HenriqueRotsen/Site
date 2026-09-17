@@ -1,5 +1,5 @@
 import { nowIso } from './lib/crypto.js';
-import { sendEmail, reminderEmailHtml, formatBRL, formatDateBR } from './lib/email.js';
+import { sendEmail, reminderEmailHtml, formatBRL, formatDateBR, ownerCopyEmails, mergeCcEmails } from './lib/email.js';
 import { audit } from './lib/audit.js';
 
 export async function handleCron(env) {
@@ -26,9 +26,11 @@ export async function handleCron(env) {
 
   for (const inv of overdue) {
     try {
+      const cc = mergeCcEmails(inv.billing_email, ownerCopyEmails(env));
       await sendEmail(env.RESEND_API_KEY, {
         from: env.FROM_EMAIL,
         to: inv.billing_email,
+        cc: cc.length ? cc : undefined,
         subject: `Lembrete: fatura ${inv.number} em aberto`,
         html: reminderEmailHtml({
           clientName: inv.legal_name,

@@ -81,7 +81,7 @@ export function brandedEmailShell({
 
 export async function sendEmail(apiKey, { from, to, cc, replyTo, subject, html, attachments }) {
   const payload = { from, to, subject, html };
-  if (cc?.length) payload.cc = cc;
+  if (cc?.length) payload.cc = Array.isArray(cc) ? cc : [cc];
   if (replyTo) payload.reply_to = replyTo;
   if (attachments?.length) payload.attachments = attachments;
 
@@ -98,6 +98,47 @@ export async function sendEmail(apiKey, { from, to, cc, replyTo, subject, html, 
     throw new Error(`Resend error: ${response.status} ${detail}`);
   }
   return response.json();
+}
+
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+/** Sempre inclui o dono em cópia nos envios (contratos, faturas, lembretes). */
+export function ownerCopyEmails(env = {}) {
+  const candidates = [
+    env.CONTRACT_COPY_EMAIL,
+    env.OWNER_COPY_EMAIL,
+    env.ADMIN_EMAIL,
+    env.ISSUER_EMAIL,
+    'contato@henriquerotsen.com.br',
+    'comercial.henriquerotsen@gmail.com',
+  ];
+  return [
+    ...new Set(
+      candidates
+        .flatMap((value) => String(value || '').split(/[,;\n]+/))
+        .map((e) => e.trim().toLowerCase())
+        .filter((e) => EMAIL_RE.test(e))
+    ),
+  ];
+}
+
+export function mergeCcEmails(to, ...lists) {
+  const toNorm = String(to || '')
+    .trim()
+    .toLowerCase();
+  const merged = [];
+  for (const list of lists) {
+    const items = Array.isArray(list) ? list : String(list || '').split(/[,;\n]+/);
+    for (const item of items) {
+      const email = String(item || '')
+        .trim()
+        .toLowerCase();
+      if (EMAIL_RE.test(email) && email !== toNorm && !merged.includes(email)) {
+        merged.push(email);
+      }
+    }
+  }
+  return merged;
 }
 
 export function otpEmailHtml({ code, siteUrl, purpose = 'client' }) {

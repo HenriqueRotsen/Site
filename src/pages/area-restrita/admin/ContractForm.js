@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { SearchableSelect } from './SearchableSelect';
 import { formatAddressLine } from '../../../utils/brazilianInput';
-import { maskCnpjInput } from '../../../api/billing';
+import { billingApi, maskCnpjInput } from '../../../api/billing';
 import { fillContractTemplate } from '../../../utils/contractFill';
 
 const SYSTEM_PARTY_KEYS = new Set([
@@ -45,6 +45,30 @@ export const emptyContractForm = {
   variables: {},
   bodyText: '',
 };
+
+/** Mapeia o cadastro da contratada para as variáveis {{issuer*}} (assinaturas etc.). */
+export function issuerPartyVariables(issuer) {
+  if (!issuer) return {};
+  const cnpj = String(issuer.cnpj || '').trim();
+  return {
+    issuerName: String(issuer.name || '').trim(),
+    issuerLegalName: String(issuer.legalName || '').trim(),
+    issuerCivilName: String(issuer.civilName || '').trim(),
+    issuerCnpj: cnpj,
+    issuerCpf: String(issuer.cpf || '').trim(),
+    issuerDocument: cnpj,
+    issuerStateRegistration: String(issuer.stateRegistration || '').trim(),
+    issuerAddress: String(issuer.address || '').trim(),
+    issuerEmail: String(issuer.email || '').trim(),
+    issuerSite: String(issuer.site || '').trim(),
+    issuerCityUf: String(issuer.cityUf || '').trim(),
+    issuerPhone: String(issuer.phone || '').trim(),
+  };
+}
+
+function fillBody(template, variables, issuerVars = {}) {
+  return fillContractTemplate(template, { ...issuerVars, ...variables });
+}
 
 function defaultsFromTemplate(template) {
   const vars = {};
@@ -94,6 +118,7 @@ export function ContractForm({
   contractNumber = null,
 }) {
   const [bodyTouched, setBodyTouched] = useState(false);
+  const [issuerVars, setIssuerVars] = useState({});
   const isRectify = mode === 'rectify';
 
   const selectedTemplate = useMemo(
@@ -114,12 +139,41 @@ export function ContractForm({
   }));
 
   useEffect(() => {
+    let cancelled = false;
+    billingApi
+      .getIssuer()
+      .then((data) => {
+        if (cancelled) return;
+        setIssuerVars(issuerPartyVariables(data.issuer));
+      })
+      .catch(() => {
+        if (!cancelled) setIssuerVars({});
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
     if (!selectedTemplate || bodyTouched) return;
     setForm((prev) => ({
       ...prev,
-      bodyText: fillContractTemplate(selectedTemplate.bodyTemplate, prev.variables || {}),
+      bodyText: fillBody(selectedTemplate.bodyTemplate, prev.variables || {}, issuerVars),
     }));
-  }, [selectedTemplate, form.variables, bodyTouched, setForm]);
+  }, [selectedTemplate, form.variables, issuerVars, bodyTouched, setForm]);
+
+  // Se o texto já foi editado, ainda preenche {{issuer*}} que restarem (assinaturas).
+  useEffect(() => {
+    if (!Object.keys(issuerVars).length) return;
+    setForm((prev) => {
+      if (!prev.bodyText || !/\{\{\s*issuer[A-Za-z0-9_]*\s*\}\}/.test(prev.bodyText)) {
+        return prev;
+      }
+      const next = fillContractTemplate(prev.bodyText, issuerVars);
+      if (next === prev.bodyText) return prev;
+      return { ...prev, bodyText: next };
+    });
+  }, [issuerVars, setForm]);
 
   const selectTemplate = (templateId) => {
     const template = templates.find((t) => t.id === templateId);
@@ -136,7 +190,7 @@ export function ContractForm({
         ...prev,
         templateId: templateId || '',
         variables,
-        bodyText: template ? fillContractTemplate(template.bodyTemplate, variables) : '',
+        bodyText: template ? fillBody(template.bodyTemplate, variables, issuerVars) : '',
       };
     });
   };
@@ -157,8 +211,10 @@ export function ContractForm({
         variables,
         bodyText:
           !bodyTouched && selectedTemplate
-            ? fillContractTemplate(selectedTemplate.bodyTemplate, variables)
-            : prev.bodyText,
+            ? fillBody(selectedTemplate.bodyTemplate, variables, issuerVars)
+            : prev.bodyText.includes('{{issuer')
+              ? fillContractTemplate(prev.bodyText, issuerVars)
+              : prev.bodyText,
       };
     });
   };
@@ -171,7 +227,7 @@ export function ContractForm({
         variables,
         bodyText:
           !bodyTouched && selectedTemplate
-            ? fillContractTemplate(selectedTemplate.bodyTemplate, variables)
+            ? fillBody(selectedTemplate.bodyTemplate, variables, issuerVars)
             : prev.bodyText,
       };
     });
@@ -266,7 +322,7 @@ export function ContractForm({
                 placeholder="destinatario@empresa.com"
                 required
               />
-              <small className="admin-field-hint">Enviado de contato@henriquerotsen.com.br</small>
+              <small className="admin-field-hint">Enviado de contato@henriquerotsen.com.br · você sempre recebe cópia</small>
             </div>
             <div className="admin-field">
               <label htmlFor="contract-cc">Com cópia (Cc)</label>
@@ -277,7 +333,7 @@ export function ContractForm({
                 onChange={(e) => setForm((prev) => ({ ...prev, ccEmails: e.target.value }))}
                 placeholder="opcional@empresa.com, outro@empresa.com"
               />
-              <small className="admin-field-hint">Separe vários e-mails por vírgula</small>
+              <small className="admin-field-hint">Além da sua cópia automática; separe por vírgula</small>
             </div>
           </div>
         </div>
@@ -332,7 +388,7 @@ export function ContractForm({
               setBodyTouched(false);
               setForm((prev) => ({
                 ...prev,
-                bodyText: fillContractTemplate(selectedTemplate.bodyTemplate, prev.variables || {}),
+                bodyText: fillBody(selectedTemplate.bodyTemplate, prev.variables || {}, issuerVars),
               }));
             }}
           >

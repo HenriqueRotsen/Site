@@ -4,7 +4,7 @@ import { requireAdmin } from '../lib/session.js';
 import { audit } from '../lib/audit.js';
 import { generateInvoicePdf, sha256Bytes } from '../lib/pdf.js';
 import { buildInvoiceHtml } from '../lib/invoice-template.js';
-import { sendEmail, invoiceEmailHtml, formatBRL, formatDateBR } from '../lib/email.js';
+import { sendEmail, invoiceEmailHtml, formatBRL, formatDateBR, ownerCopyEmails, mergeCcEmails } from '../lib/email.js';
 import { parsePagination, paginationMeta } from '../lib/pagination.js';
 import { invoicePdfFilename } from '../lib/invoice-files.js';
 import { resolveIssuer, issuerForInvoice } from '../lib/issuer.js';
@@ -366,9 +366,11 @@ export async function handleAdminInvoices(request, env, origin, path) {
       });
 
       const pdfBase64 = bytesToBase64(pdfBytes);
+      const cc = mergeCcEmails(row.billing_email, ownerCopyEmails(env));
       await sendEmail(env.RESEND_API_KEY, {
         from: env.FROM_EMAIL,
         to: row.billing_email,
+        cc: cc.length ? cc : undefined,
         subject: `Sua fatura ${row.number} chegou — Henrique Rotsen`,
         html,
         attachments: [
