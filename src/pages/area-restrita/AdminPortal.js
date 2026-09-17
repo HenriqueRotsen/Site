@@ -9,6 +9,7 @@ import { AdminShell, AdminPageHeader, StatusBadge, StatCard } from './admin/Admi
 import { SearchableSelect } from './admin/SearchableSelect';
 import { DeleteClientModal } from './admin/DeleteClientModal';
 import { ConfirmDeleteModal } from './admin/ConfirmDeleteModal';
+import { ResendContractModal } from './admin/ResendContractModal';
 import { InvoicePdfPreviewModal } from './admin/InvoicePdfPreviewModal';
 import { NfseUploadForm } from './admin/NfseUploadForm';
 import { ContractForm, emptyContractForm } from './admin/ContractForm';
@@ -168,6 +169,7 @@ export function AdminPortal() {
   const [contractSubmitting, setContractSubmitting] = useState(false);
   const [contractPreviewing, setContractPreviewing] = useState(false);
   const [resendingContractId, setResendingContractId] = useState(null);
+  const [resendContract, setResendContract] = useState(null);
 
   const loadDashboard = useCallback(async (recentPage = 1, overduePage = 1) => {
     const dash = await billingApi.getDashboard({
@@ -1020,25 +1022,22 @@ export function AdminPortal() {
     }
   };
 
-  const handleResendContract = async (contract) => {
-    const nextEmail = window.prompt('Destinatário (Para):', contract.sendEmail || '');
-    if (nextEmail == null) return;
-    const email = nextEmail.trim();
-    if (!email) {
-      setError('Informe um e-mail válido para reenviar.');
-      return;
-    }
-    const nextCc = window.prompt('Com cópia (Cc), opcional:', contract.ccEmails || '');
-    if (nextCc == null) return;
+  const handleResendContract = (contract) => {
     setError('');
     setInfo('');
-    setResendingContractId(contract.id);
+    setResendContract(contract);
+  };
+
+  const handleConfirmResendContract = async ({ sendEmail, ccEmails }) => {
+    if (!resendContract) return;
+    setResendingContractId(resendContract.id);
     try {
-      await billingApi.resendContract(contract.id, {
-        sendEmail: email,
-        ccEmails: nextCc.trim(),
+      await billingApi.resendContract(resendContract.id, {
+        sendEmail,
+        ccEmails,
       });
-      setInfo(`Contrato ${contract.number} reenviado para ${email}.`);
+      setInfo(`Contrato ${resendContract.number} reenviado para ${sendEmail}.`);
+      setResendContract(null);
       await loadContracts(contractsPage);
     } catch (err) {
       setError(err.message);
@@ -2427,6 +2426,15 @@ export function AdminPortal() {
           loading={templateDeleteLoading}
           onClose={() => !templateDeleteLoading && setTemplateToDelete(null)}
           onConfirm={handleConfirmDeleteTemplate}
+        />
+      )}
+
+      {resendContract && (
+        <ResendContractModal
+          contract={resendContract}
+          loading={resendingContractId === resendContract.id}
+          onClose={() => !resendingContractId && setResendContract(null)}
+          onConfirm={handleConfirmResendContract}
         />
       )}
     </AdminShell>

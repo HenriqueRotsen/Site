@@ -79,6 +79,7 @@ async function dispatchContractEmail(env, {
     siteUrl: env.SITE_URL,
     pdfFilename: filename,
     isRectified,
+    portalUrl: `${String(env.SITE_URL || 'https://henriquerotsen.com.br').replace(/\/$/, '')}/#/area-restrita/cliente`,
   });
   const toNorm = String(to || '').trim().toLowerCase();
   const ccList = mergeCcEmails(toNorm, cc, ownerCopyEmails(env));

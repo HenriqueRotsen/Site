@@ -4,6 +4,7 @@ import { audit } from '../lib/audit.js';
 import { corsHeaders } from '../lib/http.js';
 import { invoicePdfFilename } from '../lib/invoice-files.js';
 import { nfsePdfFilename } from '../lib/nfse-files.js';
+import { contractPdfFilename } from '../lib/contract-files.js';
 
 function nfseDto(row) {
   return {
@@ -25,8 +26,75 @@ function nfseDto(row) {
   };
 }
 
+function contractDto(row) {
+  return {
+    id: row.id,
+    number: row.number,
+    status: row.status,
+    revision: row.revision || 0,
+    isRectified: row.status === 'retificado' || (row.revision || 0) > 0,
+    contractDate: row.contract_date,
+    sentAt: row.sent_at,
+    hasPdf: Boolean(row.pdf_key),
+    createdAt: row.created_at,
+  };
+}
+
 export async function handleClientPortal(request, env, origin, path) {
   const ip = request.headers.get('CF-Connecting-IP') || '';
+
+  if (path === '/client/contracts' && request.method === 'GET') {
+    const session = await requireClient(env.DB, request);
+    if (!session) return json({ error: 'Não autenticado.' }, 401, origin);
+
+    const { results } = await env.DB.prepare(
+      `SELECT id, number, status, revision, contract_date, sent_at, pdf_key, created_at
+       FROM contracts
+       WHERE client_id = ? AND pdf_key IS NOT NULL
+       ORDER BY created_at DESC`
+    )
+      .bind(session.client_id)
+      .all();
+
+    return json({ contracts: (results || []).map(contractDto) }, 200, origin);
+  }
+
+  const contractPdfMatch = path.match(/^\/client\/contracts\/([^/]+)\/pdf$/);
+  if (contractPdfMatch && request.method === 'GET') {
+    const session = await requireClient(env.DB, request);
+    if (!session) return json({ error: 'Não autenticado.' }, 401, origin);
+
+    const id = contractPdfMatch[1];
+    const row = await env.DB.prepare(
+      'SELECT id, number, pdf_key FROM contracts WHERE id = ? AND client_id = ?'
+    )
+      .bind(id, session.client_id)
+      .first();
+
+    if (!row?.pdf_key) return json({ error: 'PDF não disponível.' }, 404, origin);
+    const obj = await env.PDFS.get(row.pdf_key);
+    if (!obj) return json({ error: 'PDF não encontrado.' }, 404, origin);
+
+    await audit(env.DB, {
+      actorRole: 'client',
+      actorId: session.client_id,
+      action: 'contract_pdf_download',
+      resourceType: 'contract',
+      resourceId: id,
+      ip,
+    });
+
+    const bytes = await obj.arrayBuffer();
+    const inline = new URL(request.url).searchParams.get('inline') === '1';
+    return new Response(bytes, {
+      status: 200,
+      headers: {
+        'Content-Type': 'application/pdf',
+        'Content-Disposition': `${inline ? 'inline' : 'attachment'}; filename="${contractPdfFilename(row.number)}"`,
+        ...corsHeaders(origin),
+      },
+    });
+  }
 
   if (path === '/client/nfse' && request.method === 'GET') {
     const session = await requireClient(env.DB, request);

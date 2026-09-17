@@ -8,6 +8,7 @@ import {
   downloadBlob,
   invoicePdfFilename,
   nfsePdfFilename,
+  contractPdfFilename,
 } from '../../api/billing';
 import { AreaRestritaLayout, AreaCard, AreaBack } from './AreaRestritaLayout';
 import { OtpInput } from './OtpInput';
@@ -36,6 +37,7 @@ export function ClientPortal() {
   const [client, setClient] = useState(null);
   const [invoices, setInvoices] = useState([]);
   const [nfseDocuments, setNfseDocuments] = useState([]);
+  const [contracts, setContracts] = useState([]);
   const [selectedInvoice, setSelectedInvoice] = useState(null);
   const [detailLoading, setDetailLoading] = useState(false);
   const [pdfPreview, setPdfPreview] = useState(null);
@@ -44,9 +46,14 @@ export function ClientPortal() {
     try {
       const data = await billingApi.clientMe();
       setClient(data.client);
-      const [inv, nfse] = await Promise.all([billingApi.clientInvoices(), billingApi.clientNfse()]);
+      const [inv, nfse, contractsData] = await Promise.all([
+        billingApi.clientInvoices(),
+        billingApi.clientNfse(),
+        billingApi.clientContracts().catch(() => ({ contracts: [] })),
+      ]);
       setInvoices(inv.invoices);
       setNfseDocuments(nfse.documents || []);
+      setContracts(contractsData.contracts || []);
       setStep('portal');
     } catch {
       setStep('cnpj');
@@ -109,9 +116,14 @@ export function ClientPortal() {
       const data = await billingApi.clientVerifyCode(cnpjDigits, codeValue);
       sessionStorage.removeItem(CLIENT_CNPJ_STORAGE_KEY);
       setClient(data.client);
-      const [inv, nfse] = await Promise.all([billingApi.clientInvoices(), billingApi.clientNfse()]);
+      const [inv, nfse, contractsData] = await Promise.all([
+        billingApi.clientInvoices(),
+        billingApi.clientNfse(),
+        billingApi.clientContracts().catch(() => ({ contracts: [] })),
+      ]);
       setInvoices(inv.invoices);
       setNfseDocuments(nfse.documents || []);
+      setContracts(contractsData.contracts || []);
       setStep('portal');
       setPage('home');
     } catch (err) {
@@ -144,6 +156,7 @@ export function ClientPortal() {
     setClient(null);
     setInvoices([]);
     setNfseDocuments([]);
+    setContracts([]);
     setSelectedInvoice(null);
     setCode('');
     setPage('home');
@@ -169,6 +182,16 @@ export function ClientPortal() {
     }
   };
 
+  const handleDownloadContract = async (contract) => {
+    setError('');
+    try {
+      const blob = await billingApi.downloadClientContractPdf(contract.id);
+      await downloadBlob(blob, contractPdfFilename(contract.number));
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
   const closePdfPreview = () => {
     setPdfPreview((current) => {
       if (current?.pdfUrl) URL.revokeObjectURL(current.pdfUrl);
@@ -183,6 +206,19 @@ export function ClientPortal() {
       const blob = await billingApi.downloadClientNfsePdf(doc.id);
       const pdfUrl = URL.createObjectURL(blob);
       setPdfPreview({ title: `NFS-e ${doc.number}`, pdfUrl, loading: false });
+    } catch (err) {
+      setPdfPreview(null);
+      setError(err.message);
+    }
+  };
+
+  const handlePreviewContract = async (contract) => {
+    setError('');
+    setPdfPreview({ title: `Contrato ${contract.number}`, loading: true });
+    try {
+      const blob = await billingApi.downloadClientContractPdf(contract.id, true);
+      const pdfUrl = URL.createObjectURL(blob);
+      setPdfPreview({ title: `Contrato ${contract.number}`, pdfUrl, loading: false });
     } catch (err) {
       setPdfPreview(null);
       setError(err.message);
@@ -356,6 +392,61 @@ export function ClientPortal() {
                                 type="button"
                                 className="admin-btn admin-btn--sm admin-btn--secondary"
                                 onClick={() => handleDownloadNfse(doc)}
+                              >
+                                PDF
+                              </button>
+                            </div>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
+          {contracts.length > 0 && (
+            <div className="admin-panel" style={{ marginBottom: 24 }}>
+              <div className="admin-panel__header">
+                <div>
+                  <h2>Contratos</h2>
+                  <p>{contracts.length} documento{contracts.length === 1 ? '' : 's'} disponível{contracts.length === 1 ? '' : 'eis'}</p>
+                </div>
+                <button type="button" className="admin-btn admin-btn--secondary admin-btn--sm" onClick={() => setPage('contracts')}>
+                  Ver todos
+                </button>
+              </div>
+              <div className="admin-table-wrap">
+                <table className="admin-table">
+                  <thead>
+                    <tr>
+                      <th>Número</th>
+                      <th>Data</th>
+                      <th>Status</th>
+                      <th></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {contracts.slice(0, 3).map((contract) => (
+                      <tr key={contract.id}>
+                        <td>{contract.number}</td>
+                        <td>{formatDate(contract.contractDate)}</td>
+                        <td><StatusBadge status={contract.status} /></td>
+                        <td>
+                          {contract.hasPdf && (
+                            <div className="admin-table__actions">
+                              <button
+                                type="button"
+                                className="admin-btn admin-btn--sm admin-btn--secondary"
+                                onClick={() => handlePreviewContract(contract)}
+                              >
+                                Ver
+                              </button>
+                              <button
+                                type="button"
+                                className="admin-btn admin-btn--sm admin-btn--secondary"
+                                onClick={() => handleDownloadContract(contract)}
                               >
                                 PDF
                               </button>
@@ -665,6 +756,74 @@ export function ClientPortal() {
           </div>
         </>
       )}
+
+      {page === 'contracts' && (
+        <>
+          <AdminPageHeader
+            title="Contratos"
+            subtitle={`${contracts.length} documento${contracts.length === 1 ? '' : 's'}`}
+          />
+          <div className="admin-panel">
+            {contracts.length === 0 ? (
+              <div className="admin-panel__body">
+                <p className="area-lead">Nenhum contrato disponível no momento.</p>
+              </div>
+            ) : (
+              <div className="admin-table-wrap">
+                <table className="admin-table">
+                  <thead>
+                    <tr>
+                      <th>Número</th>
+                      <th>Data</th>
+                      <th>Status</th>
+                      <th>Ações</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {contracts.map((contract) => (
+                      <tr key={contract.id}>
+                        <td>
+                          {contract.number}
+                          {contract.isRectified ? (
+                            <span style={{ display: 'block', fontSize: 12, color: '#6b6b6b' }}>
+                              retificado{contract.revision ? ` · rev. ${contract.revision}` : ''}
+                            </span>
+                          ) : null}
+                        </td>
+                        <td>{formatDate(contract.contractDate)}</td>
+                        <td><StatusBadge status={contract.status} /></td>
+                        <td>
+                          <div className="admin-table__actions">
+                            {contract.hasPdf && (
+                              <>
+                                <button
+                                  type="button"
+                                  className="admin-btn admin-btn--sm admin-btn--secondary"
+                                  onClick={() => handlePreviewContract(contract)}
+                                >
+                                  Ver
+                                </button>
+                                <button
+                                  type="button"
+                                  className="admin-btn admin-btn--sm admin-btn--secondary"
+                                  onClick={() => handleDownloadContract(contract)}
+                                >
+                                  Baixar PDF
+                                </button>
+                              </>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        </>
+      )}
+
       {pdfPreview && (
         <InvoicePdfPreviewModal
           title={pdfPreview.title}

@@ -34,6 +34,14 @@ const icons = {
       />
     </Icon>
   ),
+  contracts: (
+    <Icon>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+        <path d="M14 2v6h6M8 13h8M8 17h5" />
+      </svg>
+    </Icon>
+  ),
   logout: (
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75">
       <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9" />
@@ -78,6 +86,16 @@ export function ClientShell({ clientName, clientCnpjMasked, clientEmail, activeP
               >
                 {icons.nfse}
                 NFS-e
+              </button>
+            </li>
+            <li>
+              <button
+                type="button"
+                className={`admin-nav-item ${activePage === 'contracts' ? 'active' : ''}`}
+                onClick={() => onNavigate('contracts')}
+              >
+                {icons.contracts}
+                Contratos
               </button>
             </li>
           </ul>

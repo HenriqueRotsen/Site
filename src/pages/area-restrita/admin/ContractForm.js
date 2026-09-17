@@ -67,7 +67,14 @@ export function issuerPartyVariables(issuer) {
 }
 
 function fillBody(template, variables, issuerVars = {}) {
-  return fillContractTemplate(template, { ...issuerVars, ...variables });
+  // issuerVars por último: não deixa campos vazios do formulário apagarem a contratada
+  return fillContractTemplate(template, { ...variables, ...issuerVars });
+}
+
+function applyIssuerToBody(bodyText, issuerVars = {}) {
+  if (!bodyText || !Object.keys(issuerVars).length) return bodyText;
+  if (!/\{\{\s*issuer[A-Za-z0-9_]*\s*\}\}/.test(bodyText)) return bodyText;
+  return fillContractTemplate(bodyText, issuerVars);
 }
 
 function defaultsFromTemplate(template) {
@@ -144,7 +151,13 @@ export function ContractForm({
       .getIssuer()
       .then((data) => {
         if (cancelled) return;
-        setIssuerVars(issuerPartyVariables(data.issuer));
+        const nextIssuer = issuerPartyVariables(data.issuer);
+        setIssuerVars(nextIssuer);
+        setForm((prev) => ({
+          ...prev,
+          variables: { ...prev.variables, ...nextIssuer },
+          bodyText: applyIssuerToBody(prev.bodyText, nextIssuer),
+        }));
       })
       .catch(() => {
         if (!cancelled) setIssuerVars({});
@@ -152,39 +165,30 @@ export function ContractForm({
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [setForm]);
 
   useEffect(() => {
     if (!selectedTemplate || bodyTouched) return;
-    setForm((prev) => ({
-      ...prev,
-      bodyText: fillBody(selectedTemplate.bodyTemplate, prev.variables || {}, issuerVars),
-    }));
-  }, [selectedTemplate, form.variables, issuerVars, bodyTouched, setForm]);
-
-  // Se o texto já foi editado, ainda preenche {{issuer*}} que restarem (assinaturas).
-  useEffect(() => {
-    if (!Object.keys(issuerVars).length) return;
     setForm((prev) => {
-      if (!prev.bodyText || !/\{\{\s*issuer[A-Za-z0-9_]*\s*\}\}/.test(prev.bodyText)) {
-        return prev;
-      }
-      const next = fillContractTemplate(prev.bodyText, issuerVars);
+      const next = fillBody(selectedTemplate.bodyTemplate, prev.variables || {}, issuerVars);
       if (next === prev.bodyText) return prev;
       return { ...prev, bodyText: next };
     });
-  }, [issuerVars, setForm]);
+  }, [selectedTemplate, form.variables, issuerVars, bodyTouched, setForm]);
 
   const selectTemplate = (templateId) => {
     const template = templates.find((t) => t.id === templateId);
     setBodyTouched(false);
     setForm((prev) => {
       const partyKeys = Object.fromEntries(
-        Object.entries(prev.variables || {}).filter(([key]) => isSystemPartyKey(key) || key.startsWith('clientRepresentative'))
+        Object.entries(prev.variables || {}).filter(
+          ([key]) => isSystemPartyKey(key) || key.startsWith('clientRepresentative') || key.startsWith('issuer')
+        )
       );
       const variables = {
         ...defaultsFromTemplate(template),
         ...partyKeys,
+        ...issuerVars,
       };
       return {
         ...prev,
@@ -203,6 +207,7 @@ export function ContractForm({
       const variables = {
         ...prev.variables,
         ...party,
+        ...issuerVars,
       };
       return {
         ...prev,
@@ -212,23 +217,21 @@ export function ContractForm({
         bodyText:
           !bodyTouched && selectedTemplate
             ? fillBody(selectedTemplate.bodyTemplate, variables, issuerVars)
-            : prev.bodyText.includes('{{issuer')
-              ? fillContractTemplate(prev.bodyText, issuerVars)
-              : prev.bodyText,
+            : applyIssuerToBody(prev.bodyText, issuerVars),
       };
     });
   };
 
   const updateVariable = (key, value) => {
     setForm((prev) => {
-      const variables = { ...prev.variables, [key]: value };
+      const variables = { ...prev.variables, [key]: value, ...issuerVars };
       return {
         ...prev,
         variables,
         bodyText:
           !bodyTouched && selectedTemplate
             ? fillBody(selectedTemplate.bodyTemplate, variables, issuerVars)
-            : prev.bodyText,
+            : applyIssuerToBody(prev.bodyText, issuerVars),
       };
     });
   };
@@ -386,10 +389,14 @@ export function ContractForm({
             disabled={!selectedTemplate}
             onClick={() => {
               setBodyTouched(false);
-              setForm((prev) => ({
-                ...prev,
-                bodyText: fillBody(selectedTemplate.bodyTemplate, prev.variables || {}, issuerVars),
-              }));
+              setForm((prev) => {
+                const variables = { ...prev.variables, ...issuerVars };
+                return {
+                  ...prev,
+                  variables,
+                  bodyText: fillBody(selectedTemplate.bodyTemplate, variables, issuerVars),
+                };
+              });
             }}
           >
             Restaurar modelo

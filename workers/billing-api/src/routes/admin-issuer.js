@@ -12,6 +12,11 @@ export async function handleAdminIssuer(request, env, origin, path) {
 
   if (request.method === 'GET') {
     const dto = await getIssuerDto(env, env.DB);
+    // Garante cadastro persistido na primeira leitura (fallback das vars do Worker).
+    if (dto.source === 'env') {
+      const issuer = await upsertIssuerProfile(env.DB, dto.issuer);
+      return json({ issuer, source: 'db', updatedAt: issuer.updatedAt }, 200, origin);
+    }
     return json(dto, 200, origin);
   }
 

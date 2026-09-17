@@ -241,12 +241,16 @@ export function contractEmailHtml({
   siteUrl,
   pdfFilename,
   isRectified = false,
+  portalUrl,
 }) {
   const contact = 'contato@henriquerotsen.com.br';
   const title = isRectified ? 'Contrato retificado' : 'Proposta contratual';
   const lead = isRectified
     ? 'Segue em anexo a versão retificada do contrato para sua análise e assinatura.'
     : 'Segue em anexo a proposta / contrato de prestação de serviços para sua análise e assinatura.';
+  const portal =
+    portalUrl ||
+    `${String(siteUrl || 'https://henriquerotsen.com.br').replace(/\/$/, '')}/#/area-restrita/cliente`;
 
   const bodyHtml = `
     <p style="margin:0 0 16px;font-size:16px;line-height:1.65;color:#ffffff;">Olá, <strong>${escapeHtml(clientName)}</strong>!</p>
@@ -263,7 +267,11 @@ export function contractEmailHtml({
       </tr>
     </table>
     <p style="margin:0 0 16px;font-size:15px;line-height:1.65;color:rgba(255,255,255,0.78);">
-      O PDF completo está anexado a este e-mail. Após a leitura, responda confirmando o recebimento ou com eventuais ajustes.
+      O PDF completo está anexado a este e-mail. Você também pode acessar e baixar este contrato a qualquer momento no
+      <strong>portal do cliente</strong>, com o CNPJ e o código enviado ao e-mail de faturamento.
+    </p>
+    <p style="margin:0 0 16px;font-size:15px;line-height:1.65;color:rgba(255,255,255,0.78);">
+      Após a leitura, responda confirmando o recebimento ou com eventuais ajustes.
     </p>
     <p style="margin:24px 0 0;font-size:14px;line-height:1.65;color:rgba(255,255,255,0.55);">
       Dúvidas? Responda este e-mail ou escreva para
@@ -275,6 +283,8 @@ export function contractEmailHtml({
     label: 'Contratos',
     title,
     bodyHtml,
+    ctaLabel: 'Acessar portal do cliente',
+    ctaUrl: portal,
     footerNote: `Enviado por <a href="${escapeHtml(siteUrl || 'https://henriquerotsen.com.br')}" style="color:#ffffff;text-decoration:none;">henriquerotsen.com.br</a> · ${contact}`,
   });
 }

@@ -175,6 +175,9 @@ export const billingApi = {
   downloadClientPdf: (id) => request(`/client/invoices/${id}/pdf`),
   clientNfse: () => request('/client/nfse'),
   downloadClientNfsePdf: (id) => request(`/client/nfse/${id}/pdf`),
+  clientContracts: () => request('/client/contracts'),
+  downloadClientContractPdf: (id, inline = false) =>
+    request(`/client/contracts/${id}/pdf${inline ? '?inline=1' : ''}`),
 };
 
 export function invoicePdfFilename(number) {
