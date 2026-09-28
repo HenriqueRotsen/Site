@@ -107,10 +107,31 @@ export async function handleAdminNfse(request, env, origin, path) {
       .bind(...binds, limit, offset)
       .all();
 
+    const today = new Date().toISOString().slice(0, 10);
+    const yearStart = `${today.slice(0, 4)}-01-01`;
+    const nextYearStart = `${Number(today.slice(0, 4)) + 1}-01-01`;
+    const totalsRow = await env.DB.prepare(
+      `SELECT
+         COUNT(*) as count,
+         COALESCE(SUM(amount_cents), 0) as total_cents,
+         SUM(CASE WHEN competence_date >= ? AND competence_date < ? THEN 1 ELSE 0 END) as year_count,
+         COALESCE(SUM(CASE WHEN competence_date >= ? AND competence_date < ? THEN amount_cents ELSE 0 END), 0) as year_cents
+       FROM nfse_documents`
+    )
+      .bind(yearStart, nextYearStart, yearStart, nextYearStart)
+      .first();
+
     return json(
       {
         documents: results.map(nfseDto),
         pagination: paginationMeta(page, limit, countRow?.total || 0),
+        totals: {
+          count: Number(totalsRow?.count || 0),
+          totalCents: Number(totalsRow?.total_cents || 0),
+          year: today.slice(0, 4),
+          yearCount: Number(totalsRow?.year_count || 0),
+          yearCents: Number(totalsRow?.year_cents || 0),
+        },
       },
       200,
       origin

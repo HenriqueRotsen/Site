@@ -87,6 +87,30 @@ const UF_LIST = [
   'PA', 'PB', 'PR', 'PE', 'PI', 'RJ', 'RN', 'RS', 'RO', 'RR', 'SC', 'SP', 'SE', 'TO',
 ];
 
+const MONTH_SHORT_PT = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
+
+function monthLabel(ym) {
+  const month = Number(String(ym || '').slice(5, 7));
+  return MONTH_SHORT_PT[month - 1] || ym;
+}
+
+function fillMeiMonths(mei) {
+  if (!mei?.year) return [];
+  const byMonth = new Map((mei.byMonth || []).map((row) => [row.month, row]));
+  const now = new Date();
+  const currentYear = String(now.getFullYear());
+  const lastMonth = mei.year === currentYear ? now.getMonth() + 1 : 12;
+  return Array.from({ length: lastMonth }, (_, idx) => {
+    const month = `${mei.year}-${String(idx + 1).padStart(2, '0')}`;
+    const row = byMonth.get(month);
+    return {
+      month,
+      count: row?.count || 0,
+      totalCents: row?.totalCents || 0,
+    };
+  });
+}
+
 function clientToForm(client) {
   return {
     legalName: client.legalName || '',
@@ -141,6 +165,7 @@ export function AdminPortal() {
   const [clientsPagination, setClientsPagination] = useState({ page: 1, totalPages: 1, total: 0 });
   const [invoicesPagination, setInvoicesPagination] = useState({ page: 1, totalPages: 1, total: 0 });
   const [nfsePagination, setNfsePagination] = useState({ page: 1, totalPages: 1, total: 0 });
+  const [nfseTotals, setNfseTotals] = useState(null);
   const [clientForm, setClientForm] = useState(emptyClient);
   const [issuerForm, setIssuerForm] = useState(emptyIssuer);
   const [issuerLoading, setIssuerLoading] = useState(false);
@@ -196,6 +221,7 @@ export function AdminPortal() {
     const data = await billingApi.listNfse({ page: pageNumber, limit: PAGE_SIZE });
     setNfseDocuments(data.documents);
     setNfsePagination(data.pagination);
+    setNfseTotals(data.totals || null);
   }, []);
 
   const loadContracts = useCallback(async (pageNumber = 1) => {
@@ -1075,6 +1101,14 @@ export function AdminPortal() {
   const maxRevenue = dashboard?.revenueByMonth?.length
     ? Math.max(...dashboard.revenueByMonth.map((m) => m.totalCents))
     : 0;
+  const meiMonths = fillMeiMonths(dashboard?.mei);
+  const maxMeiMonth = meiMonths.length
+    ? Math.max(...meiMonths.map((m) => m.totalCents), 0)
+    : 0;
+  const meiUsedPercent = dashboard?.mei
+    ? Math.min(100, Number(dashboard.mei.usedPercent || 0))
+    : 0;
+  const meiTone = meiUsedPercent >= 100 ? 'warning' : meiUsedPercent >= 80 ? 'warning' : 'soft';
 
   const invoiceClientOptions = clientSelectOptions.map((c) => ({
     value: c.id,
@@ -1199,7 +1233,7 @@ export function AdminPortal() {
         <>
           <AdminPageHeader
             title="Insights"
-            subtitle="Visão geral do faturamento e pendências"
+            subtitle="Visão geral do faturamento, NFS-e da MEI e pendências"
           />
           <div className="admin-stats">
             <StatCard
@@ -1229,6 +1263,85 @@ export function AdminPortal() {
               hint="Cadastros em operação"
             />
           </div>
+
+          {dashboard.mei && (
+            <div className="admin-panel">
+              <div className="admin-panel__header">
+                <div>
+                  <h2>Faturamento MEI · {dashboard.mei.year}</h2>
+                  <p>Soma das NFS-e pela competência, contra o teto anual de {formatBRL(dashboard.mei.limitCents)}</p>
+                </div>
+                <button type="button" className="admin-btn admin-btn--secondary" onClick={() => navigatePage('nfse')}>
+                  Ver notas
+                </button>
+              </div>
+              <div className="admin-stats admin-stats--compact">
+                <StatCard
+                  icon="revenue"
+                  label={`NFS-e em ${dashboard.mei.year}`}
+                  value={formatBRL(dashboard.mei.yearCents)}
+                  hint={`${dashboard.mei.yearCount} nota${dashboard.mei.yearCount === 1 ? '' : 's'} no ano`}
+                  tone={meiTone}
+                />
+                <StatCard
+                  icon="pending"
+                  label="Restante no teto"
+                  value={formatBRL(dashboard.mei.remainingCents)}
+                  hint={
+                    meiUsedPercent >= 100
+                      ? 'Teto anual atingido'
+                      : `${meiUsedPercent.toFixed(1).replace('.', ',')}% do limite usado`
+                  }
+                  tone={meiUsedPercent >= 100 ? 'warning' : 'soft'}
+                />
+                <StatCard
+                  icon="overdue"
+                  label="NFS-e neste mês"
+                  value={formatBRL(dashboard.mei.monthCents)}
+                  hint={`${dashboard.mei.monthCount} nota${dashboard.mei.monthCount === 1 ? '' : 's'} na competência atual`}
+                  tone="soft"
+                />
+                <StatCard
+                  icon="clients"
+                  label="Total no sistema"
+                  value={formatBRL(dashboard.mei.allTimeCents)}
+                  hint={`${dashboard.mei.allTimeCount} NFS-e arquivada${dashboard.mei.allTimeCount === 1 ? '' : 's'}`}
+                />
+              </div>
+              <div className="admin-mei-meter">
+                <div className="admin-mei-meter__labels">
+                  <span>Uso do teto MEI</span>
+                  <strong>
+                    {formatBRL(dashboard.mei.yearCents)} / {formatBRL(dashboard.mei.limitCents)}
+                  </strong>
+                </div>
+                <div
+                  className={`admin-mei-meter__track${meiUsedPercent >= 80 ? ' is-warning' : ''}`}
+                  role="progressbar"
+                  aria-valuemin={0}
+                  aria-valuemax={100}
+                  aria-valuenow={Math.round(meiUsedPercent)}
+                  aria-label="Percentual do teto anual MEI utilizado"
+                >
+                  <span style={{ width: `${meiUsedPercent}%` }} />
+                </div>
+              </div>
+              {meiMonths.some((m) => m.totalCents > 0) && (
+                <div className="admin-revenue-bars admin-revenue-bars--mei">
+                  {meiMonths.map((m) => (
+                    <div key={m.month} className="admin-revenue-bar">
+                      <div
+                        className="admin-revenue-bar__fill"
+                        style={{ height: `${maxMeiMonth ? Math.max(6, (m.totalCents / maxMeiMonth) * 100) : 6}%` }}
+                        title={`${monthLabel(m.month)}: ${formatBRL(m.totalCents)} · ${m.count} NFS-e`}
+                      />
+                      <span>{monthLabel(m.month)}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
 
           {dashboard.revenueByMonth?.length > 0 && (
             <div className="admin-panel">
@@ -1469,7 +1582,11 @@ export function AdminPortal() {
         <>
           <AdminPageHeader
             title="NFS-e"
-            subtitle={`${nfsePagination.total} documento${nfsePagination.total === 1 ? '' : 's'} arquivado${nfsePagination.total === 1 ? '' : 's'}. Essas notas também aparecerão para os clientes.`}
+            subtitle={
+              nfseTotals
+                ? `${nfseTotals.count} nota${nfseTotals.count === 1 ? '' : 's'} · ${formatBRL(nfseTotals.yearCents)} em ${nfseTotals.year} · ${formatBRL(nfseTotals.totalCents)} no total`
+                : `${nfsePagination.total} documento${nfsePagination.total === 1 ? '' : 's'} arquivado${nfsePagination.total === 1 ? '' : 's'}. Essas notas também aparecerão para os clientes.`
+            }
             action={
               <button type="button" className="admin-btn" onClick={() => navigatePage('new-nfse')}>
                 Enviar NFS-e

@@ -51,6 +51,7 @@ ISSUER_PIX_KEY = "66.268.938/0001-03"
 ISSUER_SITE = "henriquerotsen.com.br"
 ISSUER_CITY_UF = "Belo Horizonte / MG"
 CONTRACT_FROM_EMAIL = "Henrique Rotsen <contato@henriquerotsen.com.br>"
+MEI_ANNUAL_LIMIT_CENTS = "8100000"
 
 [triggers]
 crons = ["0 12 * * *"]

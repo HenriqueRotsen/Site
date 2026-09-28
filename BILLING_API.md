@@ -104,7 +104,7 @@ Acesse: `http://localhost:3000/#/area-restrita`
 | POST | `/auth/admin/verify-code` | Confirma OTP e cria sessão admin |
 | POST | `/auth/client/request-code` | OTP por CNPJ |
 | POST | `/auth/client/verify-code` | Verificar OTP (sessão 8h) |
-| GET | `/admin/dashboard` | Insights |
+| GET | `/admin/dashboard` | Insights (faturas + faturamento MEI das NFS-e) |
 | GET/POST | `/admin/clients` | CRUD clientes |
 | GET/PUT | `/admin/issuer` | Cadastro da contratada (emissor CCMEI) |
 | GET/POST | `/admin/invoices` | Faturas |

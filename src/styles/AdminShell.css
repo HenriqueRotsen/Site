@@ -261,6 +261,60 @@
   margin-bottom: 24px;
 }
 
+.admin-stats--compact {
+  margin: 0;
+  padding: 16px 20px 8px;
+  gap: 12px;
+}
+
+.admin-stats--compact .admin-stat-card {
+  padding: 16px;
+}
+
+.admin-mei-meter {
+  padding: 8px 20px 16px;
+}
+
+.admin-mei-meter__labels {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 8px;
+  font-size: 0.8125rem;
+  color: #6b6b6b;
+}
+
+.admin-mei-meter__labels strong {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #191919;
+  font-variant-numeric: tabular-nums;
+}
+
+.admin-mei-meter__track {
+  height: 10px;
+  border-radius: 999px;
+  background: #f0f0f0;
+  overflow: hidden;
+}
+
+.admin-mei-meter__track span {
+  display: block;
+  height: 100%;
+  background: #191919;
+  border-radius: 999px;
+  min-width: 0;
+}
+
+.admin-mei-meter__track.is-warning span {
+  background: #8b2e2e;
+}
+
+.admin-revenue-bars--mei {
+  padding-bottom: 16px;
+}
+
 .admin-stat-card {
   padding: 20px;
   border: 1px solid #e5e5e5;
